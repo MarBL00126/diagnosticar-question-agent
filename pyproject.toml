@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "genphenai-repreguntas"
+version = "1.0.0"
+description = "Sistema de repreguntas diagnosticas trazables sobre Orphadata-HPO para Diagnostic.ar."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "openai",
+  "langchain",
+  "langchain-core",
+  "langchain-community",
+  "langchain-openai",
+  "langchain-chroma",
+  "langchain-text-splitters",
+  "chromadb",
+  "pydantic",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+]
+
+[project.scripts]
+genphenai-repreguntas = "genphenai_repreguntas.cli:main"
+genphenai-repreguntas-api = "genphenai_repreguntas.api:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q --basetemp=.pytest_tmp -p no:cacheprovider"
