@@ -1,0 +1,23 @@
+.env
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest_tmp/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.ipynb
+
+# Chroma/vector-store local artifacts. Rebuild with:
+# python -m genphenai_repreguntas.cli index
+db_repreguntas_demo/
+db_genphenai_medical_docs/
+
+# Local reports/exports
+outputs/
+reports/
+*.log
+data/

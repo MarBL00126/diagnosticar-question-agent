@@ -1,0 +1,3 @@
+[console_scripts]
+genphenai-repreguntas = genphenai_repreguntas.cli:main
+genphenai-repreguntas-api = genphenai_repreguntas.api:main
