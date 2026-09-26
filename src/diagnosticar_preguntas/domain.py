@@ -113,6 +113,8 @@ class CandidateTerm:
     ``genes_yes`` are the genes whose probability rises on a "sí";
     ``genes_no`` those that rise on a "no". Both feed the clinician view and
     let guardrails check that a question really separates candidates.
+    ``requires_testing`` marks findings only a lab or imaging study reveals;
+    patient mode avoids them unless nothing else is left to ask.
     """
 
     hpo_id: str
@@ -122,6 +124,7 @@ class CandidateTerm:
     p_yes: float
     genes_yes: tuple[str, ...] = field(default=())
     genes_no: tuple[str, ...] = field(default=())
+    requires_testing: bool = False
 
 
 class ModelClient(Protocol):
