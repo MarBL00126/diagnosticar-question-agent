@@ -61,12 +61,18 @@ class ModelRanking:
 
     ``scores`` maps gene symbol to the model's softmax probability for the
     genes returned (the top-k, not the whole vocabulary).
+
+    ``query_hpo_ids`` are the terms that were sent to the model. The re-ranker
+    applies as likelihoods exactly the present terms the model did not see
+    (not sent, or reported unknown), so no finding is counted twice. ``None``
+    means "not recorded" and is read as "the model saw every present term".
     """
 
     scores: Mapping[str, float]
     specialties: Mapping[str, Any] | None = None
     confidence: float | None = None
     unknown_hpo_ids: tuple[str, ...] = ()
+    query_hpo_ids: tuple[str, ...] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,8 +133,19 @@ class CandidateTerm:
     requires_testing: bool = False
 
 
+class ModelUnavailableError(RuntimeError):
+    """The diagnostic.ar model service could not produce a ranking.
+
+    Raised by ``ModelClient`` implementations on connection errors, timeouts
+    and non-success responses. Without a ranking a round cannot run, so the API
+    layer maps it to 503 instead of degrading.
+    """
+
+
 class ModelClient(Protocol):
-    def rank(self, hpo_ids: Sequence[str], top_k: int) -> ModelRanking: ...
+    def rank(self, hpo_ids: Sequence[str], top_k: int) -> ModelRanking:
+        """Rank genes for the present findings. Raises ``ModelUnavailableError``."""
+        ...
 
 
 class Reranker(Protocol):
