@@ -11,12 +11,13 @@ from diagnosticar_preguntas.agent.round import RoundService
 from diagnosticar_preguntas.api.app import create_app
 from diagnosticar_preguntas.api.schemas import RoundRequest, RoundResponse, Versions
 from diagnosticar_preguntas.config import LLMProviderName, Settings
+from diagnosticar_preguntas.domain import ModelClient
 from diagnosticar_preguntas.kb.store import KnowledgeBase
 from diagnosticar_preguntas.llm.template import TemplateProvider
 from diagnosticar_preguntas.ranking.likelihood import LikelihoodModel
 from diagnosticar_preguntas.ranking.reranker import BayesianReranker
 from diagnosticar_preguntas.selection.selector import InformationGainSelector
-from diagnosticar_preguntas.wiring import Service
+from diagnosticar_preguntas.wiring import Service, patient_vocabulary
 from fixtures.fake_model import FakeModelClient
 from fixtures.tiny_kb import GENE_A, GENE_B, GENE_C
 
@@ -30,7 +31,12 @@ NOTE = "desde bebé, dice la abuela"
 
 
 def make_settings(**overrides: Any) -> Settings:
-    values: dict[str, Any] = {"llm_provider": LLMProviderName.TEMPLATE, **overrides}
+    """Template wording and, unless a test says otherwise, no token required."""
+    values: dict[str, Any] = {
+        "llm_provider": LLMProviderName.TEMPLATE,
+        "allow_unauthenticated": True,
+        **overrides,
+    }
     return Settings(_env_file=None, **values)  # type: ignore[call-arg]
 
 
@@ -49,6 +55,7 @@ def round_body(**overrides: Any) -> dict[str, Any]:
 def finished(request: RoundRequest, warnings: tuple[str, ...] = ()) -> RoundResponse:
     return RoundResponse(
         round=request.round,
+        mode=request.mode,
         status="finished",
         finish_reason="user_finished",
         ranking=[],
@@ -107,7 +114,7 @@ def client(settings: Settings | None = None, service: Service | None = None) -> 
     return TestClient(create_app(settings or make_settings(), service or stub_service()))
 
 
-def real_rounds(kb: KnowledgeBase, model: FakeModelClient | None = None) -> RoundService:
+def real_rounds(kb: KnowledgeBase, model: ModelClient | None = None) -> RoundService:
     """The real pipeline on the tiny knowledge base, with a fake model and template wording."""
     likelihood = LikelihoodModel(kb)
     return RoundService(
@@ -117,4 +124,6 @@ def real_rounds(kb: KnowledgeBase, model: FakeModelClient | None = None) -> Roun
         labels=kb,
         llm=TemplateProvider(),
         settings=make_settings(),
+        kb_version=kb.version,
+        patient_vocabulary=patient_vocabulary(kb),
     )

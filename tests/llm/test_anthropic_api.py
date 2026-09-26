@@ -75,6 +75,23 @@ class TestRequest:
         ]
         assert call["messages"] == [{"role": "user", "content": request.user}]
 
+    @pytest.mark.parametrize(("per_call", "expected"), [(None, 30), (12.5, 12.5), (90, 30)])
+    def test_each_request_gets_the_shorter_of_the_two_timeouts(
+        self, per_call: float | None, expected: float
+    ) -> None:
+        client = ok_client()
+
+        provider(client).generate(round_request(), timeout_s=per_call)
+
+        assert client.calls[0]["timeout"] == expected
+
+    def test_the_sdk_never_retries_on_its_own(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key-never-used")
+
+        built = AnthropicProvider(model="claude-opus-5", effort="high", timeout_s=35)
+
+        assert built._client.max_retries == 0
+
     def test_opts_into_default_server_side_fallbacks(self) -> None:
         client = ok_client()
 
@@ -101,11 +118,15 @@ class TestResponse:
         with pytest.raises(LLMInvalidOutputError):
             provider(client).generate(round_request())
 
-    def test_text_that_breaks_the_schema_is_invalid(self) -> None:
-        client = FakeClient(response(text='{"preguntas": []}'))
+    def test_text_that_breaks_the_schema_is_invalid_and_never_quoted(self) -> None:
+        client = FakeClient(response(text='{"preguntas": ["desde bebé"]}'))
 
-        with pytest.raises(LLMInvalidOutputError):
+        with pytest.raises(LLMInvalidOutputError) as caught:
             provider(client).generate(round_request())
+
+        assert "bebé" not in str(caught.value)
+        assert caught.value.__cause__ is None
+        assert caught.value.__suppress_context__
 
 
 class TestErrors:

@@ -49,17 +49,23 @@ class AnthropicProvider:
         self._model = model
         self._effort = effort
         self._max_tokens = max_tokens
-        self._client = client or anthropic.Anthropic(timeout=timeout_s)
+        self._timeout_s = timeout_s
+        # The round service falls back to templates on its own; SDK retries would only
+        # spend the round's time budget.
+        self._client = client or anthropic.Anthropic(timeout=timeout_s, max_retries=0)
 
     @property
     def model_name(self) -> str | None:
         return self._model
 
-    def generate[T: BaseModel](self, request: LLMRequest[T]) -> T:
+    def generate[T: BaseModel](
+        self, request: LLMRequest[T], *, timeout_s: float | None = None
+    ) -> T:
         started = time.monotonic()
         outcome = "error"
+        timeout = self._timeout_s if timeout_s is None else min(self._timeout_s, timeout_s)
         try:
-            result = self._generate(request)
+            result = self._generate(request, timeout)
             outcome = "ok"
             return result
         except LLMError as exc:
@@ -74,7 +80,7 @@ class AnthropicProvider:
                 outcome=outcome,
             )
 
-    def _generate[T: BaseModel](self, request: LLMRequest[T]) -> T:
+    def _generate[T: BaseModel](self, request: LLMRequest[T], timeout: float) -> T:
         try:
             response = self._client.beta.messages.create(
                 model=self._model,
@@ -90,6 +96,7 @@ class AnthropicProvider:
                 },
                 fallbacks="default",
                 betas=[STRUCTURED_OUTPUTS_BETA, FALLBACK_BETA],
+                timeout=timeout,
             )
         except anthropic.APITimeoutError as exc:
             raise LLMTimeoutError("Claude API request timed out") from exc
@@ -114,6 +121,7 @@ def _validate[T: BaseModel](text: str, output: type[T]) -> T:
     try:
         return output.model_validate_json(text)
     except ValidationError as exc:
+        # ``from None``: the validation error quotes the answer, which may echo a note.
         raise LLMInvalidOutputError(
             f"answer does not match {output.__name__}: {exc.error_count()} errors"
-        ) from exc
+        ) from None

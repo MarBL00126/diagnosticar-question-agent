@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from eval.answerer import AnswererConfig, SimulatedPatient
 from eval.cases import Case, sample_present
-from eval.harness import CachedModelClient, stable_seed
+from eval.harness import AgentConfig, CachedModelClient, settings_for, stable_seed
 from eval.metrics import NO_STOPS, StopRules, apply_stops, paired_bootstrap, summarize
 from eval.policies import CaseTrace, MostFrequentSelector, RandomAskableSelector, RoundTrace
 from tests.fixtures.tiny_kb import (
@@ -32,6 +32,7 @@ from diagnosticar_preguntas.kb.store import KnowledgeBase
 from diagnosticar_preguntas.ranking.likelihood import LikelihoodModel
 from diagnosticar_preguntas.ranking.model_client import NoKnownHpoIdsError
 from diagnosticar_preguntas.ranking.reranker import BayesianReranker
+from diagnosticar_preguntas.ranking.strategy import RerankStrategy
 from diagnosticar_preguntas.selection.selector import InformationGainSelector, SelectionConfig
 
 
@@ -268,3 +269,26 @@ def test_most_frequent_asks_the_top_gene_first(tiny_kb: KnowledgeBase) -> None:
     picks = MostFrequentSelector(tiny_kb, selector).shortlist(posterior, evidence, k=1)
 
     assert [c.hpo_id for c in picks] and picks[0].hpo_id in top_terms
+
+
+def test_the_code_defaults_are_the_configuration_chosen_on_the_tuning_split() -> None:
+    chosen = {
+        "strategy": "fixed_prior",
+        "temperature": 1.0,
+        "background": 0.1,
+        "missing_frequency": 0.3,
+        "epsilon": 0.02,
+        "p_unknown": 0.2,
+        "confident_threshold": 0.9,
+        "min_information_gain": 0.05,
+    }
+
+    assert AgentConfig().to_dict() == chosen
+
+
+def test_the_strategy_reaches_the_service_through_its_settings() -> None:
+    config = AgentConfig(strategy=RerankStrategy.MODEL_SEES_PRESENT)
+
+    assert (
+        settings_for(config, early_stop=True).rerank_strategy is RerankStrategy.MODEL_SEES_PRESENT
+    )

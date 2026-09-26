@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import json
+import subprocess
 from typing import Any
 
 import pytest
 from round_fakes import (
     GENES,
+    KB_VERSION,
     LABELS,
+    PRESENT,
     SHORTLIST,
-    FakeLabels,
+    FakeClock,
     FakeModel,
     FakeReranker,
     FakeSelector,
@@ -17,52 +21,40 @@ from round_fakes import (
     question,
     request,
     round_draft,
-    settings,
+    service,
     summary,
 )
 
 from diagnosticar_preguntas import __version__
 from diagnosticar_preguntas.agent.round import (
+    MIN_LLM_CALL_S,
     WARNING_NOTES,
     WARNING_QUESTIONS,
     WARNING_SUMMARY,
-    RoundService,
 )
-from diagnosticar_preguntas.domain import (
-    AnswerValue,
-    GeneScore,
-    Mode,
-    ModelUnavailableError,
-)
+from diagnosticar_preguntas.domain import AnswerValue, GeneScore, Mode, ModelUnavailableError
+from diagnosticar_preguntas.llm.claude_cli import ClaudeCliProvider
 from diagnosticar_preguntas.llm.provider import (
     LLMInvalidOutputError,
     LLMQuotaError,
     LLMTimeoutError,
 )
-from diagnosticar_preguntas.llm.tasks import QuestionTask, SummaryTask
+from diagnosticar_preguntas.llm.tasks import NotesTask, QuestionTask, SummaryTask
 from diagnosticar_preguntas.llm.template import TemplateProvider
+from diagnosticar_preguntas.ranking.strategy import RerankStrategy
 
 FIRST_THREE = ("HP:0001738", "HP:0001696", "HP:0002099")
 # After yes_no_answers() the first two shortlist terms are known, leaving these.
 ROUND_TWO = ("HP:0002099", "HP:0000765")
+NOTE = "creo que no, no estoy segura"
 
 
-def service(
-    llm: Any = None,
-    *,
-    model: FakeModel | None = None,
-    reranker: FakeReranker | None = None,
-    selector: FakeSelector | None = None,
-    **config: Any,
-) -> RoundService:
-    return RoundService(
-        model=model or FakeModel(),
-        reranker=reranker or FakeReranker(),
-        selector=selector or FakeSelector(),
-        labels=FakeLabels(),
-        llm=llm or TemplateProvider(),
-        settings=settings(**config),
-    )
+class RoundTwoSelector(FakeSelector):
+    """Like the real selector, never offers a term that is already known."""
+
+    def shortlist(self, posterior: Any, evidence: Any, k: int) -> list[Any]:
+        self.calls.append(k)
+        return [c for c in self.candidates if c.hpo_id not in evidence.asked_or_known][:k]
 
 
 def yes_no_answers() -> list[dict[str, Any]]:
@@ -71,6 +63,16 @@ def yes_no_answers() -> list[dict[str, Any]]:
         {"hpo_id": "HP:0001696", "answer": "no"},
         {"hpo_id": "HP:0012236", "answer": "no_se"},
     ]
+
+
+def answers_with_note() -> list[dict[str, Any]]:
+    answers = yes_no_answers()
+    answers[0]["note"] = NOTE
+    return answers
+
+
+def round_two(llm: Any = None, **kwargs: Any) -> Any:
+    return service(llm, selector=kwargs.pop("selector", RoundTwoSelector()), **kwargs)
 
 
 class TestFirstRound:
@@ -84,6 +86,10 @@ class TestFirstRound:
         assert [q.id for q in response.questions] == [f"r1-{h}" for h in FIRST_THREE]
         assert response.warnings == []
         assert response.summary is None
+
+    @pytest.mark.parametrize("mode", list(Mode))
+    def test_the_response_says_which_mode_its_texts_are_for(self, mode: Mode) -> None:
+        assert service().run(request(mode=mode)).mode is mode
 
     def test_each_question_carries_the_spanish_label_of_its_term(self) -> None:
         llm = ScriptedLLM(questions=[round_draft(*FIRST_THREE)])
@@ -111,14 +117,8 @@ class TestFirstRound:
         response = service(ScriptedLLM(questions=[round_draft(*FIRST_THREE)])).run(request())
 
         assert response.versions.agent == __version__
-        assert response.versions.knowledge_base == "kb-test-1"
+        assert response.versions.knowledge_base == KB_VERSION
         assert response.versions.llm_model == "claude-opus-5"
-
-    def test_passes_specialties_and_confidence_from_the_model(self) -> None:
-        response = service().run(request())
-
-        assert response.specialties == {"top_specialties": ["Pulmonology", "Gastroenterology"]}
-        assert response.confidence == 0.41
 
     def test_asks_the_selector_for_the_configured_shortlist_size(self) -> None:
         selector = FakeSelector()
@@ -137,39 +137,50 @@ class TestFirstRound:
         assert llm.tasks(QuestionTask)[0].n_questions == 1
 
 
-class TestEvidence:
-    def test_model_sees_extracted_findings_plus_yes_answers(self) -> None:
+class TestStrategy:
+    def test_by_default_the_model_only_ever_sees_the_reported_findings(self) -> None:
         model = FakeModel()
 
-        service(model=model).run(request(round=2, answers=yes_no_answers()))
+        round_two(model=model).run(request(round=2, answers=yes_no_answers()))
 
-        assert model.calls == [(sorted(["HP:0002205", "HP:0004322", "HP:0001738"]), 50)]
+        assert model.calls == [(sorted(PRESENT), 50)]
 
-    def test_reranker_gets_no_answers_as_absent_and_no_se_as_unknown(self) -> None:
+    def test_every_answer_reaches_the_reranker_as_evidence_the_model_did_not_see(self) -> None:
         reranker = FakeReranker()
 
-        service(reranker=reranker).run(request(round=2, answers=yes_no_answers()))
+        round_two(reranker=reranker).run(request(round=2, answers=yes_no_answers()))
 
         evidence = reranker.evidence[0]
         assert evidence.present == {"HP:0002205", "HP:0004322", "HP:0001738"}
         assert evidence.absent == {"HP:0001250", "HP:0001696"}
         assert evidence.unknown == {"HP:0012236"}
+        assert reranker.rankings[0].query_hpo_ids == tuple(sorted(PRESENT))
 
+    def test_model_sees_present_sends_yes_answers_to_the_model(self) -> None:
+        model = FakeModel()
+
+        round_two(model=model, rerank_strategy=RerankStrategy.MODEL_SEES_PRESENT).run(
+            request(round=2, answers=yes_no_answers())
+        )
+
+        assert model.calls == [(sorted([*PRESENT, "HP:0001738"]), 50)]
+
+    def test_specialties_and_confidence_come_from_the_model_call(self) -> None:
+        response = round_two().run(request(round=2, answers=yes_no_answers()))
+
+        assert response.specialties == {"top_specialties": ["Pulmonology", "Gastroenterology"]}
+        assert response.confidence == 0.41
+
+
+class TestAnswers:
     def test_interpreted_answers_echo_every_answer_in_order(self) -> None:
-        response = service().run(request(round=2, answers=yes_no_answers()))
+        response = round_two().run(request(round=2, answers=yes_no_answers()))
 
         assert [(a.hpo_id, a.answer, a.effective_answer) for a in response.interpreted_answers] == [
             ("HP:0001738", AnswerValue.YES, AnswerValue.YES),
             ("HP:0001696", AnswerValue.NO, AnswerValue.NO),
             ("HP:0012236", AnswerValue.UNKNOWN, AnswerValue.UNKNOWN),
         ]
-
-
-class TestNotes:
-    def answers_with_note(self) -> list[dict[str, Any]]:
-        answers = yes_no_answers()
-        answers[0]["note"] = "creo que no, no estoy segura"
-        return answers
 
     def test_a_contradicting_note_downgrades_the_answer_to_no_se(self) -> None:
         llm = ScriptedLLM(
@@ -178,8 +189,8 @@ class TestNotes:
         )
         reranker = FakeReranker()
 
-        response = service(llm, reranker=reranker).run(
-            request(round=2, answers=self.answers_with_note())
+        response = round_two(llm, reranker=reranker).run(
+            request(round=2, answers=answers_with_note())
         )
 
         first = response.interpreted_answers[0]
@@ -193,10 +204,9 @@ class TestNotes:
             notes=[notes(("HP:0001738", True, None))], questions=[round_draft(*ROUND_TWO)]
         )
 
-        service(llm).run(request(round=2, answers=self.answers_with_note()))
+        round_two(llm).run(request(round=2, answers=answers_with_note()))
 
-        notes_task = llm.requests[0].task
-        assert [i.hpo_id for i in notes_task.items] == ["HP:0001738"]
+        assert [i.hpo_id for i in llm.tasks(NotesTask)[0].items] == ["HP:0001738"]
 
     def test_readings_for_answers_without_notes_are_ignored(self) -> None:
         llm = ScriptedLLM(
@@ -204,14 +214,45 @@ class TestNotes:
             questions=[round_draft(*ROUND_TWO)],
         )
 
-        response = service(llm).run(request(round=2, answers=self.answers_with_note()))
+        response = round_two(llm).run(request(round=2, answers=answers_with_note()))
 
         assert response.interpreted_answers[1].effective_answer is AnswerValue.NO
+
+    def test_a_note_with_an_echoed_reading_is_not_read_again(self) -> None:
+        answers = answers_with_note()
+        answers[0]["reading"] = {"effective_answer": "no_se", "note_summary": "Duda."}
+        llm = ScriptedLLM(questions=[round_draft(*ROUND_TWO)])
+        reranker = FakeReranker()
+
+        response = round_two(llm, reranker=reranker).run(request(round=3, answers=answers))
+
+        assert llm.tasks(NotesTask) == []
+        first = response.interpreted_answers[0]
+        assert (first.effective_answer, first.note_summary) == (AnswerValue.UNKNOWN, "Duda.")
+        assert "HP:0001738" in reranker.evidence[0].unknown
+
+    def test_only_unread_notes_are_sent_when_some_carry_a_reading(self) -> None:
+        answers = answers_with_note()
+        answers[0]["reading"] = {"effective_answer": "si", "note_summary": None}
+        answers[1]["note"] = "no, pero la mamá sí"
+        llm = ScriptedLLM(
+            notes=[notes(("HP:0001696", True, "La madre sí."))],
+            questions=[round_draft(*ROUND_TWO)],
+        )
+
+        response = round_two(llm).run(request(round=3, answers=answers))
+
+        assert [i.hpo_id for i in llm.tasks(NotesTask)[0].items] == ["HP:0001696"]
+        assert [a.note_summary for a in response.interpreted_answers] == [
+            None,
+            "La madre sí.",
+            None,
+        ]
 
     def test_note_failure_keeps_the_buttons_and_warns(self) -> None:
         llm = ScriptedLLM(notes=[LLMTimeoutError("slow")], questions=[round_draft(*ROUND_TWO)])
 
-        response = service(llm).run(request(round=2, answers=self.answers_with_note()))
+        response = round_two(llm).run(request(round=2, answers=answers_with_note()))
 
         assert response.interpreted_answers[0].effective_answer is AnswerValue.YES
         assert WARNING_NOTES in response.warnings
@@ -219,7 +260,7 @@ class TestNotes:
     def test_no_llm_call_when_no_answer_has_a_note(self) -> None:
         llm = ScriptedLLM(questions=[round_draft(*ROUND_TWO)])
 
-        service(llm).run(request(round=2, answers=yes_no_answers()))
+        round_two(llm).run(request(round=2, answers=yes_no_answers()))
 
         assert all(isinstance(r.task, QuestionTask) for r in llm.requests)
 
@@ -246,9 +287,16 @@ class TestStopReasons:
     def test_a_dominant_gene_closes_with_confident(self) -> None:
         reranker = FakeReranker(genes=(GeneScore("CFTR", 0.9, 0.4, 1),))
 
-        response = service(reranker=reranker, confident_threshold=0.85).run(request())
+        response = service(reranker=reranker).run(request())
 
         assert response.finish_reason == "confident"
+
+    def test_a_gene_below_the_default_threshold_keeps_asking(self) -> None:
+        reranker = FakeReranker(genes=(GeneScore("CFTR", 0.85, 0.4, 1),))
+
+        response = service(reranker=reranker).run(request())
+
+        assert response.status == "questions"
 
     def test_an_empty_shortlist_closes_with_no_useful_questions(self) -> None:
         response = service(selector=FakeSelector([])).run(request())
@@ -256,14 +304,7 @@ class TestStopReasons:
         assert response.finish_reason == "no_useful_questions"
 
     def test_low_information_gain_closes_with_no_useful_questions(self) -> None:
-        selector = FakeSelector([candidate("HP:0001738", 0.001)])
-
-        response = service(selector=selector, min_information_gain=0.01).run(request())
-
-        assert response.finish_reason == "no_useful_questions"
-
-    def test_candidates_already_known_are_never_asked(self) -> None:
-        selector = FakeSelector([candidate("HP:0002205"), candidate("HP:0001250")])
+        selector = FakeSelector([candidate("HP:0001738", 0.04)])
 
         response = service(selector=selector).run(request())
 
@@ -278,24 +319,28 @@ class TestStopReasons:
 
 
 class TestModes:
-    def test_patient_mode_hides_separates_and_rationale(self) -> None:
-        llm = ScriptedLLM(
-            questions=[round_draft(*FIRST_THREE)],
-        )
+    def test_patient_mode_hides_the_genes_and_the_rationale(self) -> None:
+        llm = ScriptedLLM(questions=[round_draft(*FIRST_THREE)])
 
         response = service(llm).run(request(mode=Mode.PATIENT))
 
         assert response.questions
-        assert all(q.separates is None and q.rationale is None for q in response.questions)
+        for q in response.questions:
+            assert (q.genes_if_yes, q.genes_if_no, q.rationale) == (None, None, None)
 
-    def test_clinician_mode_shows_rationale_and_at_most_five_separated_genes(self) -> None:
-        wide = candidate("HP:0001738", genes_yes=("G1", "G2", "G3"), genes_no=("G4", "G5", "G6"))
+    def test_clinician_mode_shows_at_most_five_genes_per_answer_and_the_rationale(self) -> None:
+        wide = candidate(
+            "HP:0001738",
+            genes_yes=("G1", "G2", "G3", "G4", "G5", "G6"),
+            genes_no=("G7", "G8"),
+        )
         llm = ScriptedLLM(questions=[round_draft("HP:0001738")])
 
         response = service(llm, selector=FakeSelector([wide])).run(request())
 
         only = response.questions[0]
-        assert only.separates == ["G1", "G2", "G3", "G4", "G5"]
+        assert only.genes_if_yes == ["G1", "G2", "G3", "G4", "G5"]
+        assert only.genes_if_no == ["G7", "G8"]
         assert only.rationale == "Separa CFTR de DNAH5."
 
     def test_patient_mode_drops_findings_that_need_a_study(self) -> None:
@@ -342,7 +387,7 @@ class TestQuestionGuardrails:
         assert response.warnings == []
 
     def test_two_rejected_drafts_fall_back_to_templates_for_the_missing_questions(self) -> None:
-        leaky = question("HP:0001696", text="¿Tiene algo que apunte a CFTR?")
+        leaky = question("HP:0001696", text="¿Hay algo que apunte a CFTR?")
         bad = round_draft("HP:0001738")
         bad = bad.model_copy(update={"questions": [*bad.questions, leaky]})
         llm = ScriptedLLM(questions=[bad, bad])
@@ -353,6 +398,19 @@ class TestQuestionGuardrails:
         assert response.questions[0].text == bad.questions[0].text
         assert all("CFTR" not in q.text for q in response.questions)
         assert WARNING_QUESTIONS in response.warnings
+        assert response.versions.llm_model == "claude-opus-5"
+
+    def test_a_patient_question_naming_a_top_disease_is_rejected(self) -> None:
+        naming = question("HP:0001696", text="¿Te dijeron que tiene fibrosis quística?")
+        draft = round_draft("HP:0001738", "HP:0002099")
+        draft = draft.model_copy(update={"questions": [*draft.questions, naming]})
+        llm = ScriptedLLM(questions=[draft, draft])
+
+        response = service(llm).run(request(mode=Mode.PATIENT))
+
+        retry = llm.tasks(QuestionTask)[1]
+        assert any("Cystic fibrosis" in c for c in retry.corrections)
+        assert all("quística" not in q.text for q in response.questions)
 
     def test_template_questions_never_repeat_an_accepted_one(self) -> None:
         llm = ScriptedLLM(questions=[round_draft("HP:0001696"), round_draft("HP:0001696")])
@@ -388,6 +446,31 @@ class TestQuestionGuardrails:
         assert response.versions.llm_model is None
 
 
+class TestLlmModelVersion:
+    def test_is_null_when_every_text_came_from_templates(self) -> None:
+        llm = ScriptedLLM(questions=[LLMQuotaError("spent")])
+
+        response = service(llm).run(request())
+
+        assert response.versions.llm_model is None
+
+    def test_is_null_when_the_summary_fell_back_and_nothing_else_used_the_llm(self) -> None:
+        llm = ScriptedLLM(summaries=[LLMTimeoutError("slow")])
+
+        response = service(llm).run(request(finish=True))
+
+        assert response.versions.llm_model is None
+
+    def test_is_set_when_only_the_note_reading_came_from_the_llm(self) -> None:
+        llm = ScriptedLLM(
+            notes=[notes(("HP:0001738", False, "Duda."))], questions=[LLMQuotaError("spent")]
+        )
+
+        response = round_two(llm).run(request(round=2, answers=answers_with_note()))
+
+        assert response.versions.llm_model == "claude-opus-5"
+
+
 class TestSummary:
     def test_the_summary_gets_answers_genes_and_specialties(self) -> None:
         llm = ScriptedLLM(summaries=[summary()])
@@ -399,6 +482,7 @@ class TestSummary:
         assert task.answers[0].label == "Insuficiencia pancreática exocrina"
         assert task.specialties == ("Pulmonology", "Gastroenterology")
         assert response.summary == summary().summary
+        assert response.versions.llm_model == "claude-opus-5"
 
     def test_a_patient_summary_naming_a_gene_is_retried_then_templated(self) -> None:
         leaky = summary("Todo apunta a CFTR.")
@@ -410,6 +494,17 @@ class TestSummary:
         assert "CFTR" not in response.summary
         assert WARNING_SUMMARY in response.warnings
         assert llm.tasks(SummaryTask)[1].corrections
+
+    def test_a_patient_summary_may_repeat_the_label_of_an_answered_term(self) -> None:
+        answers = [{"hpo_id": "HP:0001738", "answer": "si"}]
+        text = "Se informó insuficiencia pancreática exocrina. Conversalo con el médico."
+        llm = ScriptedLLM(summaries=[summary(text)])
+
+        response = service(llm).run(
+            request(mode=Mode.PATIENT, round=2, finish=True, answers=answers)
+        )
+
+        assert response.summary == text
 
     def test_a_clinician_summary_may_name_genes(self) -> None:
         llm = ScriptedLLM(summaries=[summary("CFTR subió del puesto 3 al 1 con la esteatorrea.")])
@@ -428,22 +523,113 @@ class TestSummary:
         assert WARNING_SUMMARY in response.warnings
 
 
+class TestTimeBudget:
+    """Default budget 75 s, LLM timeout 60 s, no call with less than 10 s left."""
+
+    def test_each_call_gets_the_llm_timeout_while_the_budget_allows_it(self) -> None:
+        llm = ScriptedLLM(questions=[round_draft(*FIRST_THREE)])
+
+        service(llm).run(request())
+
+        assert llm.timeouts == [60.0]
+
+    def test_a_call_never_gets_more_than_what_is_left(self) -> None:
+        bad = round_draft("HP:0009999")
+        llm = ScriptedLLM(
+            questions=[bad, round_draft(*FIRST_THREE)], clock=FakeClock(), seconds_per_call=30
+        )
+
+        service(llm, round_budget_s=50).run(request())
+
+        assert llm.timeouts == [50.0, 20.0]
+
+    def test_the_guardrail_retry_is_skipped_when_too_little_is_left(self) -> None:
+        bad = round_draft("HP:0009999")
+        llm = ScriptedLLM(questions=[bad], clock=FakeClock(), seconds_per_call=66)
+
+        response = service(llm).run(request())
+
+        assert len(llm.tasks(QuestionTask)) == 1
+        assert [q.hpo_id for q in response.questions] == list(FIRST_THREE)
+        assert WARNING_QUESTIONS in response.warnings
+
+    def test_notes_leave_room_for_the_question_call(self) -> None:
+        llm = ScriptedLLM(
+            notes=[notes(("HP:0001738", True, None))],
+            questions=[round_draft(*ROUND_TWO)],
+            clock=FakeClock(),
+        )
+
+        round_two(llm, round_budget_s=40).run(request(round=2, answers=answers_with_note()))
+
+        assert llm.timeouts == [40 - MIN_LLM_CALL_S, 40.0]
+
+    def test_notes_are_skipped_when_the_budget_is_short(self) -> None:
+        llm = ScriptedLLM(questions=[round_draft(*ROUND_TWO)], clock=FakeClock())
+
+        response = round_two(llm, round_budget_s=15).run(
+            request(round=2, answers=answers_with_note())
+        )
+
+        assert llm.tasks(NotesTask) == []
+        assert response.interpreted_answers[0].effective_answer is AnswerValue.YES
+        assert WARNING_NOTES in response.warnings
+        assert llm.timeouts == [15.0]
+
+    def test_a_slow_note_reading_leaves_the_questions_to_templates(self) -> None:
+        llm = ScriptedLLM(
+            notes=[notes(("HP:0001738", True, None))], clock=FakeClock(), seconds_per_call=70
+        )
+
+        response = round_two(llm).run(request(round=2, answers=answers_with_note()))
+
+        assert llm.tasks(QuestionTask) == []
+        assert response.questions
+        assert WARNING_QUESTIONS in response.warnings
+
+    def test_the_summary_falls_back_when_the_budget_is_spent(self) -> None:
+        llm = ScriptedLLM(
+            notes=[notes(("HP:0001738", True, None))], clock=FakeClock(), seconds_per_call=70
+        )
+
+        response = service(llm).run(request(round=2, finish=True, answers=answers_with_note()))
+
+        assert llm.tasks(SummaryTask) == []
+        assert response.summary
+        assert WARNING_SUMMARY in response.warnings
+
+
+class TestLogPrivacy:
+    def test_an_invalid_note_reading_logs_no_note_and_no_hpo_id(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        caplog.set_level("DEBUG")
+        # The CLI answers with a reading that breaks the schema and quotes the note.
+        bad = {"readings": [{"hpo_id": "HP:0001738", "consistent": "tal vez", "summary": NOTE}]}
+        envelope = {
+            "type": "result",
+            "subtype": "success",
+            "is_error": False,
+            "result": json.dumps(bad),
+            "structured_output": bad,
+        }
+
+        def runner(argv: list[str], **_: Any) -> subprocess.CompletedProcess[str]:
+            return subprocess.CompletedProcess(argv, 0, json.dumps(envelope), "")
+
+        llm = ClaudeCliProvider(
+            model="claude-opus-5", effort="high", timeout_s=30, binary="claude", runner=runner
+        )
+
+        response = round_two(llm).run(request(round=2, answers=answers_with_note()))
+
+        assert WARNING_NOTES in response.warnings
+        assert "LLMInvalidOutputError" in caplog.text
+        for value in (NOTE, "tal vez", "HP:0001738", *PRESENT):
+            assert value not in caplog.text
+        assert all(r.exc_info is None for r in caplog.records)
+
+
 def test_model_failure_propagates_as_model_unavailable() -> None:
     with pytest.raises(ModelUnavailableError):
         service(model=FakeModel(fail=True)).run(request())
-
-
-def test_kb_version_is_unknown_when_labels_do_not_carry_one() -> None:
-    class BareLabels(FakeLabels):
-        version = None  # type: ignore[assignment]
-
-    svc = RoundService(
-        model=FakeModel(),
-        reranker=FakeReranker(),
-        selector=FakeSelector(),
-        labels=BareLabels(),
-        llm=TemplateProvider(),
-        settings=settings(),
-    )
-
-    assert svc.run(request()).versions.knowledge_base == "unknown"

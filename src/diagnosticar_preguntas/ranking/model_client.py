@@ -8,7 +8,7 @@ from typing import Any
 
 import httpx
 
-from diagnosticar_preguntas.domain import ModelRanking, ModelUnavailableError
+from diagnosticar_preguntas.domain import ModelRanking, ModelRequestError, ModelUnavailableError
 
 NO_KNOWN_HPO_IDS = "no-known-hpo-ids"
 
@@ -17,7 +17,7 @@ class NoKnownHpoIdsError(ValueError):
     """The model knows none of the terms sent, so it cannot rank anything."""
 
     def __init__(self, hpo_ids: Sequence[str]) -> None:
-        super().__init__(f"the model knows none of {list(hpo_ids)}")
+        super().__init__("the model knows none of the terms sent")
         self.hpo_ids = tuple(hpo_ids)
 
 
@@ -26,7 +26,9 @@ class HttpModelClient:
 
     Connection errors, timeouts, 5xx and unusable responses raise
     ``ModelUnavailableError``; a 422 ``no-known-hpo-ids`` raises
-    ``NoKnownHpoIdsError`` because retrying the same terms cannot help.
+    ``NoKnownHpoIdsError`` and any other 4xx ``ModelRequestError``, because
+    retrying the same request cannot help. Error messages carry status codes
+    and exception types only: the service's bodies may echo the terms sent.
     """
 
     def __init__(
@@ -48,20 +50,22 @@ class HttpModelClient:
                 "/rank-genes", json={"hpo_ids": list(query), "top_k": top_k}
             )
         except httpx.TimeoutException as error:
-            raise ModelUnavailableError(f"model timed out: {error}") from error
+            raise ModelUnavailableError(f"model timed out ({type(error).__name__})") from None
         except httpx.HTTPError as error:
-            raise ModelUnavailableError(f"model unreachable: {error}") from error
+            raise ModelUnavailableError(f"model unreachable ({type(error).__name__})") from None
 
         if response.status_code == 422 and _error_code(response) == NO_KNOWN_HPO_IDS:
             raise NoKnownHpoIdsError(query)
+        if response.is_client_error:
+            raise ModelRequestError(f"model rejected the request with {response.status_code}")
         if response.is_error:
-            raise ModelUnavailableError(
-                f"model answered {response.status_code}: {response.text[:200]}"
-            )
+            raise ModelUnavailableError(f"model answered {response.status_code}")
         try:
             return _parse_ranking(response.json(), query)
         except (ValueError, KeyError, TypeError) as error:
-            raise ModelUnavailableError(f"unusable model response: {error}") from error
+            raise ModelUnavailableError(
+                f"unusable model response ({type(error).__name__})"
+            ) from None
 
     def is_healthy(self, timeout: float) -> bool:
         """Whether ``GET /healthz`` answers with a success status within ``timeout`` seconds."""

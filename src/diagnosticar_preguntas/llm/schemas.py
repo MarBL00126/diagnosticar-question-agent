@@ -9,6 +9,9 @@ class _Output(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+MAX_QUESTION_CHARS = 200
+
+
 class QuestionDraft(_Output):
     hpo_id: str
     text: str

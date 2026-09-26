@@ -3,23 +3,26 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from pydantic import BaseModel
 
+from diagnosticar_preguntas.agent.guardrails import PatientVocabulary
+from diagnosticar_preguntas.agent.round import RoundService
 from diagnosticar_preguntas.api.schemas import RoundRequest
 from diagnosticar_preguntas.config import LLMProviderName, Settings
 from diagnosticar_preguntas.domain import (
     CandidateTerm,
     Evidence,
     GeneScore,
+    Hypothesis,
     Mode,
     ModelRanking,
     ModelUnavailableError,
     Posterior,
 )
-from diagnosticar_preguntas.llm.provider import LLMRequest
+from diagnosticar_preguntas.llm.provider import LLMProvider, LLMRequest
 from diagnosticar_preguntas.llm.schemas import (
     NoteReading,
     NotesDraft,
@@ -28,6 +31,7 @@ from diagnosticar_preguntas.llm.schemas import (
     SummaryDraft,
 )
 from diagnosticar_preguntas.llm.tasks import NotesTask, QuestionTask, SummaryTask
+from diagnosticar_preguntas.llm.template import TemplateProvider
 
 PRESENT = ["HP:0002205", "HP:0004322"]
 ABSENT = ["HP:0001250"]
@@ -48,6 +52,19 @@ GENES = (
     GeneScore("DNAH5", 0.3, 0.20, 2),
     GeneScore("SCNN1A", 0.2, 0.09, 3),
 )
+HYPOTHESES = (
+    Hypothesis("CFTR", "OMIM:219700", 0.5),
+    Hypothesis("DNAH5", "OMIM:608644", 0.3),
+    Hypothesis("SCNN1A", "OMIM:264350", 0.2),
+)
+DISEASE_NAMES = {
+    "OMIM:219700": "Cystic fibrosis",
+    "OMIM:608644": "Ciliary dyskinesia, primary, 3",
+    "OMIM:264350": "Pseudohypoaldosteronism, type I, autosomal recessive",
+}
+KB_VERSION = "kb-test-1"
+# Every gene the fake knowledge base knows, beyond the three candidates of the ranking.
+ALL_GENES = ("CFTR", "DNAH5", "SCNN1A", "SCN1A", "POR", "HLA-B")
 
 
 def candidate(
@@ -110,17 +127,20 @@ class FakeModel:
         self.calls.append((list(hpo_ids), top_k))
         if self.fail:
             raise ModelUnavailableError("model service down")
-        return self.ranking
+        return replace(self.ranking, query_hpo_ids=tuple(hpo_ids))
 
 
 @dataclass
 class FakeReranker:
     genes: tuple[GeneScore, ...] = GENES
+    hypotheses: tuple[Hypothesis, ...] = HYPOTHESES
     evidence: list[Evidence] = field(default_factory=list)
+    rankings: list[ModelRanking] = field(default_factory=list)
 
     def rerank(self, ranking: ModelRanking, evidence: Evidence) -> Posterior:
         self.evidence.append(evidence)
-        return Posterior(genes=self.genes)
+        self.rankings.append(ranking)
+        return Posterior(genes=self.genes, hypotheses=self.hypotheses)
 
 
 @dataclass
@@ -134,13 +154,50 @@ class FakeSelector:
 
 
 class FakeLabels:
-    version = "kb-test-1"
-
     def label_es(self, hpo_id: str) -> str | None:
         return LABELS.get(hpo_id)
 
     def label_en(self, hpo_id: str) -> str | None:
         return None
+
+
+class FakeClock:
+    """A monotonic clock that only moves when told to."""
+
+    def __init__(self) -> None:
+        self.now = 1000.0
+
+    def __call__(self) -> float:
+        return self.now
+
+    def advance(self, seconds: float) -> None:
+        self.now += seconds
+
+
+def vocabulary() -> PatientVocabulary:
+    return PatientVocabulary(ALL_GENES, DISEASE_NAMES.get)
+
+
+def service(
+    llm: LLMProvider | None = None,
+    *,
+    model: FakeModel | None = None,
+    reranker: FakeReranker | None = None,
+    selector: FakeSelector | None = None,
+    clock: FakeClock | None = None,
+    **config: Any,
+) -> RoundService:
+    return RoundService(
+        model=model or FakeModel(),
+        reranker=reranker or FakeReranker(),
+        selector=selector or FakeSelector(),
+        labels=FakeLabels(),
+        llm=llm or TemplateProvider(),
+        settings=settings(**config),
+        kb_version=KB_VERSION,
+        patient_vocabulary=vocabulary(),
+        clock=clock or getattr(llm, "clock", None) or FakeClock(),
+    )
 
 
 class ScriptedLLM:
@@ -154,6 +211,8 @@ class ScriptedLLM:
         questions: Sequence[BaseModel | Exception] = (),
         notes: Sequence[BaseModel | Exception] = (),
         summaries: Sequence[BaseModel | Exception] = (),
+        clock: FakeClock | None = None,
+        seconds_per_call: float = 0.0,
     ) -> None:
         self._script: dict[type, list[BaseModel | Exception]] = {
             QuestionTask: list(questions),
@@ -161,9 +220,14 @@ class ScriptedLLM:
             SummaryTask: list(summaries),
         }
         self.requests: list[LLMRequest[Any]] = []
+        self.timeouts: list[float | None] = []
+        self.clock = clock or FakeClock()
+        self.seconds_per_call = seconds_per_call
 
-    def generate(self, request: LLMRequest[Any]) -> Any:
+    def generate(self, request: LLMRequest[Any], *, timeout_s: float | None = None) -> Any:
         self.requests.append(request)
+        self.timeouts.append(timeout_s)
+        self.clock.advance(self.seconds_per_call)
         queue = self._script[type(request.task)]
         assert queue, f"unexpected {type(request.task).__name__} call"
         item = queue.pop(0)

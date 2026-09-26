@@ -25,23 +25,20 @@ from typing import Any
 
 from eval.answerer import AnswererConfig, SimulatedPatient
 from eval.cases import Case
-from eval.harness import TOP_K, Pipeline, settings_for, stable_seed
+from eval.harness import TOP_K, Pipeline, round_service, settings_for, stable_seed
 
-from diagnosticar_preguntas.agent.round import RoundService
 from diagnosticar_preguntas.api.schemas import AnswerIn, RoundRequest, RoundResponse
 from diagnosticar_preguntas.domain import (
     CandidateTerm,
     Evidence,
     Mode,
     ModelClient,
-    ModelRanking,
     Posterior,
     QuestionSelector,
 )
 from diagnosticar_preguntas.kb.store import KnowledgeBase
 from diagnosticar_preguntas.llm.provider import LLMProvider
 from diagnosticar_preguntas.llm.template import TemplateProvider
-from diagnosticar_preguntas.ranking.strategy import RerankStrategy
 from diagnosticar_preguntas.selection.selector import InformationGainSelector
 
 POLICIES = ("none", "agent", "random_askable", "most_frequent_unreported")
@@ -139,17 +136,6 @@ class MostFrequentSelector(_BaselineSelector):
         return [self._candidate(t) for t in self._unrelated_prefix(ordered, k)]
 
 
-class FixedPriorModel:
-    """Sends only the findings reported before any question, whatever the round."""
-
-    def __init__(self, inner: ModelClient, reported_present: Sequence[str]) -> None:
-        self._inner = inner
-        self._query = tuple(sorted(set(reported_present)))
-
-    def rank(self, hpo_ids: Sequence[str], top_k: int) -> ModelRanking:
-        return self._inner.rank(self._query, top_k)
-
-
 @dataclass(slots=True)
 class RoundTrace:
     """One request to the service. ``round`` is the request's 1-based round number."""
@@ -234,14 +220,11 @@ def run_case(
 ) -> CaseTrace:
     if policy == "none":
         return model_only(case, model)
-    if pipeline.config.strategy is RerankStrategy.FIXED_PRIOR:
-        model = FixedPriorModel(model, case.present)
     selector = RecordingSelector(selector_for(policy, pipeline, case))
-    service = RoundService(
+    service = round_service(
+        pipeline,
         model=model,
-        reranker=pipeline.reranker,
         selector=selector,
-        labels=pipeline.kb,
         llm=llm or TemplateProvider(),
         settings=settings_for(pipeline.config, early_stop=early_stop),
     )

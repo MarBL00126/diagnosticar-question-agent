@@ -13,7 +13,8 @@ from diagnosticar_preguntas.llm.prompting import (
     question_request,
     system_prompt,
 )
-from diagnosticar_preguntas.llm.tasks import NoteItem, NotesTask, QuestionTask
+from diagnosticar_preguntas.llm.schemas import MAX_QUESTION_CHARS
+from diagnosticar_preguntas.llm.tasks import NoteItem, NotesTask, QuestionTask, SummaryTask
 
 
 def data_of(user: str) -> object:
@@ -55,9 +56,25 @@ def test_each_mode_gets_its_own_instructions() -> None:
     patient = system_prompt(Mode.PATIENT, QuestionTask)
     clinician = system_prompt(Mode.CLINICIAN, QuestionTask)
 
-    assert "¿Notaste…?" in patient
+    assert "¿Hubo alguna vez…?" in patient
     assert "médico" in clinician
     assert patient != clinician
+
+
+def test_the_patient_prompt_never_assumes_who_answers() -> None:
+    patient = system_prompt(Mode.PATIENT, QuestionTask)
+
+    assert "No sabés quién es" in patient
+    assert "misma forma impersonal" in patient
+    assert "misma forma impersonal" in system_prompt(Mode.PATIENT, SummaryTask)
+
+
+def test_the_clinician_prompt_keeps_questions_faithful_to_the_term() -> None:
+    assert "ni más amplia ni más específica" in system_prompt(Mode.CLINICIAN, QuestionTask)
+
+
+def test_the_question_prompt_states_the_guardrails_length_limit() -> None:
+    assert f"hasta {MAX_QUESTION_CHARS} caracteres" in system_prompt(Mode.PATIENT, QuestionTask)
 
 
 def test_every_prompt_carries_the_shared_clinical_rules() -> None:

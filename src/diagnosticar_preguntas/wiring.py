@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
+from diagnosticar_preguntas.agent.guardrails import PatientVocabulary
 from diagnosticar_preguntas.agent.round import RoundService
 from diagnosticar_preguntas.api.schemas import RoundRequest, RoundResponse
 from diagnosticar_preguntas.config import Settings
@@ -38,6 +39,10 @@ class Service:
     model_service: HealthProbe
 
 
+def patient_vocabulary(kb: KnowledgeBase) -> PatientVocabulary:
+    return PatientVocabulary(kb.genes(), kb.disease_name)
+
+
 def build_service(settings: Settings) -> Service:
     """Wire the real components. Raises ``KnowledgeBaseError`` if the KB is missing or stale."""
     kb = KnowledgeBase.open(settings.kb_path)
@@ -50,5 +55,7 @@ def build_service(settings: Settings) -> Service:
         labels=kb,
         llm=build_provider(settings),
         settings=settings,
+        kb_version=kb.version,
+        patient_vocabulary=patient_vocabulary(kb),
     )
     return Service(rounds=rounds, knowledge_base_version=kb.version, model_service=model)

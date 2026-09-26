@@ -34,8 +34,8 @@ UNANNOTATED_DISEASE = "unannotated"
 
 @dataclass(frozen=True, slots=True)
 class LikelihoodConfig:
-    background: float = 0.05
-    missing_frequency: float = 0.5
+    background: float = 0.1
+    missing_frequency: float = 0.3
     epsilon: float = 0.02
 
     def __post_init__(self) -> None:
