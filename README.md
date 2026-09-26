@@ -24,10 +24,17 @@ La configuración son variables `PREGUNTAS_*`, documentadas en `.env.example`.
 
 ## API
 
-- `POST /v1/rounds`: una ronda. Contrato en `src/diagnosticar_preguntas/api/schemas.py`
-  y ejemplo en `docs/contrato/rondas-ejemplo.json`. Con `PREGUNTAS_SERVICE_TOKEN`
-  exige el encabezado `X-Internal-Token`. Los errores responden `{"error": "<código>"}`
-  sin repetir nada del pedido (la tabla está en `api/app.py`).
+- `POST /v1/rounds`: una ronda. Contrato (versión 2) en
+  `src/diagnosticar_preguntas/api/schemas.py` y ejemplo en
+  `docs/contrato/rondas-ejemplo.json`. Exige el encabezado `X-Internal-Token` con el
+  valor de `PREGUNTAS_SERVICE_TOKEN`; sin token configurado rechaza todo (401), salvo
+  con `PREGUNTAS_ALLOW_UNAUTHENTICATED=true`, que `make run` activa para desarrollo
+  local. Cuerpos de más de 64 KiB responden 413. Los errores responden
+  `{"error": "<código>"}` sin repetir nada del pedido (la tabla está en `api/app.py`).
+- Tiempos: una ronda gasta como mucho `PREGUNTAS_ROUND_BUDGET_S` (75 s) en llamadas al
+  LLM, más `PREGUNTAS_MODEL_SERVICE_TIMEOUT_S` (10 s) en la llamada al modelo, y puede
+  esperar `PREGUNTAS_QUEUE_TIMEOUT_S` (10 s) un lugar libre. El timeout del backend
+  tiene que superar esa suma (95 s); la plataforma usa 100 s.
 - `GET /healthz`: versión, base de conocimiento, proveedor LLM y si tiene
   credenciales, y si el servicio del modelo responde. Siempre 200 mientras el
   proceso vive; `status: "degraded"` indica un problema de dependencias.

@@ -43,8 +43,10 @@ kb: $(STAMP)
 	$(PY) -m diagnosticar_preguntas.kb.build --download --out $(KB)
 	cat $(KB).sha256
 
+# Local development only: no token, so unauthenticated calls must be allowed explicitly.
 run: $(STAMP)
-	PREGUNTAS_MODEL_SERVICE_URL='$(PREGUNTAS_MODEL_SERVICE_URL)' $(PY) -m diagnosticar_preguntas.api
+	PREGUNTAS_MODEL_SERVICE_URL='$(PREGUNTAS_MODEL_SERVICE_URL)' PREGUNTAS_ALLOW_UNAUTHENTICATED=true \
+		$(PY) -m diagnosticar_preguntas.api
 
 docker-build:
 	docker build -t $(IMAGE) .

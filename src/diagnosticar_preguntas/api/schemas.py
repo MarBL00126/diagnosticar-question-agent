@@ -1,8 +1,9 @@
-"""HTTP contract of ``POST /v1/rounds``.
+"""HTTP contract of ``POST /v1/rounds`` (version 2).
 
 This is the only interface Express depends on. The platform keeps a JSON copy
 of a request and a response in ``frontend/mocks/fixtures.json`` (key
-``questions``); change both together.
+``questions``); change both together. The documented example lives in
+``docs/contrato/rondas-ejemplo.json``.
 """
 
 from __future__ import annotations
@@ -18,16 +19,44 @@ Note = Annotated[str, StringConstraints(strip_whitespace=True, max_length=280)]
 
 MAX_ROUNDS = 3
 QUESTIONS_PER_ROUND = 3
+MAX_NOTE_SUMMARY_CHARS = 200
+MAX_GENES_PER_SIDE = 5
+
+NoteSummary = Annotated[str, StringConstraints(max_length=MAX_NOTE_SUMMARY_CHARS)]
 
 
 class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+class AnswerReading(_Strict):
+    """How the agent read an answer's note in an earlier response, echoed back by the caller.
+
+    Copy it from that response's ``interpreted_answers``. The agent reads each
+    note once: an answer that carries a ``reading`` is used as that reading,
+    so the effective answer stays the same across rounds and modes.
+    """
+
+    effective_answer: AnswerValue
+    note_summary: NoteSummary | None = None
+
+
 class AnswerIn(_Strict):
+    """One answered question: the button pressed, an optional note and its earlier reading."""
+
     hpo_id: HpoId
     answer: AnswerValue
     note: Note | None = None
+    reading: AnswerReading | None = None
+
+    @model_validator(mode="after")
+    def _reading_only_downgrades(self) -> AnswerIn:
+        # The same rule the agent applies to notes: a reading may turn an answer into
+        # "no sé", never a "sí" into a "no" or back.
+        effective = None if self.reading is None else self.reading.effective_answer
+        if effective not in (None, self.answer, AnswerValue.UNKNOWN):
+            raise ValueError("reading.effective_answer must equal answer or be no_se")
+        return self
 
 
 class RoundRequest(_Strict):
@@ -36,6 +65,11 @@ class RoundRequest(_Strict):
     ``round`` is the 1-based number of the round being requested. Round 1
     carries no answers. A request with ``round > MAX_ROUNDS`` or
     ``finish=True`` returns the final ranking and summary without questions.
+
+    ``present_hpo_ids`` and ``absent_hpo_ids`` are the findings reported
+    before any question (the extraction step) and must not overlap.
+    ``answers`` are only for questions the agent asked, so none of them may
+    repeat a reported finding.
     """
 
     mode: Mode
@@ -48,19 +82,31 @@ class RoundRequest(_Strict):
     finish: bool = False
 
     @model_validator(mode="after")
-    def _answers_are_unique(self) -> RoundRequest:
+    def _findings_and_answers_are_consistent(self) -> RoundRequest:
+        # Messages never name the offending ids: validation errors reach logs and bodies.
         ids = [a.hpo_id for a in self.answers]
         if len(ids) != len(set(ids)):
             raise ValueError("each hpo_id may be answered at most once")
+        present, absent = set(self.present_hpo_ids), set(self.absent_hpo_ids)
+        if not present.isdisjoint(absent):
+            raise ValueError("a finding cannot be both present and absent")
+        if not (present | absent).isdisjoint(ids):
+            raise ValueError("answers may only be about asked questions, not reported findings")
         return self
 
 
 class QuestionOut(_Strict):
-    """One question. ``separates`` and ``rationale`` are only filled in clinician mode.
+    """One question.
 
     ``label`` is the official Spanish HPO label of ``hpo_id`` (the English one
     when the term has no translation), short enough for a chip such as
     "No presenta: Convulsiones" once the question is answered.
+
+    ``genes_if_yes``, ``genes_if_no`` and ``rationale`` are only filled in
+    clinician mode (``null`` for patients). ``genes_if_yes`` are the genes
+    (at most five, strongest first) whose refined score rises if the answer
+    is "sí"; ``genes_if_no`` those that rise if it is "no". Either may be an
+    empty list when no gene moves noticeably that way.
     """
 
     id: str
@@ -68,7 +114,8 @@ class QuestionOut(_Strict):
     label: str
     text: str
     help: str | None = None
-    separates: list[str] | None = None
+    genes_if_yes: list[str] | None = Field(default=None, max_length=MAX_GENES_PER_SIDE)
+    genes_if_no: list[str] | None = Field(default=None, max_length=MAX_GENES_PER_SIDE)
     rationale: str | None = None
 
 
@@ -83,16 +130,24 @@ class RankedGene(_Strict):
 
 
 class InterpretedAnswer(_Strict):
-    """How an answer was used. ``effective_answer`` differs from ``answer`` only when
-    the note contradicted the button, in which case it is downgraded to ``no_se``."""
+    """How an answer was used, for every answer of the request.
+
+    ``effective_answer`` differs from ``answer`` only when the note
+    contradicted the button or expressed doubt, in which case it is
+    downgraded to ``no_se``. Answers that arrived with a ``reading`` echo it
+    unchanged. Send ``effective_answer`` and ``note_summary`` back as the
+    answer's ``reading`` in later requests.
+    """
 
     hpo_id: HpoId
     answer: AnswerValue
     effective_answer: AnswerValue
-    note_summary: str | None = None
+    note_summary: NoteSummary | None = None
 
 
 class Versions(_Strict):
+    """``llm_model`` is ``null`` when every text of the response came from templates."""
+
     agent: str
     knowledge_base: str
     llm_model: str | None
@@ -102,7 +157,24 @@ FinishReason = Literal["max_rounds", "user_finished", "confident", "no_useful_qu
 
 
 class RoundResponse(_Strict):
+    """Result of one round.
+
+    ``mode`` is the mode the texts of this response (questions, help,
+    summary, note summaries) were written for; it always equals the
+    request's ``mode``.
+
+    ``specialties`` and ``confidence`` come unchanged from the diagnostic.ar
+    model. With the default re-ranking strategy (``fixed_prior``) the model
+    is queried every round with the findings reported before any question
+    (``present_hpo_ids``) only, and the agent applies every answer
+    afterwards. So both describe the original findings and stay the same
+    from round to round: ``confidence`` is the model's confidence on the
+    original findings, not a confidence in ``ranking``, and ``specialties``
+    ignore the answers. What the answers refine is ``ranking`` (``score``).
+    """
+
     round: int
+    mode: Mode
     status: Literal["questions", "finished"]
     finish_reason: FinishReason | None = None
     questions: list[QuestionOut] = Field(default_factory=list)

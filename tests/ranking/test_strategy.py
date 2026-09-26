@@ -4,7 +4,7 @@ import pytest
 
 from diagnosticar_preguntas.domain import Evidence
 from diagnosticar_preguntas.kb.store import KnowledgeBase
-from diagnosticar_preguntas.ranking.likelihood import LikelihoodModel
+from diagnosticar_preguntas.ranking.likelihood import LikelihoodConfig, LikelihoodModel
 from diagnosticar_preguntas.ranking.reranker import BayesianReranker, RerankConfig
 from diagnosticar_preguntas.ranking.strategy import RerankStrategy, model_query
 from fixtures.fake_model import FakeModelClient
@@ -37,7 +37,8 @@ def _scores(query: tuple[str, ...]) -> dict[str, float]:
 
 def _score_of_gene_a(kb: KnowledgeBase, strategy: RerankStrategy) -> tuple[float, FakeModelClient]:
     client = FakeModelClient(_scores)
-    reranker = BayesianReranker(kb, LikelihoodModel(kb), RerankConfig(temperature=1.0))
+    likelihood = LikelihoodModel(kb, LikelihoodConfig(background=0.05, missing_frequency=0.5))
+    reranker = BayesianReranker(kb, likelihood, RerankConfig(temperature=1.0))
     evidence = Evidence(present=frozenset({MICROCEPHALY, SEIZURE}))
     query = model_query(strategy, reported_present=REPORTED, evidence=evidence)
 

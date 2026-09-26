@@ -117,8 +117,8 @@ class CandidateTerm:
     """A symptom worth asking about, as scored by the question selector.
 
     ``genes_yes`` are the genes whose probability rises on a "sí";
-    ``genes_no`` those that rise on a "no". Both feed the clinician view and
-    let guardrails check that a question really separates candidates.
+    ``genes_no`` those that rise on a "no", strongest first. Both feed the
+    clinician view (``genes_if_yes`` / ``genes_if_no`` of the API).
     ``requires_testing`` marks findings only a lab or imaging study reveals;
     patient mode avoids them unless nothing else is left to ask.
     """
@@ -136,15 +136,27 @@ class CandidateTerm:
 class ModelUnavailableError(RuntimeError):
     """The diagnostic.ar model service could not produce a ranking.
 
-    Raised by ``ModelClient`` implementations on connection errors, timeouts
-    and non-success responses. Without a ranking a round cannot run, so the API
-    layer maps it to 503 instead of degrading.
+    Raised by ``ModelClient`` implementations on connection errors, timeouts,
+    5xx and unusable responses. Without a ranking a round cannot run, so the
+    API layer maps it to 503 instead of degrading.
+    """
+
+
+class ModelRequestError(RuntimeError):
+    """The model service rejected the request itself (a 4xx other than ``no-known-hpo-ids``).
+
+    Sending the same request again cannot succeed, so the API answers 422
+    instead of asking the caller to retry.
     """
 
 
 class ModelClient(Protocol):
     def rank(self, hpo_ids: Sequence[str], top_k: int) -> ModelRanking:
-        """Rank genes for the present findings. Raises ``ModelUnavailableError``."""
+        """Rank genes for ``hpo_ids``.
+
+        Raises ``ModelUnavailableError`` or ``ModelRequestError``. Messages
+        never carry the terms sent or the service's response body.
+        """
         ...
 
 
@@ -154,7 +166,11 @@ class Reranker(Protocol):
 
 class QuestionSelector(Protocol):
     def shortlist(self, posterior: Posterior, evidence: Evidence, k: int) -> list[CandidateTerm]:
-        """Best terms to ask next, excluding anything in ``evidence.asked_or_known``."""
+        """Best terms to ask next.
+
+        Implementations guarantee that no term of ``evidence.asked_or_known``
+        is returned; the round service relies on it.
+        """
         ...
 
 

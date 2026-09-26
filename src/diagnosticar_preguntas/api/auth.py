@@ -2,7 +2,9 @@
 
 The backend sends ``X-Internal-Token`` on every call. The service is never
 exposed publicly, so the token guards against other containers on the same
-network, not against browsers.
+network, not against browsers. Without a configured token the service fails
+closed: it refuses every round unless unauthenticated calls were allowed
+explicitly, which only local development should do.
 """
 
 from __future__ import annotations
@@ -14,14 +16,16 @@ from pydantic import SecretStr
 TOKEN_HEADER = "X-Internal-Token"
 
 
-def token_matches(expected: SecretStr | None, presented: str | None) -> bool:
-    """True when no token is configured, or when ``presented`` equals it.
+def is_authorized(
+    expected: SecretStr | None, presented: str | None, *, allow_unauthenticated: bool
+) -> bool:
+    """Whether a call presenting ``presented`` may run a round.
 
     Compared in constant time so response timing does not reveal how much of a
     guess was right.
     """
     if expected is None:
-        return True
+        return allow_unauthenticated
     if presented is None:
         return False
     return hmac.compare_digest(

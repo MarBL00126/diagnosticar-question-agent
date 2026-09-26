@@ -28,10 +28,16 @@ from diagnosticar_preguntas.ranking.likelihood import UNANNOTATED_DISEASE, Likel
 
 @dataclass(frozen=True, slots=True)
 class RerankConfig:
-    """``temperature`` > 1 flattens the model's distribution, which is overconfident."""
+    """``temperature`` > 1 flattens the model's distribution before the answers apply.
+
+    The default 1 keeps the model's probabilities as they are: flattening them
+    (T = 2, 3 or 5) let a few noisy answers push the right gene down in the
+    evaluation (``docs/EVALUACION.md``, section 5). Real patients may make the
+    model more overconfident than simulated ones; measure before raising it.
+    """
 
     top_n: int = 50
-    temperature: float = 3.0
+    temperature: float = 1.0
 
     def __post_init__(self) -> None:
         if self.top_n < 1:

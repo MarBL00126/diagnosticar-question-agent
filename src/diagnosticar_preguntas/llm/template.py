@@ -3,6 +3,12 @@
 Used for evaluation, for local runs without credentials, and as the fallback
 whenever an LLM answer fails validation twice. It follows the selector's order,
 phrases questions from the Spanish HPO labels and never interprets free text.
+
+Patient questions quote the official label as something a doctor may have
+said, in the same impersonal form the patient prompt asks of Claude: the
+reader may be the patient or a relative. The label is the one text the
+patient guardrails exempt in its own question, so these questions pass them
+whatever the label says (a label may well contain "síndrome").
 """
 
 from __future__ import annotations
@@ -12,6 +18,7 @@ from pydantic import BaseModel
 from diagnosticar_preguntas.domain import AnswerValue, CandidateTerm, Mode
 from diagnosticar_preguntas.llm.provider import LLMError, LLMRequest
 from diagnosticar_preguntas.llm.schemas import (
+    MAX_QUESTION_CHARS,
     NoteReading,
     NotesDraft,
     QuestionDraft,
@@ -20,7 +27,6 @@ from diagnosticar_preguntas.llm.schemas import (
 )
 from diagnosticar_preguntas.llm.tasks import NotesTask, QuestionTask, SummaryTask
 
-MAX_QUESTION_CHARS = 200
 _MAX_GENES_IN_RATIONALE = 3
 
 
@@ -29,7 +35,9 @@ class TemplateProvider:
     def model_name(self) -> str | None:
         return None
 
-    def generate[T: BaseModel](self, request: LLMRequest[T]) -> T:
+    def generate[T: BaseModel](
+        self, request: LLMRequest[T], *, timeout_s: float | None = None
+    ) -> T:
         task = request.task
         draft: BaseModel
         match task:
@@ -54,16 +62,17 @@ class TemplateProvider:
 
 
 def phrase_question(candidate: CandidateTerm, mode: Mode) -> QuestionDraft:
-    label = _as_phrase(candidate.label_es or candidate.label_en or candidate.hpo_id)
+    label = candidate.label_es or candidate.label_en or candidate.hpo_id
     if mode is Mode.PATIENT:
         if candidate.requires_testing:
-            text = "¿Algún médico o estudio te mencionó esto: {}?"
-            help_text = "Si no te hicieron ese estudio o no lo sabés, respondé «No sé»."
+            text = "¿Algún médico o estudio mencionó «{}»?"
+            help_text = "Si no se hizo ese estudio o no se sabe, respondé «No sé»."
         else:
-            text = "¿Notaste alguna vez esto: {}?"
-            help_text = "Si no estás seguro, respondé «No sé»."
+            text = "¿Algún médico mencionó «{}» o se notó algo así?"
+            help_text = "Si no hay seguridad, respondé «No sé»."
         rationale = "Pregunta generada sin IA."
     else:
+        label = _as_phrase(label)
         text = "¿Algún estudio mostró {}?" if candidate.requires_testing else "¿Presenta {}?"
         help_text = None
         rationale = _rationale(candidate)
@@ -78,7 +87,7 @@ def phrase_question(candidate: CandidateTerm, mode: Mode) -> QuestionDraft:
 def summarize(task: SummaryTask) -> str:
     if task.mode is Mode.PATIENT:
         opening = (
-            "Con tus respuestas se reordenó la lista de posibles causas genéticas."
+            "Con las respuestas se reordenó la lista de posibles causas genéticas."
             if task.answers
             else "No se sumaron respuestas, así que la lista quedó como la ordenó el modelo."
         )

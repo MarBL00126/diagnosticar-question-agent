@@ -1,5 +1,5 @@
 {
-  "_comment": "Ejemplo del contrato POST /v1/rounds. Es la referencia que copia frontend/mocks/fixtures.json (clave 'questions') en diagnostic.ar. Los valores son ilustrativos, no salidas reales del modelo.",
+  "_comment": "Ejemplo del contrato POST /v1/rounds, versión 2. Es la referencia que copia frontend/mocks/fixtures.json (clave 'questions') en diagnostic.ar. Los valores son ilustrativos, no salidas reales del modelo. Cada respuesta puede llevar 'reading': la interpretación que el agente ya devolvió para ella en 'interpreted_answers' de una respuesta anterior (effective_answer y note_summary), copiada tal cual; el agente solo lee las notas que llegan sin 'reading', así cada nota se interpreta una vez y su lectura no cambia entre rondas ni al repetir una ronda en el otro modo. En round2_request, la primera respuesta ya trae su lectura y la segunda todavía no. 'specialties' y 'confidence' son los del modelo de diagnostic.ar para los hallazgos informados antes de las preguntas, por eso no cambian entre rondas. 'genes_if_yes', 'genes_if_no' y 'rationale' solo vienen en modo médico (round1_response_medico).",
   "round1_request": {
     "mode": "paciente",
     "round": 1,
@@ -10,6 +10,7 @@
   },
   "round1_response": {
     "round": 1,
+    "mode": "paciente",
     "status": "questions",
     "finish_reason": null,
     "questions": [
@@ -17,27 +18,30 @@
         "id": "r1-HP:0001738",
         "hpo_id": "HP:0001738",
         "label": "Insuficiencia pancreática exocrina",
-        "text": "¿Notaste que la materia fecal es abundante, grasosa o con mal olor?",
-        "help": "Por ejemplo, que flota o deja manchas de grasa.",
-        "separates": null,
+        "text": "¿Se notó que la materia fecal es abundante y grasosa?",
+        "help": "Por ejemplo, que flota o deja manchas de grasa en el inodoro.",
+        "genes_if_yes": null,
+        "genes_if_no": null,
         "rationale": null
       },
       {
         "id": "r1-HP:0001696",
         "hpo_id": "HP:0001696",
         "label": "Situs inversus totalis",
-        "text": "¿Algún médico te dijo que tiene los órganos del lado contrario (por ejemplo, el corazón a la derecha)?",
+        "text": "¿Algún médico mencionó que los órganos están del lado contrario al habitual, por ejemplo el corazón a la derecha?",
         "help": null,
-        "separates": null,
+        "genes_if_yes": null,
+        "genes_if_no": null,
         "rationale": null
       },
       {
         "id": "r1-HP:0012236",
         "hpo_id": "HP:0012236",
         "label": "Cloruro en sudor elevado",
-        "text": "¿Le hicieron alguna vez el test del sudor y dio alterado?",
-        "help": "Si no sabés qué es, respondé «No sé».",
-        "separates": null,
+        "text": "¿Se hizo alguna vez el test del sudor y dio alterado?",
+        "help": "Si no se hizo o no se sabe, respondé «No sé».",
+        "genes_if_yes": null,
+        "genes_if_no": null,
         "rationale": null
       }
     ],
@@ -45,35 +49,6 @@
       { "gene_id": "CFTR", "gene_symbol": "CFTR", "score": 0.52, "model_score": 0.412, "model_rank": 1 },
       { "gene_id": "DNAH5", "gene_symbol": "DNAH5", "score": 0.27, "model_score": 0.201, "model_rank": 2 },
       { "gene_id": "SCNN1A", "gene_symbol": "SCNN1A", "score": 0.11, "model_score": 0.087, "model_rank": 3 }
-    ],
-    "specialties": null,
-    "confidence": 0.78,
-    "interpreted_answers": [],
-    "summary": null,
-    "warnings": [],
-    "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb1+hpo.2026-02-16", "llm_model": "claude-opus-5" }
-  },
-  "round2_request": {
-    "mode": "paciente",
-    "round": 2,
-    "present_hpo_ids": ["HP:0002205", "HP:0004322"],
-    "absent_hpo_ids": ["HP:0001250"],
-    "answers": [
-      { "hpo_id": "HP:0001738", "answer": "si", "note": "desde bebé" },
-      { "hpo_id": "HP:0001696", "answer": "no", "note": null },
-      { "hpo_id": "HP:0012236", "answer": "no_se", "note": null }
-    ],
-    "finish": true
-  },
-  "round2_response": {
-    "round": 2,
-    "status": "finished",
-    "finish_reason": "user_finished",
-    "questions": [],
-    "ranking": [
-      { "gene_id": "CFTR", "gene_symbol": "CFTR", "score": 0.81, "model_score": 0.46, "model_rank": 1 },
-      { "gene_id": "SCNN1A", "gene_symbol": "SCNN1A", "score": 0.09, "model_score": 0.08, "model_rank": 3 },
-      { "gene_id": "DNAH5", "gene_symbol": "DNAH5", "score": 0.05, "model_score": 0.19, "model_rank": 2 }
     ],
     "specialties": {
       "top_specialty": "Pulmonology",
@@ -86,13 +61,97 @@
       "unmapped_genes": [],
       "unmapped_gene_count": 0
     },
-    "confidence": 0.81,
+    "confidence": 0.78,
+    "interpreted_answers": [],
+    "summary": null,
+    "warnings": [],
+    "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb1+hpo.2026-02-16", "llm_model": "claude-opus-5" }
+  },
+  "round1_response_medico": {
+    "round": 1,
+    "mode": "medico",
+    "status": "questions",
+    "finish_reason": null,
+    "questions": [
+      {
+        "id": "r1-HP:0001738",
+        "hpo_id": "HP:0001738",
+        "label": "Insuficiencia pancreática exocrina",
+        "text": "¿Presenta insuficiencia pancreática exocrina?",
+        "help": "Esteatorrea o elastasa fecal baja.",
+        "genes_if_yes": ["CFTR", "SCNN1A"],
+        "genes_if_no": ["DNAH5"],
+        "rationale": "Separa CFTR y SCNN1A (sí) de DNAH5 (no)."
+      }
+    ],
+    "ranking": [
+      { "gene_id": "CFTR", "gene_symbol": "CFTR", "score": 0.52, "model_score": 0.412, "model_rank": 1 },
+      { "gene_id": "DNAH5", "gene_symbol": "DNAH5", "score": 0.27, "model_score": 0.201, "model_rank": 2 },
+      { "gene_id": "SCNN1A", "gene_symbol": "SCNN1A", "score": 0.11, "model_score": 0.087, "model_rank": 3 }
+    ],
+    "specialties": {
+      "top_specialty": "Pulmonology",
+      "top_specialties": ["Pulmonology", "Gastroenterology"],
+      "specialty_ranking": [
+        { "specialty": "Pulmonology", "matched_genes_count": 2, "probability_mass": 0.61, "genes": ["CFTR", "DNAH5"], "fraction_of_selected_genes": 0.67 },
+        { "specialty": "Gastroenterology", "matched_genes_count": 1, "probability_mass": 0.09, "genes": ["SCNN1A"], "fraction_of_selected_genes": 0.33 }
+      ],
+      "selected_gene_count": 3,
+      "unmapped_genes": [],
+      "unmapped_gene_count": 0
+    },
+    "confidence": 0.78,
+    "interpreted_answers": [],
+    "summary": null,
+    "warnings": [],
+    "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb1+hpo.2026-02-16", "llm_model": "claude-opus-5" }
+  },
+  "round2_request": {
+    "mode": "paciente",
+    "round": 2,
+    "present_hpo_ids": ["HP:0002205", "HP:0004322"],
+    "absent_hpo_ids": ["HP:0001250"],
+    "answers": [
+      {
+        "hpo_id": "HP:0001738",
+        "answer": "si",
+        "note": "desde bebé",
+        "reading": { "effective_answer": "si", "note_summary": "Desde bebé." }
+      },
+      { "hpo_id": "HP:0001696", "answer": "no", "note": "no, pero al hermano sí", "reading": null },
+      { "hpo_id": "HP:0012236", "answer": "no_se", "note": null, "reading": null }
+    ],
+    "finish": true
+  },
+  "round2_response": {
+    "round": 2,
+    "mode": "paciente",
+    "status": "finished",
+    "finish_reason": "user_finished",
+    "questions": [],
+    "ranking": [
+      { "gene_id": "CFTR", "gene_symbol": "CFTR", "score": 0.81, "model_score": 0.412, "model_rank": 1 },
+      { "gene_id": "SCNN1A", "gene_symbol": "SCNN1A", "score": 0.09, "model_score": 0.087, "model_rank": 3 },
+      { "gene_id": "DNAH5", "gene_symbol": "DNAH5", "score": 0.05, "model_score": 0.201, "model_rank": 2 }
+    ],
+    "specialties": {
+      "top_specialty": "Pulmonology",
+      "top_specialties": ["Pulmonology", "Gastroenterology"],
+      "specialty_ranking": [
+        { "specialty": "Pulmonology", "matched_genes_count": 2, "probability_mass": 0.61, "genes": ["CFTR", "DNAH5"], "fraction_of_selected_genes": 0.67 },
+        { "specialty": "Gastroenterology", "matched_genes_count": 1, "probability_mass": 0.09, "genes": ["SCNN1A"], "fraction_of_selected_genes": 0.33 }
+      ],
+      "selected_gene_count": 3,
+      "unmapped_genes": [],
+      "unmapped_gene_count": 0
+    },
+    "confidence": 0.78,
     "interpreted_answers": [
       { "hpo_id": "HP:0001738", "answer": "si", "effective_answer": "si", "note_summary": "Desde bebé." },
-      { "hpo_id": "HP:0001696", "answer": "no", "effective_answer": "no", "note_summary": null },
+      { "hpo_id": "HP:0001696", "answer": "no", "effective_answer": "no", "note_summary": "El hermano sí." },
       { "hpo_id": "HP:0012236", "answer": "no_se", "effective_answer": "no_se", "note_summary": null }
     ],
-    "summary": "Con tus respuestas, los genes relacionados con la digestión y los pulmones quedaron más arriba. Llevá esta lista a la consulta: el médico puede pedir estudios para confirmarlo o descartarlo.",
+    "summary": "Con las respuestas, los genes relacionados con la digestión y los pulmones quedaron más arriba en la lista. Llevá esta información a la consulta: el médico puede pedir estudios para confirmar o descartar lo que haga falta.",
     "warnings": [],
     "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb1+hpo.2026-02-16", "llm_model": "claude-opus-5" }
   }

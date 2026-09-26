@@ -1,17 +1,24 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 from llm_fakes import CANDIDATES, question_task
 
-from diagnosticar_preguntas.agent.guardrails import QuestionRules, check_round, check_summary
+from diagnosticar_preguntas.agent.guardrails import (
+    PatientVocabulary,
+    QuestionRules,
+    check_round,
+    check_summary,
+)
 from diagnosticar_preguntas.domain import AnswerValue, GeneScore, Mode
 from diagnosticar_preguntas.llm.prompting import notes_request, question_request, summary_request
 from diagnosticar_preguntas.llm.provider import LLMError, LLMRequest
-from diagnosticar_preguntas.llm.schemas import SummaryDraft
+from diagnosticar_preguntas.llm.schemas import MAX_QUESTION_CHARS, SummaryDraft
 from diagnosticar_preguntas.llm.tasks import AnsweredTerm, NoteItem, NotesTask, SummaryTask
 from diagnosticar_preguntas.llm.template import TemplateProvider, phrase_question
 
-GENES = frozenset({"CFTR", "DNAH5", "SCNN1A"})
+PATIENT_TEXT = PatientVocabulary(("CFTR", "DNAH5", "SCNN1A"), dict[str, str]().get).for_diseases(())
 
 
 def rules(mode: Mode, expected: int) -> QuestionRules:
@@ -19,8 +26,9 @@ def rules(mode: Mode, expected: int) -> QuestionRules:
         mode=mode,
         shortlist=frozenset(c.hpo_id for c in CANDIDATES),
         already_known=frozenset(),
-        gene_symbols=GENES,
         expected=expected,
+        patient_text=PATIENT_TEXT,
+        labels={c.hpo_id: (c.label_es, c.label_en) for c in CANDIDATES},
     )
 
 
@@ -37,17 +45,19 @@ def test_questions_follow_the_selector_order() -> None:
     assert [q.hpo_id for q in draft.questions] == ["HP:0001738", "HP:0001696"]
 
 
-def test_patient_questions_are_phrased_from_the_spanish_label() -> None:
+def test_patient_questions_quote_the_spanish_label_impersonally() -> None:
     draft = phrase_question(CANDIDATES[0], Mode.PATIENT)
 
-    assert draft.text == "¿Notaste alguna vez esto: insuficiencia pancreática exocrina?"
-    assert draft.help
+    assert draft.text == (
+        "¿Algún médico mencionó «Insuficiencia pancreática exocrina» o se notó algo así?"
+    )
+    assert draft.help == "Si no hay seguridad, respondé «No sé»."
 
 
 def test_patient_questions_about_studies_offer_no_se() -> None:
     draft = phrase_question(CANDIDATES[2], Mode.PATIENT)
 
-    assert "estudio" in draft.text
+    assert draft.text == "¿Algún médico o estudio mencionó «Test del sudor alterado»?"
     assert draft.help is not None and "No sé" in draft.help
 
 
@@ -73,8 +83,8 @@ def test_long_labels_are_cut_to_fit_a_question() -> None:
 
     text = phrase_question(candidate, Mode.PATIENT).text
 
-    assert len(text) <= 200
-    assert text.endswith("…?")
+    assert len(text) <= MAX_QUESTION_CHARS
+    assert "…»" in text
 
 
 def test_notes_are_never_interpreted() -> None:
@@ -97,7 +107,7 @@ def summary_task(mode: Mode) -> SummaryTask:
 def test_patient_summary_passes_the_guardrails() -> None:
     draft = TemplateProvider().generate(summary_request(summary_task(Mode.PATIENT)))
 
-    assert check_summary(draft, Mode.PATIENT, GENES) == []
+    assert check_summary(draft, Mode.PATIENT, PATIENT_TEXT) == []
     assert "médico" in draft.summary
 
 
@@ -113,3 +123,26 @@ def test_a_request_for_the_wrong_output_is_an_error() -> None:
 
     with pytest.raises(LLMError):
         TemplateProvider().generate(mismatched)
+
+
+def test_a_long_label_cut_by_the_template_still_passes_the_patient_guardrails() -> None:
+    long = CANDIDATES[0].__class__(
+        hpo_id="HP:0001738",
+        label_es="Síndrome " + "muy largo " * 30,
+        label_en="",
+        information_gain=1,
+        p_yes=0.5,
+    )
+    draft = TemplateProvider().generate(
+        question_request(replace(question_task(Mode.PATIENT, 1), candidates=(long,)))
+    )
+    long_rules = replace(rules(Mode.PATIENT, 1), labels={long.hpo_id: (long.label_es, "")})
+
+    assert check_round(draft, long_rules).violations == ()
+
+
+def test_patient_questions_never_address_the_reader_as_the_patient() -> None:
+    for candidate in CANDIDATES:
+        text = phrase_question(candidate, Mode.PATIENT).text
+
+        assert not any(word in text for word in ("te ", "tuviste", "notaste", "tenés"))

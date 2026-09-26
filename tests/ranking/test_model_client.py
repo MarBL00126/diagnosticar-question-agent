@@ -6,7 +6,7 @@ from collections.abc import Callable
 import httpx
 import pytest
 
-from diagnosticar_preguntas.domain import ModelUnavailableError
+from diagnosticar_preguntas.domain import ModelRequestError, ModelUnavailableError
 from diagnosticar_preguntas.ranking.model_client import HttpModelClient, NoKnownHpoIdsError
 from fixtures.fake_model import FakeModelClient
 
@@ -67,18 +67,35 @@ def test_no_known_hpo_ids_raises_a_dedicated_error() -> None:
     assert caught.value.hpo_ids == ("HP:0000002",)
 
 
-def test_other_validation_errors_mean_the_model_is_unusable() -> None:
-    client = _client(lambda _: httpx.Response(422, json={"detail": [{"msg": "bad"}]}))
+@pytest.mark.parametrize("status", [400, 404, 413, 422])
+def test_other_client_errors_are_a_rejected_request_not_an_outage(status: int) -> None:
+    body = {"detail": [{"msg": "bad", "input": ["HP:0002205"]}]}
+    client = _client(lambda _: httpx.Response(status, json=body))
 
-    with pytest.raises(ModelUnavailableError, match="422"):
+    with pytest.raises(ModelRequestError, match=str(status)) as caught:
         client.rank(["HP:0002205"], 50)
 
+    assert "HP:0002205" not in str(caught.value)
+    assert not isinstance(caught.value, ModelUnavailableError)
 
-def test_server_error_raises_model_unavailable() -> None:
-    client = _client(lambda _: httpx.Response(503, text="warming up"))
 
-    with pytest.raises(ModelUnavailableError, match="503"):
+def test_server_error_raises_model_unavailable_without_the_body() -> None:
+    client = _client(lambda _: httpx.Response(503, text="warming up with HP:0002205"))
+
+    with pytest.raises(ModelUnavailableError, match="503") as caught:
         client.rank(["HP:0002205"], 50)
+
+    assert "warming" not in str(caught.value)
+    assert "HP:0002205" not in str(caught.value)
+
+
+def test_no_known_hpo_ids_does_not_quote_the_terms_in_its_message() -> None:
+    body = {"detail": {"error": "no-known-hpo-ids"}}
+
+    with pytest.raises(NoKnownHpoIdsError) as caught:
+        _client(lambda _: httpx.Response(422, json=body)).rank(["HP:0000002"], 50)
+
+    assert "HP:0000002" not in str(caught.value)
 
 
 def test_timeout_raises_model_unavailable() -> None:
@@ -112,8 +129,10 @@ def test_malformed_response_raises_model_unavailable(body: object) -> None:
             return httpx.Response(200, text=body)
         return httpx.Response(200, json=body)
 
-    with pytest.raises(ModelUnavailableError, match="unusable"):
+    with pytest.raises(ModelUnavailableError, match="unusable") as caught:
         _client(handler).rank(["HP:0002205"], 50)
+
+    assert caught.value.__cause__ is None
 
 
 def test_fake_model_records_calls_and_reports_unknown_terms() -> None:

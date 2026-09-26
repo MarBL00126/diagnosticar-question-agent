@@ -1,18 +1,24 @@
 # Evaluación del agente de preguntas
 
 Este documento describe cómo se evaluó el agente de preguntas de seguimiento de
-diagnostic.ar, qué resultados dio y qué valores por defecto se recomiendan a
+diagnostic.ar, qué resultados dio y qué valores por defecto se adoptaron a
 partir de ellos. Todas las cifras salen de corridas reales del código en `eval/`
 (26/09/2026) y se pueden reproducir con los comandos del final.
 
-**Resumen.** Con los valores por defecto actuales del código, las preguntas no
-mejoran el ranking del modelo de diagnostic.ar: tras tres rondas, el MRR del gen
+**Los valores por defecto del código son hoy la configuración elegida acá**
+(sección 8): estrategia `fixed_prior`, temperatura 1, fondo 0,1, frecuencia
+faltante 0,3, umbral de confianza 0,9 y ganancia mínima 0,05. «Configuración
+anterior» se refiere a los valores por defecto que tenía el código hasta el commit
+46e7daa, guardados en `eval/configs/defaults_before_tuning.json`.
+
+**Resumen.** Con la configuración anterior del código, las preguntas no
+mejoraban el ranking del modelo de diagnostic.ar: tras tres rondas, el MRR del gen
 verdadero cae de 0,787 a 0,759 (Δ −0,029, IC 95 % [−0,063; +0,006]), y bajo un
 paciente menos parecido al modelo de verosimilitud cae mucho más (Δ −0,112). Con
 la configuración ajustada en el conjunto de ajuste (prior fijo, temperatura 1,
-umbrales de cierre algo más exigentes), en el conjunto de prueba el agente
-mejora el top-1 en +7,3 puntos (IC [+3,7; +11,3]) y el MRR en +0,054
-(IC [+0,033; +0,078]) con 3,25 preguntas en promedio, supera a las dos
+umbrales de cierre algo más exigentes), hoy la del código, en el conjunto de
+prueba el agente mejora el top-1 en +7,3 puntos (IC [+3,7; +11,3]) y el MRR en
++0,054 (IC [+0,033; +0,078]) con 3,25 preguntas en promedio, supera a las dos
 heurísticas de referencia y, bajo el respondedor pesimista, ya no empeora el
 ranking (Δ MRR +0,018, IC [−0,009; +0,043]). Claude redactó las 36 preguntas en
 vivo sin ninguna violación de las salvaguardas y leyó las 24 notas de prueba sin
@@ -167,7 +173,7 @@ verosimilitud {0,02; 0,05; 0,1} × frecuencia faltante {0,3; 0,5}. **Etapa 2**:
 piso de ruido `epsilon` {0,05; 0,1} alrededor de la mejor. **Etapa 3**
 (exploratoria, no elegible): temperaturas {0,5; 0,75; 1,5}. Criterio: MRR tras 3
 rondas; entre configuraciones a menos de 0,005 de la mejor, la que cambia menos
-valores por defecto. Tiempo total: 326 s.
+valores por defecto de entonces (la configuración anterior). Tiempo total: 326 s.
 
 MRR tras 3 rondas, sin cierre anticipado, promedio (y máximo) sobre el resto de
 los factores:
@@ -201,7 +207,7 @@ preguntar, el MRR es 0,756 en todas.
 - Fondo y frecuencia faltante tienen efectos chicos (≤ 0,02 de MRR), del orden
   del ruido con 200 casos. `epsilon` mayor no ayudó (0,829 / 0,826 / 0,819
   contra 0,831 con 0,02).
-- Con la configuración actual del código, en AJUSTE el MRR sube de 0,756 a 0,776
+- Con la configuración anterior del código, en AJUSTE el MRR sube de 0,756 a 0,776
   tras la primera ronda y cae a 0,745 tras la tercera (6,51 preguntas): las
   rondas 2 y 3 deshacen lo ganado.
 
@@ -211,7 +217,7 @@ preguntar, el MRR es 0,756 en todas.
 |---|---|---|---|---|
 | 0,5 | 0,05 | 0,797 | 1,40 | 4,0 % |
 | 0,7 | 0,05 | 0,807 | 2,44 | 5,5 % |
-| 0,8 | 0,01 (actual) | 0,823 | 3,04 | 6,5 % |
+| 0,8 | 0,01 (anterior) | 0,823 | 3,04 | 6,5 % |
 | **0,9** | **0,05** | **0,828** | **3,45** | 6,0 % |
 | 0,9 | 0,1 | 0,818 | 3,06 | 7,0 % |
 | 1,0 (nunca) | 0,05 | 0,828 | 3,81 | 6,0 % |
@@ -220,11 +226,11 @@ preguntar, el MRR es 0,756 en todas.
 La curva es casi plana entre 0,8 y 1,0: cerrar por confianza ahorra más de la
 mitad de las preguntas casi sin costo.
 
-**Configuración elegida** (`eval/results/chosen_config.json`):
+**Configuración elegida** (`eval/results/chosen_config.json`), hoy la del código:
 
-| parámetro | código actual | elegido |
+| parámetro | configuración anterior | elegido (valor por defecto actual) |
 |---|---|---|
-| estrategia de re-ranking | `model_sees_present` (fija en `RoundService`) | `fixed_prior` |
+| estrategia de re-ranking (`PREGUNTAS_RERANK_STRATEGY`) | `model_sees_present` (fija en `RoundService`) | `fixed_prior` |
 | `RerankConfig.temperature` | 3,0 | **1,0** |
 | `LikelihoodConfig.background` | 0,05 | 0,1 |
 | `LikelihoodConfig.missing_frequency` | 0,5 | 0,3 |
@@ -237,7 +243,12 @@ mitad de las preguntas casi sin costo.
 
 Modo paciente, respondedor `default`, reglas de cierre reales.
 
-### 6.1 Configuración elegida
+### 6.1 Configuración elegida (valores por defecto actuales)
+
+Se repitió con el código que ya la tiene por defecto (`python -m eval.run_simulation
+--split test`, sin `--config`, con la estrategia elegida por la configuración del
+servicio y no por un envoltorio del arnés): todas las cifras de esta sección
+salieron idénticas.
 
 | política | ronda | top-1 | top-3 | top-5 | top-10 | top-20 | MRR | empeora | mejora | preguntas |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -269,7 +280,9 @@ La mediana del puesto es 1 en todas las filas. Diferencias pareadas tras la
   cambian, porque el re-ranking redistribuye entre genes que el modelo ya
   consideraba.
 
-### 6.2 Configuración actual del código, mismos casos
+### 6.2 Configuración anterior del código, mismos casos
+
+Repetida con `--config eval/configs/defaults_before_tuning.json`: cifras idénticas.
 
 | política | ronda | top-1 | top-5 | top-10 | MRR | empeora | preguntas |
 |---|---|---|---|---|---|---|---|
@@ -280,7 +293,7 @@ La mediana del puesto es 1 en todas las filas. Diferencias pareadas tras la
 | most_frequent_unreported | 3 | 74,3 | 84,0 | 88,0 | 0,789 | 15,3 | 6,69 |
 
 Agent vs none: Δ MRR −0,029 [−0,063; +0,006], Δ top-1 −2,7 pp [−7,3; +2,0].
-Con los valores actuales, el agente empeora el ranking en uno de cada cinco
+Con los valores anteriores, el agente empeoraba el ranking en uno de cada cinco
 casos y no le gana a la heurística de la pantalla de resultados (Δ top-1 −5,0 pp
 [−9,7; −0,3]). Solo supera claramente a las preguntas al azar, que con T = 3
 son muy dañinas.
@@ -292,7 +305,7 @@ son muy dañinas.
 | elegida | 0,842 | +0,054 [+0,033; +0,078] | 3,7 % | 3,25 |
 | con `model_sees_present` | 0,799 | +0,012 [−0,011; +0,036] | 9,0 % | 3,20 |
 | con T = 3 | 0,805 | +0,018 [−0,018; +0,051] | 12,0 % | 6,83 |
-| con los cierres actuales (0,8 / 0,01) | 0,839 | +0,052 [+0,031; +0,076] | 4,3 % | 2,87 |
+| con los cierres anteriores (0,8 / 0,01) | 0,839 | +0,052 [+0,031; +0,076] | 4,3 % | 2,87 |
 
 La estrategia y la temperatura explican casi toda la diferencia; los umbrales
 de cierre nuevos aportan poco (0,003 de MRR a cambio de 0,38 preguntas más).
@@ -302,12 +315,12 @@ de cierre nuevos aportan poco (0,003 de MRR a cambio de 0,38 preguntas más).
 | escenario | config. | MRR agent (none = 0,787) | Δ MRR vs none | Δ top-1 (pp) | empeora | preguntas |
 |---|---|---|---|---|---|---|
 | respondedor `dropout` | elegida | 0,805 | +0,018 [−0,009; +0,043] | +3,0 [−1,0; +7,0] | 8,3 % | 3,44 |
-| respondedor `dropout` | actual | 0,675 | **−0,112 [−0,154; −0,072]** | −11,3 [−16,7; −6,0] | 30,3 % | 6,91 |
+| respondedor `dropout` | anterior | 0,675 | **−0,112 [−0,154; −0,072]** | −11,3 [−16,7; −6,0] | 30,3 % | 6,91 |
 | respondedor `noiseless` | elegida | 0,876 | +0,089 [+0,064; +0,116] | +11,0 [+7,3; +15,0] | 1,3 % | 3,12 |
 | modo médico | elegida | 0,845 | +0,058 [+0,037; +0,082] | +8,0 | 4,3 % | 3,18 |
 
 - Con un paciente que no se ajusta a la base de conocimiento, **la
-  configuración actual es claramente dañina**: empeora el puesto del gen
+  configuración anterior es claramente dañina**: empeora el puesto del gen
   correcto en el 30 % de los casos. La elegida conserva una mejora chica y no
   significativa y no daña en promedio. Bajo `dropout`, contra
   `most_frequent_unreported` el MRR queda empatado (+0,003 [−0,018; +0,026]) y el
@@ -322,7 +335,7 @@ de cierre nuevos aportan poco (0,003 de MRR a cambio de 0,38 preguntas más).
 
 Por ronda, con el modelo en caché local (el tiempo es re-ranking + selección):
 60 / 59 / 65 ms en las rondas 1–3 y 12 ms en el cierre con la configuración
-elegida; 124 / 147 / 145 / 45 ms con la actual. Una llamada al modelo sin caché tarda 10 ms de mediana
+elegida; 124 / 147 / 145 / 45 ms con la anterior. Una llamada al modelo sin caché tarda 10 ms de mediana
 (p90 12 ms, `python -m eval.model_latency`, 30 llamadas en CPU). El cuello de
 botella de una ronda real es el LLM (sección 7), no el cálculo.
 
@@ -371,8 +384,8 @@ Observaciones para revisión humana:
 - En modo paciente **se mezcla la persona gramatical**: algunas preguntas se
   dirigen al paciente («¿Alguna vez tuviste convulsiones?», «¿Naciste con…?») y
   otras al cuidador («¿Hubo alguna vez episodios en los que se sacudiera…?»),
-  a veces dentro de la misma ronda. El prompt no dice quién responde; conviene
-  fijarlo.
+  a veces dentro de la misma ronda. El prompt no decía quién responde. Se
+  corrigió después de esta evaluación (sección 7.3).
 - Algunas preguntas de paciente sobre hallazgos de laboratorio o imágenes
   («depósitos de calcio… en el cerebro», «tus defensas atacan partes de tu
   propio cuerpo») están bien redactadas como «¿algún médico te dijo…?» y con
@@ -405,27 +418,69 @@ coherente y sin resumen: no cambió nada. Que ninguna respuesta se invierta est�
 garantizado por el diseño (`interpret_answers` solo puede degradar a «no sé»), y
 la prueba lo confirma.
 
-## 8. Valores por defecto recomendados
+### 7.3 Después de reescribir los prompts
 
-Con la evidencia de AJUSTE confirmada en PRUEBA (secciones 5 y 6):
+Tras esta evaluación se reescribieron los prompts: en modo paciente, una única
+forma impersonal para todas las preguntas y el resumen («¿Hubo alguna vez…?»,
+«¿Se notó…?», «¿Algún médico mencionó…?»), porque quien responde puede ser la
+persona con los síntomas o un familiar; un solo síntoma por pregunta, con el
+mismo alcance que el término; y en modo médico, la pregunta fiel al término (ni
+más amplia ni más específica). Se verificó con 4 llamadas a `claude -p`
+(`claude-opus-5`, esfuerzo `high`, configuración por defecto) sobre los dos casos
+que mostraban los problemas, en ambos modos. Las 4 rondas se aceptaron al primer
+intento, sin reintentos ni plantillas:
 
-1. **Usar `RerankStrategy.FIXED_PRIOR` en `RoundService`.** Hoy el servicio
-   siempre envía al modelo todos los presentes (equivale a `MODEL_SEES_PRESENT`) y
-   la estrategia no está conectada. Hay que consultar al modelo con
-   `model_query(FIXED_PRIOR, reported_present=request.present_hpo_ids, …)`; el
-   re-ranker ya aplica como verosimilitud los «sí» que el modelo no vio.
+- Paciente, IQSEC2 (antes mezclaba «¿Te dijeron…?» con «se sacudiera»):
+  «¿Alguna vez un médico o la escuela mencionaron una dificultad importante para
+  aprender y entender cosas, comparada con otras personas de la misma edad?»;
+  «¿Hubo alguna vez episodios de convulsión que empezaran en una sola parte del
+  cuerpo, por ejemplo en un brazo o en un lado de la cara?»; «¿Se notó alguna vez
+  una forma de comportarse que llamara la atención en casa o en la escuela por
+  ser distinta de lo habitual?».
+- Paciente, SGCA: «¿Pasa que, para levantarse del piso, hace falta apoyar las
+  manos sobre los muslos e ir trepando con ellas hasta enderezarse?»; «¿Se notó
+  alguna vez que las articulaciones de los pies quedaran duras, sin poder
+  moverlas en todo su recorrido?»; «¿Algún médico mencionó alguna vez que el
+  corazón no alcanza a bombear la sangre como debería?».
+- Médico, SGCA (antes «¿Presenta contracturas o limitación para la movilidad de
+  las articulaciones de los pies?», dos hallazgos): «¿Presenta contracturas en
+  las articulaciones de los pies?»; «¿Presenta signo de Gowers al incorporarse
+  desde el piso?»; «¿Presenta insuficiencia cardíaca congestiva?».
+- Médico, IQSEC2: «¿Presenta discapacidad intelectual?»; «¿Presenta
+  convulsiones focales?»; «¿Hay ausencia del lenguaje?».
+
+**Latencia**: 47,3 / 12,8 / 19,9 / 49,7 s. Dos de las cuatro llamadas (las del
+caso IQSEC2) superaban el tope por llamada que se había propuesto, 35 s; la
+verificación se corrió con 120 s para no cortarlas. En la sección 7.1 el máximo
+había sido 34,4 s. Por eso el tope por llamada, `PREGUNTAS_LLM_TIMEOUT_S`, quedó
+en 60 s: entra en el presupuesto de la ronda (75 s) y en el timeout de 100 s de la
+plataforma, y la llamada nunca recibe más de lo que le queda a la ronda. Antes de
+producción conviene medir la cola de latencia con más casos; la alternativa es
+bajar el esfuerzo de las llamadas de preguntas, a costa de calidad.
+
+## 8. Valores por defecto adoptados
+
+Con la evidencia de AJUSTE confirmada en PRUEBA (secciones 5 y 6), estos son
+ahora los valores por defecto del código:
+
+1. **`RerankStrategy.FIXED_PRIOR`**, elegible con `PREGUNTAS_RERANK_STRATEGY`
+   (`fixed_prior` por defecto). `RoundService` consulta al modelo con
+   `model_query(estrategia, reported_present=request.present_hpo_ids, …)`: con
+   `fixed_prior`, siempre con los hallazgos informados antes de las preguntas, y
+   el re-ranker aplica como verosimilitud todas las respuestas, «sí» y «no».
    Evidencia: +0,043 de MRR en PRUEBA a igualdad del resto (0,842 contra 0,799).
-2. **`RerankConfig.temperature` = 1,0** (hoy 3,0). Es el cambio de mayor efecto
+   Consecuencia para el contrato: `specialties` y `confidence` de cada respuesta
+   son las del modelo para los hallazgos originales y no cambian entre rondas.
+2. **`RerankConfig.temperature` = 1,0** (antes 3,0). Es el cambio de mayor efecto
    (0,842 contra 0,805 con T = 3 y el resto igual en PRUEBA; en AJUSTE, T = 1 es
    el óptimo entre 0,5 y 5).
-3. `LikelihoodConfig.background` = 0,1 (hoy 0,05) y `missing_frequency` = 0,3
-   (hoy 0,5). Efecto chico y dentro del ruido; se pueden adoptar o no.
-4. `Settings.confident_threshold` = 0,9 y `min_information_gain` = 0,05 (hoy 0,8
-   y 0,01). Efecto marginal (+0,003 de MRR, +0,38 preguntas); los actuales
-   también son razonables.
-5. `epsilon` y `p_unknown` sin cambios.
+3. `LikelihoodConfig.background` = 0,1 (antes 0,05) y `missing_frequency` = 0,3
+   (antes 0,5). Efecto chico y dentro del ruido.
+4. `Settings.confident_threshold` = 0,9 y `min_information_gain` = 0,05 (antes 0,8
+   y 0,01). Efecto marginal (+0,003 de MRR, +0,38 preguntas).
+5. `epsilon` (0,02) y `p_unknown` (0,2) sin cambios.
 
-Con los cambios 1 y 2 alcanza para pasar de «no mejora y a veces daña» a una
+Los cambios 1 y 2 son los que pasan de «no mejora y a veces daña» a una
 mejora significativa. **Advertencia sobre T = 1**: en estos casos el modelo está
 en su terreno (72 % de top-1) y conviene confiar en él. Con pacientes reales es
 probable que esté más sobreconfiado, y ahí una temperatura mayor podría volver
@@ -453,8 +508,9 @@ a convenir. Antes de fijarla definitivamente hay que medirla con casos reales.
 - **Tamaño**: 200 casos de ajuste no alcanzan para distinguir diferencias de
   MRR menores a ~0,02; fondo, frecuencia faltante y umbrales se eligieron dentro
   de ese margen.
-- **Evaluación en vivo pequeña** (15 llamadas): suficiente para detectar fallas
-  gruesas, no para estimar tasas de rechazo raras. Las preguntas no fueron
+- **Evaluación en vivo pequeña** (15 llamadas, más 4 tras reescribir los
+  prompts): suficiente para detectar fallas gruesas, no para estimar tasas de
+  rechazo raras. Las preguntas no fueron
   revisadas todavía por un médico.
 - El agente solo reordena los 50 genes que devuelve el modelo.
 
@@ -469,11 +525,15 @@ así que repetir es barato.
 ```sh
 .venv/bin/python -m eval.cases                     # 500 casos -> eval/data/cases.json (1 s)
 .venv/bin/python -m eval.tune                      # grilla sobre AJUSTE (326 s, 14 procesos)
+# (el desempate de eval.tune prefiere la configuración más cercana a los valores por
+#  defecto del código, que desde entonces son los elegidos)
 C=eval/results/chosen_config.json
+P=eval/configs/defaults_before_tuning.json        # la configuración anterior
 .venv/bin/python -m eval.run_simulation --split test --config $C --out eval/results/test_chosen.json
-.venv/bin/python -m eval.run_simulation --split test --out eval/results/test_default.json
+.venv/bin/python -m eval.run_simulation --split test --out eval/results/test_defaults_v2.json   # = elegida
+.venv/bin/python -m eval.run_simulation --split test --config $P --out eval/results/test_default.json
 .venv/bin/python -m eval.run_simulation --split test --config $C --answerer dropout --out eval/results/test_chosen_dropout.json
-.venv/bin/python -m eval.run_simulation --split test --answerer dropout --out eval/results/test_default_dropout.json
+.venv/bin/python -m eval.run_simulation --split test --config $P --answerer dropout --out eval/results/test_default_dropout.json
 .venv/bin/python -m eval.run_simulation --split test --config $C --answerer noiseless --out eval/results/test_chosen_noiseless.json
 .venv/bin/python -m eval.run_simulation --split test --config $C --mode medico --out eval/results/test_chosen_medico.json
 .venv/bin/python -m eval.report eval/results/test_*.json --out eval/results/report.md

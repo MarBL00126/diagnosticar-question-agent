@@ -111,6 +111,16 @@ class TestInvocation:
         assert kwargs.get("shell", False) is False
         assert kwargs["capture_output"] is True
 
+    @pytest.mark.parametrize(("per_call", "expected"), [(10.5, 10.5), (90, 42)])
+    def test_a_per_call_timeout_only_ever_shortens_the_configured_one(
+        self, per_call: float, expected: float
+    ) -> None:
+        runner = FakeRunner(stdout=envelope())
+
+        provider(runner).generate(round_request(), timeout_s=per_call)
+
+        assert runner.calls[0][1]["timeout"] == expected
+
     def test_binary_comes_from_claude_binary(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("CLAUDE_BINARY", "/opt/claude/bin/claude")
         runner = FakeRunner(stdout=envelope())
@@ -147,11 +157,17 @@ class TestParsing:
 
         assert draft.questions[0].text == "¿Presenta esteatorrea?"
 
-    def test_output_that_breaks_the_schema_is_invalid(self) -> None:
-        runner = FakeRunner(stdout=envelope(structured_output={"questions": [{"hpo_id": 1}]}))
+    def test_output_that_breaks_the_schema_is_invalid_and_never_quotes_it(self) -> None:
+        echoed_note = "desde bebé, dice la abuela"
+        bad = {"questions": [{"hpo_id": 1, "text": echoed_note}]}
+        runner = FakeRunner(stdout=envelope(structured_output=bad))
 
-        with pytest.raises(LLMInvalidOutputError):
+        with pytest.raises(LLMInvalidOutputError) as caught:
             provider(runner).generate(round_request())
+
+        assert echoed_note not in str(caught.value)
+        assert caught.value.__cause__ is None
+        assert caught.value.__suppress_context__
 
     def test_non_json_stdout_is_invalid(self) -> None:
         with pytest.raises(LLMInvalidOutputError):
@@ -171,11 +187,15 @@ class TestParsing:
 
 
 class TestFailures:
-    def test_a_timeout_raises_timeout(self) -> None:
-        runner = FakeRunner(raises=subprocess.TimeoutExpired(["claude"], 42))
+    def test_a_timeout_raises_timeout_without_the_partial_output(self) -> None:
+        expired = subprocess.TimeoutExpired(["claude"], 42, output="partial answer about HP:1")
+        runner = FakeRunner(raises=expired)
 
-        with pytest.raises(LLMTimeoutError):
+        with pytest.raises(LLMTimeoutError) as caught:
             provider(runner).generate(round_request())
+
+        assert caught.value.__suppress_context__
+        assert "HP:1" not in str(caught.value)
 
     @pytest.mark.parametrize(
         "message",

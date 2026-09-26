@@ -11,14 +11,18 @@ from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any
 
+from diagnosticar_preguntas.agent.guardrails import PatientVocabulary
+from diagnosticar_preguntas.agent.round import RoundService
 from diagnosticar_preguntas.config import LLMProviderName, Settings
-from diagnosticar_preguntas.domain import ModelClient, ModelRanking
+from diagnosticar_preguntas.domain import ModelClient, ModelRanking, QuestionSelector
 from diagnosticar_preguntas.kb.store import KnowledgeBase
+from diagnosticar_preguntas.llm.provider import LLMProvider
 from diagnosticar_preguntas.ranking.likelihood import LikelihoodConfig, LikelihoodModel
 from diagnosticar_preguntas.ranking.model_client import HttpModelClient, NoKnownHpoIdsError
 from diagnosticar_preguntas.ranking.reranker import BayesianReranker, RerankConfig
 from diagnosticar_preguntas.ranking.strategy import RerankStrategy
 from diagnosticar_preguntas.selection.selector import InformationGainSelector, SelectionConfig
+from diagnosticar_preguntas.wiring import patient_vocabulary
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 KB_PATH = REPO_ROOT / "data" / "kb.sqlite"
@@ -99,9 +103,9 @@ def real_model(gate: Any = None) -> CachedModelClient:
 
 @dataclass(frozen=True, slots=True)
 class AgentConfig:
-    """Every knob the evaluation varies. Defaults mirror the code defaults."""
+    """Every knob the evaluation varies. Defaults are read from the code defaults."""
 
-    strategy: RerankStrategy = RerankStrategy.MODEL_SEES_PRESENT
+    strategy: RerankStrategy = Settings.model_fields["rerank_strategy"].default
     temperature: float = RerankConfig().temperature
     background: float = LikelihoodConfig().background
     missing_frequency: float = LikelihoodConfig().missing_frequency
@@ -139,6 +143,7 @@ class Pipeline:
     likelihood: LikelihoodModel
     reranker: BayesianReranker
     selector: InformationGainSelector
+    vocabulary: PatientVocabulary
 
 
 def build_pipeline(
@@ -157,7 +162,7 @@ def build_pipeline(
     selector = selector or InformationGainSelector(
         kb, likelihood, SelectionConfig(p_unknown=config.p_unknown)
     )
-    return Pipeline(config, kb, likelihood, reranker, selector)
+    return Pipeline(config, kb, likelihood, reranker, selector, patient_vocabulary(kb))
 
 
 def settings_for(
@@ -181,6 +186,28 @@ def settings_for(
         max_rounds=3,
         confident_threshold=config.confident_threshold if early_stop else 1.0,
         min_information_gain=config.min_information_gain if early_stop else 0.0,
+        rerank_strategy=config.strategy,
+    )
+
+
+def round_service(
+    pipeline: Pipeline,
+    *,
+    model: ModelClient,
+    selector: QuestionSelector,
+    llm: LLMProvider,
+    settings: Settings,
+) -> RoundService:
+    """The production ``RoundService`` over ``pipeline``'s ranking components."""
+    return RoundService(
+        model=model,
+        reranker=pipeline.reranker,
+        selector=selector,
+        labels=pipeline.kb,
+        llm=llm,
+        settings=settings,
+        kb_version=pipeline.kb.version,
+        patient_vocabulary=pipeline.vocabulary,
     )
 
 

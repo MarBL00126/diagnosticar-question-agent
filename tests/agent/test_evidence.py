@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 from round_fakes import request
 
-from diagnosticar_preguntas.agent.evidence import build_evidence, interpret_answers
-from diagnosticar_preguntas.api.schemas import AnswerIn
+from diagnosticar_preguntas.agent.evidence import build_evidence, interpret_answers, needs_reading
+from diagnosticar_preguntas.api.schemas import AnswerIn, AnswerReading
 from diagnosticar_preguntas.domain import AnswerValue
 from diagnosticar_preguntas.llm.schemas import NoteReading
 
@@ -77,15 +77,6 @@ def test_evidence_merges_extraction_with_effective_answers() -> None:
     assert evidence.unknown == {"HP:0012236"}
 
 
-def test_an_answer_overrides_the_extraction_for_the_same_term() -> None:
-    req = request(answers=[{"hpo_id": "HP:0001250", "answer": "si"}])
-
-    evidence = build_evidence(req, interpret_answers(req.answers, {}))
-
-    assert "HP:0001250" in evidence.present
-    assert "HP:0001250" not in evidence.absent
-
-
 def test_a_downgraded_answer_is_neither_present_nor_absent() -> None:
     req = request(answers=[{"hpo_id": "HP:0001738", "answer": "si", "note": "no sé"}])
 
@@ -93,3 +84,52 @@ def test_a_downgraded_answer_is_neither_present_nor_absent() -> None:
 
     assert "HP:0001738" in evidence.unknown
     assert "HP:0001738" not in evidence.present | evidence.absent
+
+
+def echoed(value: AnswerValue, effective: AnswerValue, summary: str | None = "Duda.") -> AnswerIn:
+    return AnswerIn(
+        hpo_id="HP:0001738",
+        answer=value,
+        note="creo que no",
+        reading=AnswerReading(effective_answer=effective, note_summary=summary),
+    )
+
+
+@pytest.mark.parametrize(("value", "effective"), [(YES, UNKNOWN), (YES, YES), (NO, UNKNOWN)])
+def test_an_echoed_reading_is_used_as_sent(value: AnswerValue, effective: AnswerValue) -> None:
+    [result] = interpret_answers([echoed(value, effective)], {})
+
+    assert (result.answer, result.effective_answer) == (value, effective)
+    assert result.note_summary == "Duda."
+
+
+def test_an_echoed_reading_wins_over_a_new_reading_of_the_same_note() -> None:
+    [result] = interpret_answers([echoed(YES, YES, None)], reading(consistent=False, summary="x"))
+
+    assert result.effective_answer is YES
+    assert result.note_summary is None
+
+
+def test_only_notes_without_a_reading_need_one() -> None:
+    assert needs_reading(answer(YES))
+    assert not needs_reading(answer(YES, note=None))
+    assert not needs_reading(echoed(YES, UNKNOWN))
+
+
+def test_an_echoed_downgrade_is_unknown_evidence() -> None:
+    req = request(
+        round=3,
+        answers=[
+            {
+                "hpo_id": "HP:0001738",
+                "answer": "si",
+                "note": "creo que no",
+                "reading": {"effective_answer": "no_se", "note_summary": "Duda."},
+            }
+        ],
+    )
+
+    evidence = build_evidence(req, interpret_answers(req.answers, {}))
+
+    assert "HP:0001738" in evidence.unknown
+    assert "HP:0001738" not in evidence.present

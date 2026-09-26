@@ -35,13 +35,23 @@ class LLMProvider(Protocol):
         """Model identifier reported in ``Versions.llm_model``; None when no LLM is used."""
         ...
 
-    def generate[T: BaseModel](self, request: LLMRequest[T]) -> T:
-        """Return a validated ``request.output`` instance or raise an ``LLMError``."""
+    def generate[T: BaseModel](
+        self, request: LLMRequest[T], *, timeout_s: float | None = None
+    ) -> T:
+        """Return a validated ``request.output`` instance or raise an ``LLMError``.
+
+        ``timeout_s`` caps this call below the provider's own timeout; the
+        round service passes what is left of the round's budget.
+        """
         ...
 
 
 class LLMError(Exception):
-    """The provider could not produce a valid answer."""
+    """The provider could not produce a valid answer.
+
+    Messages are generic and never quote the prompt or the answer, which carry
+    clinical data; callers log the exception type only.
+    """
 
 
 class LLMTimeoutError(LLMError):

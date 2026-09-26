@@ -3,17 +3,19 @@
 The re-ranker follows a single rule: it multiplies in the likelihood of every
 piece of evidence the model did not see (absent findings, and present
 findings that were not sent or that the model reported as unknown). Each
-strategy is then just a choice of what to send to the model:
+strategy is then just a choice of what to send to the model, selected with
+``PREGUNTAS_RERANK_STRATEGY``:
 
-``MODEL_SEES_PRESENT`` (default)
+``FIXED_PRIOR`` (default)
+    Every round sends only the findings reported before the questions. The
+    prior stays the first ranking and every answer, "sí" or "no", goes
+    through the likelihood, so a wrong "sí" weighs as one bounded factor.
+    On the evaluation's held-out cases this beat ``MODEL_SEES_PRESENT`` at
+    every temperature tried (``docs/EVALUACION.md``, sections 5 and 6.3).
+``MODEL_SEES_PRESENT``
     Every round sends all present findings, original and answered "sí". The
     model re-ranks with everything positive it knows; only the "no" answers,
     negated findings and model-unknown terms go through the likelihood.
-``FIXED_PRIOR``
-    Every round sends only the findings reported before the questions. The
-    prior stays the first ranking and every answer, "sí" or "no", goes
-    through the likelihood. Useful as an evaluation baseline because the
-    effect of the answers is isolated from the model's.
 """
 
 from __future__ import annotations

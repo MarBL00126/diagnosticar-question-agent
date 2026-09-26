@@ -4,17 +4,22 @@ Requests carry clinical data (findings and free-text notes), so no error body
 and no log line ever repeats any part of them. Errors answer with a short
 code instead:
 
-======  ====================  ==================================================
-Status  ``error``             When
-======  ====================  ==================================================
-401     ``unauthorized``      ``X-Internal-Token`` missing or wrong
-422     ``invalid-request``   the body breaks the contract (``detail`` lists
-                              where, without the offending values)
-422     ``no-known-hpo-ids``  the model knows none of the present findings
-503     ``busy``              every round slot is taken and the queue is full
-503     ``model-unavailable`` the diagnostic.ar model service failed
-500     ``internal-error``    anything else
-======  ====================  ==================================================
+======  =====================  =================================================
+Status  ``error``              When
+======  =====================  =================================================
+401     ``unauthorized``       ``X-Internal-Token`` missing or wrong, or no token
+                               is configured (the service fails closed unless
+                               ``PREGUNTAS_ALLOW_UNAUTHENTICATED`` is set)
+413     ``payload-too-large``  the body exceeds 64 KiB
+422     ``invalid-request``    the body breaks the contract (``detail`` lists
+                               where, without the offending values), or the
+                               model service rejected the request (no
+                               ``detail``); retrying the same body cannot help
+422     ``no-known-hpo-ids``   the model knows none of the present findings
+503     ``busy``               every round slot is taken and the queue is full
+503     ``model-unavailable``  the diagnostic.ar model service failed
+500     ``internal-error``     anything else
+======  =====================  =================================================
 
 503 answers carry ``Retry-After``. LLM failures are not errors: the round
 falls back to template wording and says so in ``warnings``.
@@ -34,12 +39,13 @@ from pydantic import BaseModel
 
 from diagnosticar_preguntas import __version__
 from diagnosticar_preguntas.agent.round import LLM_FALLBACK_WARNINGS
-from diagnosticar_preguntas.api.auth import TOKEN_HEADER, token_matches
+from diagnosticar_preguntas.api.auth import TOKEN_HEADER, is_authorized
+from diagnosticar_preguntas.api.body_limit import MAX_BODY_BYTES, BodySizeLimit
 from diagnosticar_preguntas.api.health import Health, check_health, llm_health
 from diagnosticar_preguntas.api.limiter import RoundLimiter, SaturatedError
 from diagnosticar_preguntas.api.schemas import RoundRequest, RoundResponse
 from diagnosticar_preguntas.config import Settings, get_settings
-from diagnosticar_preguntas.domain import ModelUnavailableError
+from diagnosticar_preguntas.domain import ModelRequestError, ModelUnavailableError
 from diagnosticar_preguntas.ranking.model_client import NO_KNOWN_HPO_IDS, NoKnownHpoIdsError
 from diagnosticar_preguntas.wiring import Service, build_service
 
@@ -64,7 +70,8 @@ class ApiError(Exception):
 _ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     status: {"model": ErrorOut, "description": description}
     for status, description in {
-        401: "Missing or wrong X-Internal-Token.",
+        401: "Missing or wrong X-Internal-Token, or no token configured.",
+        413: "Body larger than 64 KiB.",
         422: "Invalid request, or no finding known to the model.",
         500: "Unexpected failure.",
         503: "Busy, or the model service is unavailable. See Retry-After.",
@@ -88,6 +95,7 @@ def create_app(settings: Settings | None = None, service: Service | None = None)
         version=__version__,
         summary="Follow-up symptom questions that refine a gene ranking. It never diagnoses.",
     )
+    app.add_middleware(BodySizeLimit, max_bytes=MAX_BODY_BYTES)
 
     @app.exception_handler(ApiError)
     async def _api_error(_: Request, error: ApiError) -> JSONResponse:
@@ -107,7 +115,9 @@ def create_app(settings: Settings | None = None, service: Service | None = None)
     def require_token(
         token: Annotated[str | None, Header(alias=TOKEN_HEADER)] = None,
     ) -> None:
-        if not token_matches(settings.service_token, token):
+        if not is_authorized(
+            settings.service_token, token, allow_unauthenticated=settings.allow_unauthenticated
+        ):
             raise ApiError(401, "unauthorized")
 
     @app.post(
@@ -137,6 +147,8 @@ def _run_round(service: Service, limiter: RoundLimiter, request: RoundRequest) -
         error = ApiError(503, "busy", retry_after_s=RETRY_AFTER_S)
     except NoKnownHpoIdsError:
         error = ApiError(422, NO_KNOWN_HPO_IDS)
+    except ModelRequestError:
+        error = ApiError(422, "invalid-request")
     except ModelUnavailableError:
         error = ApiError(503, "model-unavailable", retry_after_s=RETRY_AFTER_S)
     except Exception as exc:
@@ -177,10 +189,16 @@ def _elapsed_ms(started: float) -> float:
 
 
 def _warn_about_setup(settings: Settings) -> None:
-    if settings.service_token is None:
+    if settings.service_token is None and settings.allow_unauthenticated:
         logger.warning(
-            "PREGUNTAS_SERVICE_TOKEN is not set: /v1/rounds accepts unauthenticated calls."
-            " Fine for local development, never for a shared host."
+            "PREGUNTAS_SERVICE_TOKEN is not set and PREGUNTAS_ALLOW_UNAUTHENTICATED is:"
+            " /v1/rounds accepts unauthenticated calls. Fine for local development, never for"
+            " a shared host."
+        )
+    elif settings.service_token is None:
+        logger.error(
+            "PREGUNTAS_SERVICE_TOKEN is not set: /v1/rounds refuses every call."
+            " Set it, or PREGUNTAS_ALLOW_UNAUTHENTICATED=true for local development."
         )
     if llm_health(settings).credentials == "missing":
         logger.warning(

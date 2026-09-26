@@ -3,7 +3,7 @@
 Rounds run in the server's worker threads, so the limiter is thread-based. A
 request that finds the queue full, or waits longer than ``wait_s`` for a
 slot, is turned away at once: the caller (the platform backend) gives up
-after about 90 s, and work it has abandoned would still spend LLM quota.
+after 100 s, and work it has abandoned would still spend LLM quota.
 """
 
 from __future__ import annotations

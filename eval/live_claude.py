@@ -36,6 +36,7 @@ from eval.harness import (
     build_pipeline,
     open_kb,
     real_model,
+    round_service,
     settings_for,
 )
 from eval.policies import RecordingSelector
@@ -43,7 +44,6 @@ from eval.run_simulation import load_config
 from pydantic import BaseModel
 
 from diagnosticar_preguntas.agent.evidence import interpret_answers
-from diagnosticar_preguntas.agent.round import RoundService
 from diagnosticar_preguntas.api.schemas import AnswerIn, RoundRequest
 from diagnosticar_preguntas.config import LLMProviderName
 from diagnosticar_preguntas.domain import AnswerValue, Mode
@@ -102,7 +102,9 @@ class BudgetedProvider:
         BUDGET_PATH.parent.mkdir(parents=True, exist_ok=True)
         BUDGET_PATH.write_text(json.dumps({"calls": spent + 1}))
 
-    def generate[T: BaseModel](self, request: LLMRequest[T]) -> T:
+    def generate[T: BaseModel](
+        self, request: LLMRequest[T], *, timeout_s: float | None = None
+    ) -> T:
         key = hashlib.sha256(
             json.dumps([self.model_name, request.system, request.user]).encode()
         ).hexdigest()
@@ -131,7 +133,7 @@ class BudgetedProvider:
             raise
         started = time.perf_counter()
         try:
-            result = self._inner.generate(request)
+            result = self._inner.generate(request, timeout_s=timeout_s)
         except LLMError as error:
             record.outcome = type(error).__name__
             record.seconds = time.perf_counter() - started
@@ -158,11 +160,10 @@ def pick_cases(kb: KnowledgeBase, config: AgentConfig) -> list[Case]:
     for case in load("test"):
         if len(by_source[case.source]) >= needed:
             continue
-        service = RoundService(
+        service = round_service(
+            pipeline,
             model=model,
-            reranker=pipeline.reranker,
             selector=pipeline.selector,
-            labels=kb,
             llm=TemplateProvider(),
             settings=settings_for(config, early_stop=True),
         )
@@ -187,11 +188,10 @@ def live_round(
 ) -> dict[str, Any]:
     pipeline = build_pipeline(kb, config)
     selector = RecordingSelector(pipeline.selector)
-    service = RoundService(
+    service = round_service(
+        pipeline,
         model=real_model(),
-        reranker=pipeline.reranker,
         selector=selector,
-        labels=kb,
         llm=provider,
         settings=settings_for(config, early_stop=True, llm_provider=LLMProviderName.CLAUDE_CLI),
     )

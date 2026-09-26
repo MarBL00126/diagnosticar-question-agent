@@ -93,8 +93,11 @@ class ClaudeCliProvider:
             "--no-session-persistence",
         ]
 
-    def generate[T: BaseModel](self, request: LLMRequest[T]) -> T:
+    def generate[T: BaseModel](
+        self, request: LLMRequest[T], *, timeout_s: float | None = None
+    ) -> T:
         argv = self.build_argv(request)
+        timeout = self._timeout_s if timeout_s is None else min(self._timeout_s, timeout_s)
         started = time.monotonic()
         outcome = "error"
         try:
@@ -104,7 +107,7 @@ class ClaudeCliProvider:
                 input=request.user,
                 capture_output=True,
                 text=True,
-                timeout=self._timeout_s,
+                timeout=timeout,
                 check=False,
                 # Keeps any project CLAUDE.md in the service's directory out of the context.
                 cwd=tempfile.gettempdir(),
@@ -112,9 +115,10 @@ class ClaudeCliProvider:
             result = _parse(completed, request.output)
             outcome = "ok"
             return result
-        except subprocess.TimeoutExpired as exc:
+        except subprocess.TimeoutExpired:
             outcome = "timeout"
-            raise LLMTimeoutError(f"claude CLI exceeded {self._timeout_s:.0f}s") from exc
+            # ``from None``: the expired process carries whatever the CLI printed so far.
+            raise LLMTimeoutError(f"claude CLI exceeded {timeout:.0f}s") from None
         except OSError as exc:
             raise LLMError(f"could not start the claude CLI: {exc.strerror}") from exc
         except LLMError as exc:
@@ -153,9 +157,10 @@ def _parse[T: BaseModel](completed: subprocess.CompletedProcess[str], output: ty
             return output.model_validate_json(str(envelope.get("result", "")))
         return output.model_validate(payload)
     except ValidationError as exc:
+        # ``from None``: the validation error quotes the answer, which may echo a note.
         raise LLMInvalidOutputError(
             f"answer does not match {output.__name__}: {exc.error_count()} errors"
-        ) from exc
+        ) from None
 
 
 def _envelope(stdout: str | None) -> dict[str, Any] | None:
