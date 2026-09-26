@@ -1,3 +1,3 @@
 from __future__ import annotations
 
-from tests.fixtures.tiny_kb import tiny_kb as tiny_kb
+from fixtures.tiny_kb import tiny_kb as tiny_kb

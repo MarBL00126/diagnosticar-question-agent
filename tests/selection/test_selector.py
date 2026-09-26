@@ -1,20 +1,6 @@
 from __future__ import annotations
 
 import pytest
-from tests.fixtures.tiny_kb import (
-    BLINDNESS,
-    DISEASE_A,
-    DISEASE_C2,
-    FOCAL_SEIZURE,
-    GENE_A,
-    GENE_B,
-    GENE_C,
-    GENE_E,
-    HYPOTONIA,
-    LACTIC_ACIDOSIS,
-    MICROCEPHALY,
-    SEIZURE,
-)
 
 from diagnosticar_preguntas.domain import (
     CandidateTerm,
@@ -28,6 +14,20 @@ from diagnosticar_preguntas.kb.store import KnowledgeBase
 from diagnosticar_preguntas.ranking.likelihood import LikelihoodConfig, LikelihoodModel
 from diagnosticar_preguntas.ranking.reranker import BayesianReranker, RerankConfig
 from diagnosticar_preguntas.selection.selector import InformationGainSelector, SelectionConfig
+from fixtures.tiny_kb import (
+    BLINDNESS,
+    DISEASE_A,
+    DISEASE_C2,
+    FOCAL_SEIZURE,
+    GENE_A,
+    GENE_B,
+    GENE_C,
+    GENE_E,
+    HYPOTONIA,
+    LACTIC_ACIDOSIS,
+    MICROCEPHALY,
+    SEIZURE,
+)
 
 NO_EVIDENCE = Evidence(present=frozenset())
 EQUAL = {GENE_A: 0.25, GENE_B: 0.25, GENE_C: 0.25, GENE_E: 0.25}

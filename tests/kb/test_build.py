@@ -5,7 +5,6 @@ from pathlib import Path
 
 import httpx
 import pytest
-from tests.fixtures.tiny_kb import HPO_VERSION, build_tiny_kb, write_tiny_sources
 
 from diagnosticar_preguntas.kb.build import (
     SourceError,
@@ -15,6 +14,7 @@ from diagnosticar_preguntas.kb.build import (
     main,
 )
 from diagnosticar_preguntas.kb.sources import SOURCES, Source, sha256_file
+from fixtures.tiny_kb import HPO_VERSION, build_tiny_kb, write_tiny_sources
 
 
 def test_same_sources_build_byte_identical_files(tmp_path: Path) -> None:

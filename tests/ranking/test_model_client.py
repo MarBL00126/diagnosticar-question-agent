@@ -5,10 +5,10 @@ from collections.abc import Callable
 
 import httpx
 import pytest
-from tests.fixtures.fake_model import FakeModelClient
 
 from diagnosticar_preguntas.domain import ModelUnavailableError
 from diagnosticar_preguntas.ranking.model_client import HttpModelClient, NoKnownHpoIdsError
+from fixtures.fake_model import FakeModelClient
 
 RESPONSE = {
     "results": [
@@ -132,3 +132,22 @@ def test_fake_model_fails_like_the_real_service() -> None:
         FakeModelClient({}, known_hpo_ids=()).rank(["HP:0000002"], 5)
     with pytest.raises(ModelUnavailableError):
         FakeModelClient({}, unavailable=True).rank(["HP:0000002"], 5)
+
+
+@pytest.mark.parametrize(("status", "healthy"), [(200, True), (503, False)])
+def test_health_probe_reads_the_status_of_healthz(status: int, healthy: bool) -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(status, json={"status": "ok"})
+
+    assert _client(handler).is_healthy(timeout=1.0) is healthy
+    assert (seen[0].method, seen[0].url.path) == ("GET", "/healthz")
+
+
+def test_health_probe_is_false_when_the_model_is_unreachable() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("refused", request=request)
+
+    assert _client(handler).is_healthy(timeout=1.0) is False

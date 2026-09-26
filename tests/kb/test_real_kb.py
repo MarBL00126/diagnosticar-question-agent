@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from diagnosticar_preguntas.kb.requires_testing import OBSERVABLE_ROOTS, REQUIRES_TESTING_ROOTS
 from diagnosticar_preguntas.kb.sources import HPO_VERSION, SOURCES
 from diagnosticar_preguntas.kb.store import KnowledgeBase
+from fixtures.real_kb import real_kb_path
 
-REAL_KB = Path(__file__).resolve().parents[2] / "data" / "kb.sqlite"
+REAL_KB = real_kb_path()
 
 pytestmark = pytest.mark.skipif(not REAL_KB.is_file(), reason="data/kb.sqlite not built")
 

@@ -1,7 +1,14 @@
 from __future__ import annotations
 
 import pytest
-from tests.fixtures.tiny_kb import (
+
+from diagnosticar_preguntas.kb.store import KnowledgeBase
+from diagnosticar_preguntas.ranking.likelihood import (
+    UNANNOTATED_DISEASE,
+    LikelihoodConfig,
+    LikelihoodModel,
+)
+from fixtures.tiny_kb import (
     BLINDNESS,
     DISEASE_A,
     DISEASE_B,
@@ -16,13 +23,6 @@ from tests.fixtures.tiny_kb import (
     NERVOUS_PHYSIOLOGY,
     SEIZURE,
     VISUAL_IMPAIRMENT,
-)
-
-from diagnosticar_preguntas.kb.store import KnowledgeBase
-from diagnosticar_preguntas.ranking.likelihood import (
-    UNANNOTATED_DISEASE,
-    LikelihoodConfig,
-    LikelihoodModel,
 )
 
 CONFIG = LikelihoodConfig(background=0.05, missing_frequency=0.5, epsilon=0.02)

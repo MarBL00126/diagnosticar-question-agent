@@ -56,10 +56,16 @@ class RoundRequest(_Strict):
 
 
 class QuestionOut(_Strict):
-    """One question. ``separates`` and ``rationale`` are only filled in clinician mode."""
+    """One question. ``separates`` and ``rationale`` are only filled in clinician mode.
+
+    ``label`` is the official Spanish HPO label of ``hpo_id`` (the English one
+    when the term has no translation), short enough for a chip such as
+    "No presenta: Convulsiones" once the question is answered.
+    """
 
     id: str
     hpo_id: HpoId
+    label: str
     text: str
     help: str | None = None
     separates: list[str] | None = None
