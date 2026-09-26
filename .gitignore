@@ -11,6 +11,6 @@ dist/
 .ruff_cache/
 
 # Knowledge-base inputs and build output. Rebuild with `make kb`.
-data/
+/data/
 eval/results/
 *.log
