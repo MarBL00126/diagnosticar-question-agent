@@ -3,7 +3,9 @@
 Este documento describe cómo se evaluó el agente de preguntas de seguimiento de
 diagnostic.ar, qué resultados dio y qué valores por defecto se adoptaron a
 partir de ellos. Todas las cifras salen de corridas reales del código en `eval/`
-(26/09/2026) y se pueden reproducir con los comandos del final.
+(26/09/2026) y se pueden reproducir con los comandos del final. El modelo
+evaluado se describe en [ARQUITECTURA.md](ARQUITECTURA.md) y las decisiones que
+salieron de acá, en [DECISIONES.md](DECISIONES.md) (D-11).
 
 **Los valores por defecto del código son hoy la configuración elegida acá**
 (sección 8): estrategia `fixed_prior`, temperatura 1, fondo 0,1, frecuencia
