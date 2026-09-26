@@ -31,6 +31,7 @@ dev = [
 ]
 
 [project.scripts]
+diagnosticar-preguntas = "diagnosticar_preguntas.api.__main__:main"
 diagnosticar-preguntas-kb = "diagnosticar_preguntas.kb.build:main"
 
 [tool.setuptools.packages.find]

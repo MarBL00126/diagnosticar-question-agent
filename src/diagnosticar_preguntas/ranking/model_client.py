@@ -63,6 +63,14 @@ class HttpModelClient:
         except (ValueError, KeyError, TypeError) as error:
             raise ModelUnavailableError(f"unusable model response: {error}") from error
 
+    def is_healthy(self, timeout: float) -> bool:
+        """Whether ``GET /healthz`` answers with a success status within ``timeout`` seconds."""
+        try:
+            response = self._client.get("/healthz", timeout=timeout)
+        except httpx.HTTPError:
+            return False
+        return response.is_success
+
     def close(self) -> None:
         self._client.close()
 

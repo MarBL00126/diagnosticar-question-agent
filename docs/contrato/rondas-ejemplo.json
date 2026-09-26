@@ -16,6 +16,7 @@
       {
         "id": "r1-HP:0001738",
         "hpo_id": "HP:0001738",
+        "label": "Insuficiencia pancreática exocrina",
         "text": "¿Notaste que la materia fecal es abundante, grasosa o con mal olor?",
         "help": "Por ejemplo, que flota o deja manchas de grasa.",
         "separates": null,
@@ -24,6 +25,7 @@
       {
         "id": "r1-HP:0001696",
         "hpo_id": "HP:0001696",
+        "label": "Situs inversus totalis",
         "text": "¿Algún médico te dijo que tiene los órganos del lado contrario (por ejemplo, el corazón a la derecha)?",
         "help": null,
         "separates": null,
@@ -32,6 +34,7 @@
       {
         "id": "r1-HP:0012236",
         "hpo_id": "HP:0012236",
+        "label": "Cloruro en sudor elevado",
         "text": "¿Le hicieron alguna vez el test del sudor y dio alterado?",
         "help": "Si no sabés qué es, respondé «No sé».",
         "separates": null,
@@ -48,7 +51,7 @@
     "interpreted_answers": [],
     "summary": null,
     "warnings": [],
-    "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb-v1.0.0", "llm_model": "claude-opus-5" }
+    "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb1+hpo.2026-02-16", "llm_model": "claude-opus-5" }
   },
   "round2_request": {
     "mode": "paciente",
@@ -91,6 +94,6 @@
     ],
     "summary": "Con tus respuestas, los genes relacionados con la digestión y los pulmones quedaron más arriba. Llevá esta lista a la consulta: el médico puede pedir estudios para confirmarlo o descartarlo.",
     "warnings": [],
-    "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb-v1.0.0", "llm_model": "claude-opus-5" }
+    "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb1+hpo.2026-02-16", "llm_model": "claude-opus-5" }
   }
 }

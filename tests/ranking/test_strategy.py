@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import pytest
-from tests.fixtures.fake_model import FakeModelClient
-from tests.fixtures.tiny_kb import GENE_A, GENE_B, GENE_C, HYPOTONIA, MICROCEPHALY, SEIZURE
 
 from diagnosticar_preguntas.domain import Evidence
 from diagnosticar_preguntas.kb.store import KnowledgeBase
 from diagnosticar_preguntas.ranking.likelihood import LikelihoodModel
 from diagnosticar_preguntas.ranking.reranker import BayesianReranker, RerankConfig
 from diagnosticar_preguntas.ranking.strategy import RerankStrategy, model_query
+from fixtures.fake_model import FakeModelClient
+from fixtures.tiny_kb import GENE_A, GENE_B, GENE_C, HYPOTONIA, MICROCEPHALY, SEIZURE
 
 REPORTED = [MICROCEPHALY]
 AFTER_ANSWERS = Evidence(present=frozenset({MICROCEPHALY, SEIZURE}), absent=frozenset({HYPOTONIA}))

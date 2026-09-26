@@ -1,7 +1,16 @@
 from __future__ import annotations
 
 import pytest
-from tests.fixtures.tiny_kb import (
+
+from diagnosticar_preguntas.domain import Evidence, ModelRanking, Posterior
+from diagnosticar_preguntas.kb.store import KnowledgeBase
+from diagnosticar_preguntas.ranking.likelihood import (
+    UNANNOTATED_DISEASE,
+    LikelihoodConfig,
+    LikelihoodModel,
+)
+from diagnosticar_preguntas.ranking.reranker import BayesianReranker, RerankConfig, tempered_prior
+from fixtures.tiny_kb import (
     BLINDNESS,
     DISEASE_C1,
     DISEASE_C2,
@@ -15,15 +24,6 @@ from tests.fixtures.tiny_kb import (
     SEIZURE,
     SEIZURE_ALT_ID,
 )
-
-from diagnosticar_preguntas.domain import Evidence, ModelRanking, Posterior
-from diagnosticar_preguntas.kb.store import KnowledgeBase
-from diagnosticar_preguntas.ranking.likelihood import (
-    UNANNOTATED_DISEASE,
-    LikelihoodConfig,
-    LikelihoodModel,
-)
-from diagnosticar_preguntas.ranking.reranker import BayesianReranker, RerankConfig, tempered_prior
 
 EQUAL = {GENE_A: 0.25, GENE_B: 0.25, GENE_C: 0.25, GENE_E: 0.25}
 

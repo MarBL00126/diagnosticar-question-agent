@@ -69,14 +69,14 @@ def flag(argv: list[str], name: str) -> str:
 
 
 class TestInvocation:
-    def test_builds_an_argument_list_with_prompt_model_and_schema(self) -> None:
+    def test_builds_an_argument_list_with_model_rules_and_schema(self) -> None:
         runner = FakeRunner(stdout=envelope())
         request = round_request()
 
         provider(runner).generate(request)
 
         argv, _ = runner.calls[0]
-        assert argv[:3] == ["/usr/bin/claude", "-p", request.user]
+        assert argv[:2] == ["/usr/bin/claude", "-p"]
         assert flag(argv, "--model") == "claude-opus-5"
         assert flag(argv, "--effort") == "high"
         assert flag(argv, "--append-system-prompt") == request.system
@@ -86,13 +86,27 @@ class TestInvocation:
         assert schema["required"] == ["questions"]
         assert "--no-session-persistence" in argv
 
-    def test_runs_without_shell_with_stdin_closed_and_a_hard_timeout(self) -> None:
+    def test_the_case_data_goes_on_stdin_never_in_the_arguments(self) -> None:
+        runner = FakeRunner(stdout=envelope())
+        request = round_request()
+
+        provider(runner).generate(request)
+
+        argv, kwargs = runner.calls[0]
+        assert kwargs["input"] == request.user
+        assert "stdin" not in kwargs
+        arguments = "\n".join(argv)
+        assert request.user not in arguments
+        for case_data in ("Infecciones respiratorias recurrentes", "HP:0001738", "Situs inversus"):
+            assert case_data in request.user
+            assert case_data not in arguments
+
+    def test_runs_without_shell_and_with_a_hard_timeout(self) -> None:
         runner = FakeRunner(stdout=envelope())
 
         provider(runner).generate(round_request())
 
         _, kwargs = runner.calls[0]
-        assert kwargs["stdin"] is subprocess.DEVNULL
         assert kwargs["timeout"] == 42
         assert kwargs.get("shell", False) is False
         assert kwargs["capture_output"] is True

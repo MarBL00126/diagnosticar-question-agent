@@ -65,6 +65,7 @@ LLM_ATTEMPTS = 2
 WARNING_NOTES = "No pudimos interpretar las notas; se usaron las respuestas tal como se marcaron."
 WARNING_QUESTIONS = "Algunas preguntas se generaron sin IA."
 WARNING_SUMMARY = "El resumen se generó sin IA."
+LLM_FALLBACK_WARNINGS = frozenset({WARNING_NOTES, WARNING_QUESTIONS, WARNING_SUMMARY})
 
 
 class RoundService:
@@ -267,6 +268,7 @@ class RoundService:
         return QuestionOut(
             id=f"r{request.round}-{draft.hpo_id}",
             hpo_id=draft.hpo_id,
+            label=candidate.label_es,
             text=draft.text.strip(),
             help=(draft.help or "").strip() or None,
             separates=separates[:MAX_SEPARATES] if clinician else None,

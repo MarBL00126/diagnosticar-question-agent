@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from tests.fixtures.tiny_kb import (
+from diagnosticar_preguntas.kb.store import KnowledgeBase
+from diagnosticar_preguntas.selection.askability import AskabilityRules, askable_terms
+from fixtures.tiny_kb import (
     ABNORMAL_SPEECH,
     AUTOSOMAL_DOMINANT,
     BLINDNESS,
@@ -15,9 +17,6 @@ from tests.fixtures.tiny_kb import (
     SEIZURE,
     VISUAL_IMPAIRMENT,
 )
-
-from diagnosticar_preguntas.kb.store import KnowledgeBase
-from diagnosticar_preguntas.selection.askability import AskabilityRules, askable_terms
 
 
 def test_specific_symptoms_are_askable(tiny_kb: KnowledgeBase) -> None:

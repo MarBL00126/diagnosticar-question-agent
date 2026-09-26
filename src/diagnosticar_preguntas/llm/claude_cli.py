@@ -1,8 +1,15 @@
 """Provider backed by the Claude Code CLI (``claude -p``).
 
 Runs on a Claude subscription: locally with the user's login, in a container
-with ``CLAUDE_CODE_OAUTH_TOKEN``. Structured output comes from ``--json-schema``
-with ``--output-format json``, which prints one envelope::
+with ``CLAUDE_CODE_OAUTH_TOKEN``.
+
+The user prompt, which carries the case data, goes to the CLI on stdin: any
+account on the host can read another process's arguments from
+``/proc/<pid>/cmdline``. Only the system prompt (static rules) and the output
+schema (derived from the pydantic models) are passed as arguments.
+
+Structured output comes from ``--json-schema`` with ``--output-format json``,
+which prints one envelope::
 
     {"type": "result", "subtype": "success", "is_error": false,
      "result": "<the JSON as text>", "structured_output": {...}, ...}
@@ -70,7 +77,6 @@ class ClaudeCliProvider:
         return [
             self._binary,
             "-p",
-            request.user,
             "--model",
             self._model,
             "--effort",
@@ -94,7 +100,8 @@ class ClaudeCliProvider:
         try:
             completed = self._runner(
                 argv,
-                stdin=subprocess.DEVNULL,
+                # ``input`` writes the prompt and closes stdin, so the CLI never waits on it.
+                input=request.user,
                 capture_output=True,
                 text=True,
                 timeout=self._timeout_s,

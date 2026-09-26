@@ -5,6 +5,7 @@ from typing import Any
 import pytest
 from round_fakes import (
     GENES,
+    LABELS,
     SHORTLIST,
     FakeLabels,
     FakeModel,
@@ -83,6 +84,20 @@ class TestFirstRound:
         assert [q.id for q in response.questions] == [f"r1-{h}" for h in FIRST_THREE]
         assert response.warnings == []
         assert response.summary is None
+
+    def test_each_question_carries_the_spanish_label_of_its_term(self) -> None:
+        llm = ScriptedLLM(questions=[round_draft(*FIRST_THREE)])
+
+        response = service(llm).run(request())
+
+        assert [(q.hpo_id, q.label) for q in response.questions] == [
+            (h, LABELS[h]) for h in FIRST_THREE
+        ]
+
+    def test_template_questions_carry_the_label_too(self) -> None:
+        response = service(TemplateProvider()).run(request(mode=Mode.PATIENT))
+
+        assert all(q.label == LABELS[q.hpo_id] for q in response.questions)
 
     def test_ranking_uses_gene_symbol_as_gene_id(self) -> None:
         response = service().run(request())

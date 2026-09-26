@@ -21,6 +21,19 @@ def test_defaults_match_the_contract(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.service_token is None
 
 
+def test_http_defaults_serve_on_8010_with_a_small_bounded_queue(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for name in ("PREGUNTAS_HOST", "PREGUNTAS_PORT", "PREGUNTAS_MAX_CONCURRENT_ROUNDS"):
+        monkeypatch.delenv(name, raising=False)
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+
+    assert (settings.host, settings.port) == ("0.0.0.0", 8010)
+    assert settings.max_concurrent_rounds == 2
+    assert settings.max_queued_rounds >= 0
+
+
 def test_environment_variables_use_the_preguntas_prefix(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("PREGUNTAS_LLM_PROVIDER", "template")
     monkeypatch.setenv("PREGUNTAS_SERVICE_TOKEN", "s3cret")
@@ -33,6 +46,23 @@ def test_environment_variables_use_the_preguntas_prefix(monkeypatch: pytest.Monk
     assert settings.service_token.get_secret_value() == "s3cret"
     assert settings.confident_threshold == 0.9
     assert "s3cret" not in repr(settings)
+
+
+@pytest.mark.parametrize("blank", ["", "   "])
+def test_a_blank_service_token_means_no_token(blank: str) -> None:
+    settings = Settings(_env_file=None, service_token=blank)  # type: ignore[call-arg]
+
+    assert settings.service_token is None
+
+
+def test_empty_environment_variables_fall_back_to_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PREGUNTAS_PORT", "")
+    monkeypatch.setenv("PREGUNTAS_SERVICE_TOKEN", "")
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+
+    assert settings.port == 8010
+    assert settings.service_token is None
 
 
 def test_more_questions_than_the_contract_allows_are_rejected() -> None:

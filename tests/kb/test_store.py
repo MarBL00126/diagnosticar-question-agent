@@ -5,7 +5,9 @@ import sqlite3
 from pathlib import Path
 
 import pytest
-from tests.fixtures.tiny_kb import (
+
+from diagnosticar_preguntas.kb.store import Annotation, KnowledgeBase, KnowledgeBaseError
+from fixtures.tiny_kb import (
     ABNORMAL_SPEECH,
     ALL,
     AUTOSOMAL_DOMINANT,
@@ -38,8 +40,6 @@ from tests.fixtures.tiny_kb import (
     UNKNOWN_TERM,
     build_tiny_kb,
 )
-
-from diagnosticar_preguntas.kb.store import Annotation, KnowledgeBase, KnowledgeBaseError
 
 
 def _annotation(kb: KnowledgeBase, disease: str, hpo_id: str) -> Annotation:
