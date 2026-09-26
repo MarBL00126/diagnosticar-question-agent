@@ -1,0 +1,96 @@
+{
+  "_comment": "Ejemplo del contrato POST /v1/rounds. Es la referencia que copia frontend/mocks/fixtures.json (clave 'questions') en diagnostic.ar. Los valores son ilustrativos, no salidas reales del modelo.",
+  "round1_request": {
+    "mode": "paciente",
+    "round": 1,
+    "present_hpo_ids": ["HP:0002205", "HP:0004322"],
+    "absent_hpo_ids": ["HP:0001250"],
+    "answers": [],
+    "finish": false
+  },
+  "round1_response": {
+    "round": 1,
+    "status": "questions",
+    "finish_reason": null,
+    "questions": [
+      {
+        "id": "r1-HP:0001738",
+        "hpo_id": "HP:0001738",
+        "text": "¿Notaste que la materia fecal es abundante, grasosa o con mal olor?",
+        "help": "Por ejemplo, que flota o deja manchas de grasa.",
+        "separates": null,
+        "rationale": null
+      },
+      {
+        "id": "r1-HP:0001696",
+        "hpo_id": "HP:0001696",
+        "text": "¿Algún médico te dijo que tiene los órganos del lado contrario (por ejemplo, el corazón a la derecha)?",
+        "help": null,
+        "separates": null,
+        "rationale": null
+      },
+      {
+        "id": "r1-HP:0012236",
+        "hpo_id": "HP:0012236",
+        "text": "¿Le hicieron alguna vez el test del sudor y dio alterado?",
+        "help": "Si no sabés qué es, respondé «No sé».",
+        "separates": null,
+        "rationale": null
+      }
+    ],
+    "ranking": [
+      { "gene_id": "CFTR", "gene_symbol": "CFTR", "score": 0.52, "model_score": 0.412, "model_rank": 1 },
+      { "gene_id": "DNAH5", "gene_symbol": "DNAH5", "score": 0.27, "model_score": 0.201, "model_rank": 2 },
+      { "gene_id": "SCNN1A", "gene_symbol": "SCNN1A", "score": 0.11, "model_score": 0.087, "model_rank": 3 }
+    ],
+    "specialties": null,
+    "confidence": 0.78,
+    "interpreted_answers": [],
+    "summary": null,
+    "warnings": [],
+    "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb-v1.0.0", "llm_model": "claude-opus-5" }
+  },
+  "round2_request": {
+    "mode": "paciente",
+    "round": 2,
+    "present_hpo_ids": ["HP:0002205", "HP:0004322"],
+    "absent_hpo_ids": ["HP:0001250"],
+    "answers": [
+      { "hpo_id": "HP:0001738", "answer": "si", "note": "desde bebé" },
+      { "hpo_id": "HP:0001696", "answer": "no", "note": null },
+      { "hpo_id": "HP:0012236", "answer": "no_se", "note": null }
+    ],
+    "finish": true
+  },
+  "round2_response": {
+    "round": 2,
+    "status": "finished",
+    "finish_reason": "user_finished",
+    "questions": [],
+    "ranking": [
+      { "gene_id": "CFTR", "gene_symbol": "CFTR", "score": 0.81, "model_score": 0.46, "model_rank": 1 },
+      { "gene_id": "SCNN1A", "gene_symbol": "SCNN1A", "score": 0.09, "model_score": 0.08, "model_rank": 3 },
+      { "gene_id": "DNAH5", "gene_symbol": "DNAH5", "score": 0.05, "model_score": 0.19, "model_rank": 2 }
+    ],
+    "specialties": {
+      "top_specialty": "Pulmonology",
+      "top_specialties": ["Pulmonology", "Gastroenterology"],
+      "specialty_ranking": [
+        { "specialty": "Pulmonology", "matched_genes_count": 2, "probability_mass": 0.61, "genes": ["CFTR", "DNAH5"], "fraction_of_selected_genes": 0.67 },
+        { "specialty": "Gastroenterology", "matched_genes_count": 1, "probability_mass": 0.09, "genes": ["SCNN1A"], "fraction_of_selected_genes": 0.33 }
+      ],
+      "selected_gene_count": 3,
+      "unmapped_genes": [],
+      "unmapped_gene_count": 0
+    },
+    "confidence": 0.81,
+    "interpreted_answers": [
+      { "hpo_id": "HP:0001738", "answer": "si", "effective_answer": "si", "note_summary": "Desde bebé." },
+      { "hpo_id": "HP:0001696", "answer": "no", "effective_answer": "no", "note_summary": null },
+      { "hpo_id": "HP:0012236", "answer": "no_se", "effective_answer": "no_se", "note_summary": null }
+    ],
+    "summary": "Con tus respuestas, los genes relacionados con la digestión y los pulmones quedaron más arriba. Llevá esta lista a la consulta: el médico puede pedir estudios para confirmarlo o descartarlo.",
+    "warnings": [],
+    "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb-v1.0.0", "llm_model": "claude-opus-5" }
+  }
+}
