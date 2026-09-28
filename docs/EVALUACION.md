@@ -5,7 +5,9 @@ diagnostic.ar, qué resultados dio y qué valores por defecto se adoptaron a
 partir de ellos. Todas las cifras salen de corridas reales del código en `eval/`
 (26/09/2026) y se pueden reproducir con los comandos del final. El modelo
 evaluado se describe en [ARQUITECTURA.md](ARQUITECTURA.md) y las decisiones que
-salieron de acá, en [DECISIONES.md](DECISIONES.md) (D-11).
+salieron de acá, en [DECISIONES.md](DECISIONES.md) (D-11). Las mismas corridas,
+expresadas como mejoras absolutas y relativas con intervalos de confianza (por
+subgrupo, por ronda y por pregunta), están en [IMPACTO.md](IMPACTO.md).
 
 **Los valores por defecto del código son hoy la configuración elegida acá**
 (sección 8): estrategia `fixed_prior`, temperatura 1, fondo 0,1, frecuencia
@@ -271,9 +273,11 @@ La mediana del puesto es 1 en todas las filas. Diferencias pareadas tras la
 | agent vs most_frequent_unreported | +3,3 [+0,3; +6,3] | +2,3 [+0,3; +4,7] | +1,0 [−0,7; +2,7] | +0,026 [+0,006; +0,045] |
 
 - **Motivos de cierre del agente**: 207 por confianza, 84 por máximo de rondas,
-  9 sin preguntas útiles. En 165 de 300 casos no se hizo ninguna pregunta: el
-  gen de arriba ya superaba 0,9 en la ronda 1, y en esos casos era el correcto
-  el 95,7 % de las veces (en los 207 cierres por confianza, el 94,2 %).
+  9 sin preguntas útiles. En 165 de 300 casos no se hizo ninguna pregunta: en
+  162 el gen de arriba ya superaba 0,9 en la ronda 1, y en esos era el correcto
+  el 95,7 % de las veces; los otros 3 cerraron sin preguntas útiles (el gen
+  correcto no estaba primero), así que sobre los 165 el acierto es 93,9 %. En
+  los 207 cierres por confianza, contando los de rondas posteriores, el 94,2 %.
 - **En los 135 casos en que sí preguntó**, el efecto es mayor: Δ MRR +0,121
   [+0,076; +0,168] y Δ top-1 +16,3 pp [+8,1; +24,4], partiendo de un MRR de
   0,583.
