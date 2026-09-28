@@ -65,7 +65,6 @@ class SummaryTask:
     finish_reason: str
     answers: tuple[AnsweredTerm, ...]
     top_genes: tuple[GeneScore, ...]
-    specialties: tuple[str, ...] = ()
     corrections: tuple[str, ...] = ()
 
 

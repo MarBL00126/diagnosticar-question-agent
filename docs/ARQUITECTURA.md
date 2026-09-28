@@ -291,7 +291,7 @@ escapan como `<` y `>`, así que una nota no puede cerrar el bloque.
 |---|---|
 | Preguntas | modo, ronda, cantidad de preguntas, los 10 primeros genes con su puntaje, etiquetas de síntomas presentes, ausentes y sin respuesta, candidatos (id, etiqueta en español e inglés, ganancia, `p_si`, genes que suben con sí y con no, si requiere estudio) y `correcciones`. |
 | Notas | por respuesta: id, etiqueta del síntoma, botón y nota. |
-| Resumen | modo, motivo de cierre, respuestas efectivas con el resumen de su nota, los 5 primeros genes con su puesto actual, el del modelo y su puntaje, especialidades sugeridas y `correcciones`. |
+| Resumen | modo, motivo de cierre, respuestas efectivas con el resumen de su nota, los 5 primeros genes con su puesto actual, el del modelo y su puntaje, y `correcciones`. Sin especialidades: nombrarlas sería una derivación. |
 
 El agente no recibe ni manda a Claude nombres, identificadores de usuario o de
 diagnóstico, ni el texto libre original de la consulta: solo ids HPO, sus
@@ -321,9 +321,13 @@ el reintento.
   "gen", "genes", "diagnóstico"). La etiqueta oficial del término preguntado
   queda exceptuada en su propia pregunta.
 
-**Resumen**: no vacío; hasta 700 caracteres (paciente) o 1000 (médico); en modo
-paciente, los mismos controles de texto salvo "diagnóstico" (el prompt del
-resumen pide recordar que no es un diagnóstico), con las etiquetas de los síntomas respondidos exceptuadas.
+**Resumen**: no vacío; hasta 700 caracteres (paciente) o 1000 (médico). En los
+dos modos rechaza todo vocabulario de recomendación o de estudios ("solicitar",
+"considerar", "confirmar", "descartar", "estudio", "exoma", "EEG", entre otros;
+lista completa en `agent/guardrails.py`). En modo paciente suma los mismos
+controles de texto de las preguntas salvo "diagnóstico" (el prompt pide recordar
+que no es un diagnóstico). Las etiquetas de los síntomas respondidos quedan
+exceptuadas.
 
 **Notas**: una lectura solo puede dejar el botón como está o bajarlo a `no_se`
 (`agent/evidence.py`); el contrato rechaza además una `reading` reenviada que

@@ -23,6 +23,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
 | D-13 | El prompt va por stdin | 2026-09-26 |
 | D-14 | Presupuesto de tiempo por ronda | 2026-09-26 |
 | D-15 | El trabajo vive en el repositorio de Mariano, en ramas propias | 2026-09-26 |
+| D-16 | El resumen no recomienda estudios | 2026-09-28 |
 
 ---
 
@@ -280,3 +281,35 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   privado, con una clave de despliegue y un commit fijado
   ([INTEGRACION.md](INTEGRACION.md)).
 - **Fecha.** 2026-09-26.
+
+## D-16. El resumen no recomienda estudios
+
+- **Contexto.** El resumen de cierre proponía próximos pasos. En modo médico
+  el prompt pedía "qué conviene confirmar con estudios", y salieron borradores
+  como "Conviene solicitar test del sudor y elastasa fecal antes de secuenciar
+  CFTR" o "considerar estudio genómico amplio (exoma o panel de
+  neurodesarrollo/epilepsia) junto con EEG y RM de cerebro". En modo paciente
+  decía que el médico "puede pedir estudios para confirmar o descartar". Nadie
+  del equipo es médico, así que nadie puede validar esas indicaciones. Mate
+  decidió que el resumen no las dé.
+- **Decisión.** En los dos modos, el resumen solo repasa las preguntas sobre
+  los síntomas informados: qué se preguntó, qué se respondió y cómo cambió la
+  lista. En modo médico dice qué respuestas movieron qué genes; en modo
+  paciente, sin genes, enfermedades ni porcentajes, termina con una invitación
+  neutral a llevar la información a la consulta. No propone estudios, pruebas,
+  especialistas ni otros pasos, ni habla de confirmar, descartar, solicitar,
+  pedir o considerar. Lo pide el prompt, lo exige una salvaguarda en los dos
+  modos (raíces de palabras de consejo y de estudios, con las etiquetas de los
+  síntomas respondidos exceptuadas) y lo cumplen las plantillas. El prompt del
+  resumen ya no recibe las especialidades sugeridas.
+- **Alternativas.** Permitir estudios solo en modo médico; en modo paciente,
+  decir que el médico va a decidir qué estudios tienen sentido, que es lo que
+  hacía el commit 51a2fa0.
+- **Consecuencias.** Un borrador que nombra un estudio fuera de la etiqueta de
+  un síntoma respondido se reintenta con la corrección y, si vuelve a fallar,
+  sale la plantilla con advertencia. La lista es literal, así que una
+  paráfrasis inocente ("considerando las respuestas", "el EEG alterado" en vez
+  de "Anormalidad en el EEG") cuesta un reintento. Las notas que mencionan
+  estudios no se repiten en el resumen. Las especialidades siguen en la
+  respuesta de la API, fuera del resumen.
+- **Fecha.** 2026-09-28.

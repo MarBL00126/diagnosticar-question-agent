@@ -18,9 +18,14 @@ What patient text may not contain:
 * verdict words: "síndrome", "gen", "variante", "mutación", "patogénica", and
   in questions "diagnóstico".
 
+No summary, in either mode, may advise anything or name a study or test
+("conviene", "solicitar", "descartar", "estudio", "exoma", "EEG", ...): it only
+recaps what was asked, what was answered and how the list moved, because
+nobody on the team can validate clinical advice.
+
 The official label of the term a question asks about is exempt in that
 question (an HPO label may well read "Síndrome nefrótico"), and in a summary
-the labels of the answered terms are.
+the labels of the answered terms are ("Anormalidad en el EEG").
 """
 
 from __future__ import annotations
@@ -70,6 +75,51 @@ _FORBIDDEN_IN_SUMMARY = (
     r"gen(?:es)?\b",
 )
 _FORBIDDEN_IN_QUESTIONS = (*_FORBIDDEN_IN_SUMMARY, "diagnostic")
+
+# Word starts of advice and of studies and tests, forbidden in every summary. Verb forms are
+# listed one by one so that "pediatra", "indica" or "secuencia" pass.
+_ADVICE_IN_SUMMARY = (
+    "solicit",
+    r"ped(?:ir|i(?:le|les)?\b)",
+    r"pid(?:a|as|an|ale|anle)\b",
+    "indicar",
+    "indiqu",
+    r"indicad[oa]s?\b",
+    "consider",
+    r"conv(?:ien|endr|enien)",
+    "suger",
+    "sugier",
+    "recomend",
+    "confirm",
+    "descart",
+    r"deriv(?:ar|acion|en?\b)",
+    "interconsult",
+    r"(?:proximo|siguiente)s? pasos?\b",
+    "estudi",
+    r"analisis\b",
+    r"pruebas?\b",
+    r"tests?\b",
+    "exom",
+    "genom",
+    r"secuenci(?:ar|acion|ad)",
+    r"panel(?:es)?\b",
+    "biops",
+    "resonancia",
+    r"rmn?\b",
+    "tomogra",
+    r"tac\b",
+    r"tc\b",
+    "electroencefalogra",
+    r"eeg\b",
+    "electrocardiogra",
+    r"ecg\b",
+    "ecocardiogra",
+    "ecogra",
+    "laboratori",
+    "dosaj",
+)
+# A word start not preceded by "-" either, so the gene MT-TC does not read as "TC".
+_ADVICE = re.compile(rf"(?<![\w-])(?:{'|'.join(_ADVICE_IN_SUMMARY)})\w*")
 
 # Words of disease names that say nothing about which disease it is.
 _GENERIC_NAME_WORDS = (
@@ -303,6 +353,13 @@ def check_summary(
     problems = []
     if len(text) > MAX_SUMMARY_CHARS[mode]:
         problems.append(f"el resumen supera {MAX_SUMMARY_CHARS[mode]} caracteres")
+    advice = _without_labels(_fold(text), exempt).lower()
+    if words := sorted({m.group(0) for m in _ADVICE.finditer(advice)}):
+        problems.append(
+            f"menciona estudios o pasos a seguir ({', '.join(words)}): el resumen solo repasa"
+            " qué se preguntó, qué se respondió y cómo cambió la lista; la etiqueta de un"
+            " síntoma respondido se puede nombrar tal cual"
+        )
     if mode is Mode.PATIENT:
         problems.extend(patient_text.problems(text, exempt=exempt, forbidden=_FORBIDDEN_IN_SUMMARY))
     return problems

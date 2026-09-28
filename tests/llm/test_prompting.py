@@ -11,6 +11,7 @@ from diagnosticar_preguntas.llm.prompting import (
     _load,
     notes_request,
     question_request,
+    summary_request,
     system_prompt,
 )
 from diagnosticar_preguntas.llm.schemas import MAX_QUESTION_CHARS
@@ -75,6 +76,20 @@ def test_the_clinician_prompt_keeps_questions_faithful_to_the_term() -> None:
 
 def test_the_question_prompt_states_the_guardrails_length_limit() -> None:
     assert f"hasta {MAX_QUESTION_CHARS} caracteres" in system_prompt(Mode.PATIENT, QuestionTask)
+
+
+def test_the_summary_prompt_forbids_advice_in_both_modes() -> None:
+    for mode in Mode:
+        prompt = system_prompt(mode, SummaryTask)
+        assert "El resumen no recomienda nada, ni al médico ni a la familia" in prompt
+        assert "orientar estudios" not in prompt
+
+
+def test_the_summary_gets_no_specialties_to_refer_to() -> None:
+    task = SummaryTask(Mode.PATIENT, "user_finished", (), ())
+
+    assert not hasattr(task, "specialties")
+    assert "especialidad" not in summary_request(task).user.lower()
 
 
 def test_every_prompt_carries_the_shared_clinical_rules() -> None:

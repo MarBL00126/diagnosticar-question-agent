@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from diagnosticar_preguntas.agent.guardrails import (
@@ -63,8 +66,17 @@ def patient(text: str, hpo_id: str = "HP:0002099") -> list[str]:
     return list(check(q(hpo_id, text), mode=Mode.PATIENT).violations)
 
 
+def summary_problems(text: str, mode: Mode, exempt: tuple[str, ...] = ()) -> list[str]:
+    return check_summary(SummaryDraft(summary=text), mode, TOP_DISEASES, exempt)
+
+
 def patient_summary(text: str, exempt: tuple[str, ...] = ()) -> list[str]:
-    return check_summary(SummaryDraft(summary=text), Mode.PATIENT, TOP_DISEASES, exempt)
+    return summary_problems(text, Mode.PATIENT, exempt)
+
+
+def advice_in(problems: list[str]) -> str:
+    """The advice problem, or "" when the summary has none."""
+    return next((p for p in problems if "estudios o pasos a seguir" in p), "")
 
 
 def test_a_valid_clinician_round_passes() -> None:
@@ -272,6 +284,112 @@ def test_a_clinician_summary_may_name_genes() -> None:
     draft = SummaryDraft(summary="CFTR subió al puesto 1.")
 
     assert check_summary(draft, Mode.CLINICIAN, TOP_DISEASES) == []
+
+
+@pytest.mark.parametrize("mode", list(Mode))
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Conviene solicitar test del sudor y elastasa fecal antes de secuenciar CFTR.",
+        "Para avanzar, resulta razonable considerar estudio genómico amplio (exoma o panel de"
+        " neurodesarrollo/epilepsia) junto con EEG y RM de cerebro",
+        "el médico puede pedir estudios para confirmar o descartar lo que haga falta",
+    ],
+)
+def test_no_summary_recommends_studies_like_the_reviewed_drafts_did(text: str, mode: Mode) -> None:
+    assert advice_in(summary_problems(text, mode))
+
+
+@pytest.mark.parametrize(
+    ("text", "word"),
+    [
+        ("Se sugiere una ecografía abdominal.", "sugiere"),
+        ("Se sugiere una ecografía abdominal.", "ecografia"),
+        ("Recomendamos una biopsia de piel.", "recomendamos"),
+        ("Recomendamos una biopsia de piel.", "biopsia"),
+        ("Pidan un dosaje de cobre.", "pidan"),
+        ("Pedí un laboratorio completo.", "pedi"),
+        ("Pedí un laboratorio completo.", "laboratorio"),
+        ("Convendría una tomografía o una TAC de tórax.", "convendria"),
+        ("Convendría una tomografía o una TAC de tórax.", "tac"),
+        ("Indique un electroencefalograma.", "indique"),
+        ("Está indicado un ECG y un ecocardiograma.", "indicado"),
+        ("Está indicado un ECG y un ecocardiograma.", "ecocardiograma"),
+        ("Solicitar una RMN de cerebro.", "rmn"),
+        ("Hace falta un análisis de orina.", "analisis"),
+        ("Queda por hacer la prueba del sudor.", "prueba"),
+        ("Podría secuenciarse el genoma completo.", "genoma"),
+        ("Un panel genético ordenaría el cuadro.", "panel"),
+        ("Así se puede confirmar el cuadro.", "confirmar"),
+        ("Queda descartada la forma pulmonar.", "descartada"),
+        ("Tiene sentido derivar a neurología.", "derivar"),
+        ("Próximos pasos: control en seis meses.", "proximos pasos"),
+    ],
+)
+def test_advice_and_studies_are_rejected_in_clinician_summaries_too(text: str, word: str) -> None:
+    assert word in advice_in(summary_problems(text, Mode.CLINICIAN))
+
+
+@pytest.mark.parametrize(
+    ("text", "mode"),
+    [
+        (
+            "Con esteatorrea presente, CFTR subió del puesto 3 al 1; con situs inversus ausente,"
+            " DNAH5 bajó del 1 al 3. Es una orientación, no un diagnóstico.",
+            Mode.CLINICIAN,
+        ),
+        (
+            "Se respondieron tres preguntas y con esas respuestas la lista cambió de orden."
+            " Llevá esta información a la consulta para conversarla con el médico.",
+            Mode.PATIENT,
+        ),
+        ("El pediatra ya lo había notado; la respuesta indica más peso para CFTR.", Mode.CLINICIAN),
+        ("La secuencia de respuestas dejó a MT-TC en el puesto 2.", Mode.CLINICIAN),
+        ("Se informaron testículos no descendidos y la lista cambió de orden.", Mode.PATIENT),
+    ],
+)
+def test_a_summary_that_only_recaps_the_answers_passes(text: str, mode: Mode) -> None:
+    assert summary_problems(text, mode) == []
+
+
+@pytest.mark.parametrize("mode", list(Mode))
+def test_a_summary_may_repeat_answered_labels_that_name_a_study(mode: Mode) -> None:
+    labels = ("Anormalidad en el EEG", "Prueba de Coombs positiva")
+    text = (
+        "Se respondió que sí a «Anormalidad en el EEG» y que no a prueba de Coombs positiva."
+        " Llevá esta información a la consulta para conversarla con el médico."
+    )
+
+    assert advice_in(summary_problems(text, mode))
+    assert summary_problems(text, mode, exempt=labels) == []
+
+
+def test_the_label_exemption_does_not_hide_advice_around_it() -> None:
+    text = "Se respondió que sí a «Anormalidad en el EEG»; conviene repetir el EEG."
+
+    problem = advice_in(summary_problems(text, Mode.CLINICIAN, ("Anormalidad en el EEG",)))
+
+    assert "(conviene, eeg)" in problem
+
+
+EXAMPLE = Path(__file__).resolve().parents[2] / "docs" / "contrato" / "rondas-ejemplo.json"
+
+
+@pytest.mark.skipif(not EXAMPLE.is_file(), reason="docs/ is not in the image")
+def test_the_documented_example_summary_passes_the_guardrails() -> None:
+    example = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    response = example["round2_response"]
+    vocabulary = PatientVocabulary([g["gene_symbol"] for g in response["ranking"]], {}.get)
+    labels = [q["label"] for q in example["round1_response"]["questions"]]
+
+    problems = check_summary(
+        SummaryDraft(summary=response["summary"]),
+        Mode(response["mode"]),
+        vocabulary.for_diseases(()),
+        labels,
+    )
+
+    assert problems == []
 
 
 @pytest.mark.parametrize("mode", list(Mode))

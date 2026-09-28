@@ -95,20 +95,41 @@ def test_notes_are_never_interpreted() -> None:
     assert [(r.consistent, r.summary) for r in draft.readings] == [(True, None)]
 
 
-def summary_task(mode: Mode) -> SummaryTask:
+ANSWERS = (
+    AnsweredTerm("HP:0001738", "Esteatorrea", AnswerValue.YES),
+    AnsweredTerm("HP:0002353", "Anormalidad en el EEG", AnswerValue.NO),
+)
+
+
+def summary_task(mode: Mode, answers: tuple[AnsweredTerm, ...] = ANSWERS[:1]) -> SummaryTask:
     return SummaryTask(
         mode=mode,
         finish_reason="user_finished",
-        answers=(AnsweredTerm("HP:0001738", "Esteatorrea", AnswerValue.YES),),
+        answers=answers,
         top_genes=(GeneScore("CFTR", 0.7, 0.3, 2), GeneScore("DNAH5", 0.3, 0.4, 1)),
     )
 
 
-def test_patient_summary_passes_the_guardrails() -> None:
-    draft = TemplateProvider().generate(summary_request(summary_task(Mode.PATIENT)))
+@pytest.mark.parametrize("answers", [ANSWERS, ()])
+@pytest.mark.parametrize("mode", list(Mode))
+def test_template_summaries_pass_the_guardrails_and_recommend_nothing(
+    mode: Mode, answers: tuple[AnsweredTerm, ...]
+) -> None:
+    draft = TemplateProvider().generate(summary_request(summary_task(mode, answers)))
 
-    assert check_summary(draft, Mode.PATIENT, PATIENT_TEXT) == []
-    assert "médico" in draft.summary
+    assert check_summary(draft, mode, PATIENT_TEXT, [a.label for a in answers]) == []
+    assert "estudio" not in draft.summary
+
+
+@pytest.mark.parametrize("answers", [ANSWERS, ()])
+def test_the_patient_summary_ends_inviting_to_the_consultation(
+    answers: tuple[AnsweredTerm, ...],
+) -> None:
+    draft = TemplateProvider().generate(summary_request(summary_task(Mode.PATIENT, answers)))
+
+    assert draft.summary.endswith(
+        "Llevá esta información a la consulta para conversarla con el médico."
+    )
 
 
 def test_clinician_summary_reports_answers_and_genes_that_rose() -> None:

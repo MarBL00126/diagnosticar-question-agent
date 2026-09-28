@@ -472,7 +472,7 @@ class TestLlmModelVersion:
 
 
 class TestSummary:
-    def test_the_summary_gets_answers_genes_and_specialties(self) -> None:
+    def test_the_summary_gets_answers_and_genes_but_no_specialties(self) -> None:
         llm = ScriptedLLM(summaries=[summary()])
 
         response = service(llm).run(request(round=2, finish=True, answers=yes_no_answers()))
@@ -480,7 +480,8 @@ class TestSummary:
         task = llm.tasks(SummaryTask)[0]
         assert task.finish_reason == "user_finished"
         assert task.answers[0].label == "Insuficiencia pancreática exocrina"
-        assert task.specialties == ("Pulmonology", "Gastroenterology")
+        assert task.top_genes
+        assert not hasattr(task, "specialties")
         assert response.summary == summary().summary
         assert response.versions.llm_model == "claude-opus-5"
 
@@ -513,6 +514,17 @@ class TestSummary:
 
         assert response.summary == "CFTR subió del puesto 3 al 1 con la esteatorrea."
         assert response.warnings == []
+
+    def test_a_clinician_summary_recommending_studies_is_retried_then_templated(self) -> None:
+        advice = summary("Conviene solicitar test del sudor antes de secuenciar CFTR.")
+        llm = ScriptedLLM(summaries=[advice, advice])
+
+        response = service(llm).run(request(finish=True))
+
+        assert response.summary
+        assert "sudor" not in response.summary
+        assert WARNING_SUMMARY in response.warnings
+        assert any("estudios o pasos a seguir" in c for c in llm.tasks(SummaryTask)[1].corrections)
 
     def test_a_summary_failure_degrades_to_the_template(self) -> None:
         llm = ScriptedLLM(summaries=[LLMTimeoutError("slow")])

@@ -43,7 +43,6 @@ from diagnosticar_preguntas.domain import (
     Evidence,
     Mode,
     ModelClient,
-    ModelRanking,
     Posterior,
     QuestionSelector,
     Reranker,
@@ -162,7 +161,7 @@ class RoundService:
             )
         else:
             summary = self._summary(
-                request.mode, finish_reason, interpreted, posterior, ranking, patient_text, state
+                request.mode, finish_reason, interpreted, posterior, patient_text, state
             )
 
         return RoundResponse(
@@ -353,7 +352,6 @@ class RoundService:
         finish_reason: FinishReason,
         interpreted: Sequence[InterpretedAnswer],
         posterior: Posterior,
-        ranking: ModelRanking,
         patient_text: PatientText,
         state: _Round,
     ) -> str:
@@ -365,7 +363,6 @@ class RoundService:
                 for a in interpreted
             ),
             top_genes=posterior.top(SUMMARY_TOP_GENES),
-            specialties=_specialty_names(ranking),
         )
         answered_labels = [a.label for a in task.answers]
         for _ in range(LLM_ATTEMPTS):
@@ -402,10 +399,3 @@ def _top_diseases(posterior: Posterior) -> list[str]:
     """Diseases behind the genes the LLM is shown: what it could name if it slipped."""
     top = {g.gene_symbol for g in posterior.top(PROMPT_TOP_GENES)}
     return [h.disease_id for h in posterior.hypotheses if h.gene_symbol in top]
-
-
-def _specialty_names(ranking: ModelRanking) -> tuple[str, ...]:
-    top = (ranking.specialties or {}).get("top_specialties")
-    if not isinstance(top, list):
-        return ()
-    return tuple(s for s in top if isinstance(s, str))
