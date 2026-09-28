@@ -1,8 +1,9 @@
-# The image is built from pyproject.toml, README.md and src/ only; the
-# knowledge base is rebuilt from its pinned sources inside the build.
+# The image is built from pyproject.toml, README.md, constraints.txt and src/
+# only; the knowledge base is rebuilt from its pinned sources inside the build.
 *
 !pyproject.toml
 !README.md
+!constraints.txt
 !src/
 **/__pycache__
 **/*.py[cod]

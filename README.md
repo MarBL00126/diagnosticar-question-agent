@@ -55,6 +55,7 @@ make install   # crea .venv e instala el paquete con las dependencias de desarro
 make kb        # descarga las fuentes HPO fijadas, construye data/kb.sqlite e imprime su sha256
 make run       # sirve la API en :8010 contra el modelo en http://127.0.0.1:18021
 make ci        # ruff (lint y formato), mypy estricto y pytest sin los tests "live"
+make lock      # regenera constraints.txt con docker (ver Imagen)
 ```
 
 `make run` activa `PREGUNTAS_ALLOW_UNAUTHENTICATED=true` porque localmente no hay
@@ -128,6 +129,12 @@ La imagen reconstruye la base de conocimiento desde las fuentes fijadas
 2.1.270, sin Node ni npm), deja la base como archivo de solo lectura y corre como
 el usuario `app` (uid 10001). El `Dockerfile` documenta cómo correr los tests
 dentro de la imagen, que es lo que hace el job de release de la plataforma.
+
+`pyproject.toml` solo fija mínimos; la imagen y `make install` instalan las
+dependencias de ejecución, transitivas incluidas, con las versiones exactas de
+`constraints.txt`, así que dos builds del mismo commit instalan lo mismo.
+`make lock` lo regenera desde una instalación limpia en `python:3.12-slim` (la
+base de la imagen); correlo al cambiar o actualizar dependencias.
 
 ## Tests
 
