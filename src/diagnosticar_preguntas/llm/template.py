@@ -92,8 +92,8 @@ def summarize(task: SummaryTask) -> str:
             else "No se sumaron respuestas, así que la lista quedó como la ordenó el modelo."
         )
         return (
-            f"{opening} Llevá esta información a la consulta para conversarla con el médico: "
-            "solo los estudios que indique pueden confirmar o descartar algo."
+            f"{opening} Llevá esta información a la consulta para conversarla con el médico, "
+            "que va a decidir qué estudios tienen sentido."
         )
     parts = []
     for value, name in (
