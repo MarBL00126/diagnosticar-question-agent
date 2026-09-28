@@ -4,9 +4,10 @@ import pytest
 
 from diagnosticar_preguntas.config import LLMProviderName, Settings, get_settings
 from diagnosticar_preguntas.ranking.likelihood import LikelihoodConfig
-from diagnosticar_preguntas.ranking.reranker import RerankConfig
+from diagnosticar_preguntas.ranking.reranker import AnswerWeighting, RerankConfig
 from diagnosticar_preguntas.ranking.strategy import RerankStrategy
 from diagnosticar_preguntas.selection.selector import SelectionConfig
+from diagnosticar_preguntas.wiring import rerank_config
 
 
 def test_defaults_match_the_contract(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -50,6 +51,41 @@ def test_ranking_defaults_are_the_tuned_configuration() -> None:
         "confident_threshold": settings.confident_threshold,
         "min_information_gain": settings.min_information_gain,
     } == chosen
+
+
+def test_answers_are_weighted_asymmetrically_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name in ("PREGUNTAS_ANSWER_WEIGHTING", "PREGUNTAS_ANSWER_WEIGHT"):
+        monkeypatch.delenv(name, raising=False)
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    config = rerank_config(settings)
+
+    assert settings.answer_weighting is AnswerWeighting.ASYMMETRIC
+    assert settings.answer_weight == 0.3
+    assert config == RerankConfig()
+    assert (config.answer_weight, config.exclusion_factor, config.temperature) == (0.3, 0.02, 1.0)
+
+
+def test_the_answer_weighting_is_read_from_the_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("PREGUNTAS_ANSWER_WEIGHTING", "calibrated")
+    monkeypatch.setenv("PREGUNTAS_ANSWER_WEIGHT", "0.5")
+
+    config = rerank_config(Settings(_env_file=None))  # type: ignore[call-arg]
+
+    assert config.answer_weighting is AnswerWeighting.CALIBRATED
+    assert config.answer_weight == 0.5
+
+
+@pytest.mark.parametrize("weight", ["-0.1", "1", "1.5"])
+def test_an_answer_weight_outside_zero_to_one_is_rejected(
+    monkeypatch: pytest.MonkeyPatch, weight: str
+) -> None:
+    monkeypatch.setenv("PREGUNTAS_ANSWER_WEIGHT", weight)
+
+    with pytest.raises(ValueError):
+        Settings(_env_file=None)  # type: ignore[call-arg]
 
 
 def test_the_strategy_is_read_from_the_environment(monkeypatch: pytest.MonkeyPatch) -> None:

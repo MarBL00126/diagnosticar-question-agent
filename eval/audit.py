@@ -5,9 +5,11 @@
 
 The simulation of ``eval.run_simulation`` draws patients from the same HPO
 annotations the agent reasons with. These runs remove that shared knowledge
-in three ways, always with the code defaults (nothing is re-tuned), the
-template provider (no LLM) and the policies ``none``, ``agent`` and
-``most_frequent_unreported``:
+in three ways, always with the code defaults at the time of the audit
+(``CALIBRATED_DEFAULTS``: nothing is re-tuned), the template provider (no LLM)
+and the policies ``none``, ``agent`` and ``most_frequent_unreported``. The
+asymmetric weighting that replaced those defaults is measured on the same
+scenarios by ``eval.variants``:
 
 A  Real patients (``eval.phenopackets``): published case reports answer from
    their own record, "no sé" when the article does not mention the finding.
@@ -60,6 +62,7 @@ from eval.cases import (
     sample_present,
 )
 from eval.harness import (
+    CALIBRATED_DEFAULTS,
     MODEL_URL,
     RESULTS_DIR,
     AgentConfig,
@@ -142,7 +145,7 @@ class Run:
     agent_kb: KbFor
     patient: PatientFor
     mode: Mode = Mode.PATIENT
-    config: AgentConfig = field(default_factory=AgentConfig)
+    config: AgentConfig = CALIBRATED_DEFAULTS
     policies: tuple[str, ...] = POLICIES
     answerer: str = DEFAULT.name
     case_meta: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -259,7 +262,7 @@ def real_patient_runs(kb: KnowledgeBase, model_genes: frozenset[str]) -> list[Ru
             one_cases,
             without_article,
             honest,
-            config=replace(AgentConfig(), **changes),
+            config=replace(CALIBRATED_DEFAULTS, **changes),
             policies=("none", "agent"),
             **base,
         )
@@ -323,7 +326,7 @@ def hold_out_runs(kb: KnowledgeBase, negation_pool: Sequence[str]) -> list[Run]:
             cases,
             masked,
             patient,
-            config=replace(AgentConfig(), **MSP),
+            config=replace(CALIBRATED_DEFAULTS, **MSP),
             policies=("none", "agent"),
             case_meta=case_meta,
         ),
@@ -400,7 +403,7 @@ def cross_source_runs(
                 cases,
                 only_other,
                 _simulated(kb),
-                config=replace(AgentConfig(), **MSP),
+                config=replace(CALIBRATED_DEFAULTS, **MSP),
                 policies=("none", "agent"),
                 meta=meta,
             )
@@ -647,7 +650,7 @@ def split_hygiene() -> dict[str, Any]:
 def simulator_vs_agent() -> dict[str, Any]:
     """The simulated family's answer rates next to the agent's likelihood parameters."""
     a = DEFAULT
-    agent = AgentConfig()
+    agent = CALIBRATED_DEFAULTS
     unrelated_yes = a.spurious_yes * (1 - a.flip) + (1 - a.spurious_yes) * a.flip
     return {
         "answerer": {

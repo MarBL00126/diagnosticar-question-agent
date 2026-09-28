@@ -24,6 +24,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
 | D-14 | Presupuesto de tiempo por ronda | 2026-09-26 |
 | D-15 | El trabajo vive en el repositorio de Mariano, en ramas propias | 2026-09-26 |
 | D-16 | El resumen no recomienda estudios | 2026-09-28 |
+| D-17 | Ponderación asimétrica de respuestas | 2026-09-28 |
 
 ---
 
@@ -231,8 +232,9 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   reemplazó daña menos (+0,034 a su favor): `model_sees_present` le gana a
   `fixed_prior` por +0,046. Ninguna de las dos mejora al modelo. La evidencia, y
   la variante estructural que deja de dañar (verosimilitud asimétrica con prior
-  fijo), están en [EVALUACION.md](EVALUACION.md), secciones 11.6 a 11.9. Los
-  valores por defecto no se cambiaron todavía: queda como decisión pendiente.
+  fijo), están en [EVALUACION.md](EVALUACION.md), secciones 11.6 a 11.9. La
+  estrategia `fixed_prior` y T = 1 se mantienen; lo que cambió es cómo pesan las
+  respuestas (D-17).
 
 ## D-12. `claude-cli` en local y staging, API de Anthropic en producción
 
@@ -322,4 +324,47 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   de "Anormalidad en el EEG") cuesta un reintento. Las notas que mencionan
   estudios no se repiten en el resumen. Las especialidades siguen en la
   respuesta de la API, fuera del resumen.
+- **Fecha.** 2026-09-28.
+
+## D-17. Ponderación asimétrica de respuestas
+
+- **Contexto.** La auditoría de circularidad ([EVALUACION.md](EVALUACION.md),
+  sección 11) midió el agente con 501 pacientes reales publicados
+  (phenopacket-store, sin el artículo de cada paciente en la base). Con la
+  verosimilitud calibrada de D-11, las preguntas **empeoraban** el ranking del
+  modelo (Δ MRR −0,047, IC [−0,065; −0,029]; el gen correcto bajaba en el 17,6 %
+  de los casos). La causa es estructural: esa verosimilitud trata como evidencia
+  en contra que las anotaciones de una enfermedad no mencionen un síntoma (factor
+  0,1 contra hasta 0,98), y las anotaciones HPO no describen a los pacientes
+  reales con esa precisión. Ninguna de 44 configuraciones de sus parámetros
+  mejoró a los pacientes reales.
+- **Decisión.** Por defecto, `AnswerWeighting.ASYMMETRIC`
+  (`PREGUNTAS_ANSWER_WEIGHTING=asymmetric`) con $k$ = 0,3
+  (`PREGUNTAS_ANSWER_WEIGHT`) y factor de exclusión 0,02, sobre `fixed_prior` y
+  T = 1: un «sí» que el modelo no vio multiplica a las enfermedades que anotan el
+  síntoma por $1 + k\,p$; un «no» o un negado, por $1 - k\,p$; un hallazgo
+  presente que la enfermedad excluye, por 0,02; todo lo demás queda neutro
+  ([ARQUITECTURA.md](ARQUITECTURA.md), 4.3). La selección de preguntas no
+  cambia. La ponderación calibrada sigue disponible con
+  `PREGUNTAS_ANSWER_WEIGHTING=calibrated`.
+- **Alternativas.** Nueve variantes estructurales, evaluadas en la mitad
+  retenida (por gen) de los pacientes reales, en anotaciones retenidas (B) y en
+  fuentes cruzadas (C) ([EVALUACION.md](EVALUACION.md), sección 11.8): mandarle
+  los «sí» al modelo sin re-ranking (V1) o con solo las exclusiones (V2), neutras
+  con pacientes reales pero dañinas en B y C_omim; la misma ponderación con
+  `model_sees_present`, que cuenta dos veces cada «sí» y daña en todos los
+  escenarios; $k$ = 0,5, algo peor; la mejor configuración de los parámetros
+  calibrados, que daña en B y C; y no re-rankear.
+- **Consecuencias.** Con pacientes reales el efecto es **aproximadamente neutro**
+  (−0,001 [−0,009; +0,007] en los 251 retenidos; el gen correcto baja en el
+  4,0 %, contra 18,3 %), y no daña en B (+0,004) ni en C_orpha (+0,001); en
+  C_omim daña poco (−0,022 [−0,039; −0,006], contra −0,095). En la simulación
+  la mejora cae de +0,054 a +0,025. El re-ranking casi no mueve la lista con
+  pacientes reales: una respuesta cambia un gen a lo sumo un 30 %. No hay
+  evidencia de que mejore el ranking del modelo, así que la vista por defecto de
+  la interfaz debería ser la del modelo. La variante se eligió después de ver
+  todos los escenarios: hace falta un conjunto nuevo de confirmación (genes o
+  casos de una release posterior de phenopacket-store) antes de darla por
+  validada. La corrida de confirmación con el código nuevo reproduce las cifras
+  ([EVALUACION.md](EVALUACION.md), sección 11.10).
 - **Fecha.** 2026-09-28.

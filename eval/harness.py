@@ -19,7 +19,7 @@ from diagnosticar_preguntas.kb.store import KnowledgeBase
 from diagnosticar_preguntas.llm.provider import LLMProvider
 from diagnosticar_preguntas.ranking.likelihood import LikelihoodConfig, LikelihoodModel
 from diagnosticar_preguntas.ranking.model_client import HttpModelClient, NoKnownHpoIdsError
-from diagnosticar_preguntas.ranking.reranker import BayesianReranker, RerankConfig
+from diagnosticar_preguntas.ranking.reranker import AnswerWeighting, BayesianReranker, RerankConfig
 from diagnosticar_preguntas.ranking.strategy import RerankStrategy
 from diagnosticar_preguntas.selection.selector import InformationGainSelector, SelectionConfig
 from diagnosticar_preguntas.wiring import patient_vocabulary
@@ -113,25 +113,40 @@ class AgentConfig:
     p_unknown: float = SelectionConfig().p_unknown
     confident_threshold: float = Settings.model_fields["confident_threshold"].default
     min_information_gain: float = Settings.model_fields["min_information_gain"].default
+    answer_weighting: AnswerWeighting = RerankConfig().answer_weighting
+    answer_weight: float = RerankConfig().answer_weight
+    exclusion_factor: float = RerankConfig().exclusion_factor
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
         data["strategy"] = self.strategy.value
+        data["answer_weighting"] = self.answer_weighting.value
         return data
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> AgentConfig:
+        """A config saved before ``answer_weighting`` existed used the calibrated weighting."""
         known = {f.name for f in fields(cls)}
         values = {k: v for k, v in data.items() if k in known}
         if "strategy" in values:
             values["strategy"] = RerankStrategy(values["strategy"])
+        values["answer_weighting"] = AnswerWeighting(
+            values.get("answer_weighting", AnswerWeighting.CALIBRATED)
+        )
         return cls(**values)
 
     def label(self) -> str:
+        weighting = self.answer_weighting.value
+        if self.answer_weighting is AnswerWeighting.ASYMMETRIC:
+            weighting += f" k={self.answer_weight:g} x={self.exclusion_factor:g}"
         return (
             f"{self.strategy.value} T={self.temperature:g} bg={self.background:g} "
-            f"mf={self.missing_frequency:g} pu={self.p_unknown:g}"
+            f"mf={self.missing_frequency:g} pu={self.p_unknown:g} {weighting}"
         )
+
+
+CALIBRATED_DEFAULTS = AgentConfig(answer_weighting=AnswerWeighting.CALIBRATED)
+"""The code defaults until 2026-09-28, measured in docs/EVALUACION.md sections 5 to 11.7."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -158,7 +173,16 @@ def build_pipeline(
             epsilon=config.epsilon,
         ),
     )
-    reranker = BayesianReranker(kb, likelihood, RerankConfig(temperature=config.temperature))
+    reranker = BayesianReranker(
+        kb,
+        likelihood,
+        RerankConfig(
+            temperature=config.temperature,
+            answer_weighting=config.answer_weighting,
+            answer_weight=config.answer_weight,
+            exclusion_factor=config.exclusion_factor,
+        ),
+    )
     selector = selector or InformationGainSelector(
         kb, likelihood, SelectionConfig(p_unknown=config.p_unknown)
     )
@@ -187,6 +211,8 @@ def settings_for(
         confident_threshold=config.confident_threshold if early_stop else 1.0,
         min_information_gain=config.min_information_gain if early_stop else 0.0,
         rerank_strategy=config.strategy,
+        answer_weighting=config.answer_weighting,
+        answer_weight=config.answer_weight,
     )
 
 
