@@ -9,7 +9,9 @@
   su integración en la plataforma diagnostic.ar.
 
 El prototipo sigue completo en la historia de git: `git show c2e3548 --stat`
-lista sus archivos y `git show c2e3548:<ruta>` muestra cada uno.
+lista sus archivos y `git show c2e3548:<ruta>` muestra cada uno. Qué era, qué
+se encontró al integrarlo y la comparación medida con la versión 2 están en
+[ANTES_Y_DESPUES.md](ANTES_Y_DESPUES.md).
 
 ## Qué del prototipo sigue vivo en la versión 2
 
