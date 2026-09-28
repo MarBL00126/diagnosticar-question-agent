@@ -8,7 +8,8 @@ from typing import Protocol
 
 from pydantic import BaseModel
 
-from diagnosticar_preguntas.llm.tasks import Task
+from diagnosticar_preguntas.config import Effort
+from diagnosticar_preguntas.llm.tasks import QuestionTask, Task
 
 logger = logging.getLogger("diagnosticar_preguntas.llm")
 
@@ -80,3 +81,10 @@ def log_call(*, provider: str, model: str, task: Task, elapsed_ms: float, outcom
         elapsed_ms,
         outcome,
     )
+
+
+def effort_for(task: Task, default: Effort, question_effort: Effort | None) -> Effort:
+    """Effort for one call: question drafting may run lighter than notes and summaries."""
+    if question_effort is not None and isinstance(task, QuestionTask):
+        return question_effort
+    return default

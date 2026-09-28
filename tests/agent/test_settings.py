@@ -19,6 +19,7 @@ def test_defaults_match_the_contract(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.llm_model == "claude-opus-5"
     assert settings.llm_timeout_s == 60
     assert settings.llm_effort == "high"
+    assert settings.llm_question_effort == "medium"
     assert settings.shortlist_size == 8
     assert settings.questions_per_round == 3
     assert settings.max_rounds == 3
