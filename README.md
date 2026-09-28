@@ -142,7 +142,9 @@ ruido, el agente sube el top-1 del gen verdadero de 72,0 % a 79,3 % y el MRR de
 0,787 a 0,842 (Δ +0,054, IC 95 % [+0,033; +0,078]) con 3,25 preguntas en promedio.
 La simulación es circular (pacientes y agente comparten la base HPO), así que es
 una cota optimista; falta validar con pacientes reales. Todo el detalle en
-[docs/EVALUACION.md](docs/EVALUACION.md).
+[docs/EVALUACION.md](docs/EVALUACION.md). Cada mejora cuantificada en términos
+absolutos y relativos (por subgrupo, por ronda, por pregunta y frente a las
+alternativas), con sus advertencias, en [docs/IMPACTO.md](docs/IMPACTO.md).
 
 ## Estructura
 
@@ -157,10 +159,12 @@ una cota optimista; falta validar con pacientes reales. Todo el detalle en
 | `src/diagnosticar_preguntas/config.py`, `domain.py`, `wiring.py` | Configuración, tipos compartidos, armado de componentes. |
 | `tests/` | Tests por paquete, con una base de conocimiento chica sintética (`tests/fixtures/tiny_kb.py`). |
 | `eval/` | Arnés de evaluación (casos simulados, respondedor, políticas, ajuste, prueba en vivo). |
-| `docs/` | [Arquitectura](docs/ARQUITECTURA.md), [decisiones](docs/DECISIONES.md), [integración](docs/INTEGRACION.md), [evaluación](docs/EVALUACION.md), [contrato](docs/contrato/rondas-ejemplo.json), [créditos](docs/CREDITOS.md). |
+| `docs/` | [Arquitectura](docs/ARQUITECTURA.md), [decisiones](docs/DECISIONES.md), [integración](docs/INTEGRACION.md), [evaluación](docs/EVALUACION.md), [impacto](docs/IMPACTO.md), [contrato](docs/contrato/rondas-ejemplo.json), [créditos](docs/CREDITOS.md), [antes y después](docs/ANTES_Y_DESPUES.md). |
 
 ## Créditos
 
 Mariano Brizuela creó este repositorio y el primer prototipo del agente; la
 versión 2 conserva sus reglas clínicas y su esquema de preguntas trazables.
-Detalle, y los datos HPO usados, en [docs/CREDITOS.md](docs/CREDITOS.md).
+Detalle, y los datos HPO usados, en [docs/CREDITOS.md](docs/CREDITOS.md). Qué
+era el prototipo, qué se encontró al integrarlo y cómo se reestructuró, con
+mediciones reproducibles, en [docs/ANTES_Y_DESPUES.md](docs/ANTES_Y_DESPUES.md).
