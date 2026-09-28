@@ -145,12 +145,20 @@ no se construyó. `make test-live` llama de verdad a `claude -p` y gasta cuota.
 
 ## Evaluación
 
-Sobre 300 pacientes simulados de prueba, con el modelo real y respuestas con
-ruido, el agente sube el top-1 del gen verdadero de 72,0 % a 79,3 % y el MRR de
-0,787 a 0,842 (Δ +0,054, IC 95 % [+0,033; +0,078]) con 3,25 preguntas en promedio.
-La simulación es circular (pacientes y agente comparten la base HPO), así que es
-una cota optimista; falta validar con pacientes reales. Todo el detalle en
-[docs/EVALUACION.md](docs/EVALUACION.md). Cada mejora cuantificada en términos
+**Con pacientes reales, las preguntas no mejoran el ranking del modelo.** Sobre
+501 casos publicados de phenopacket-store (uno por gen, sin el artículo del
+paciente en la base del agente), la configuración actual baja el top-1 del gen
+verdadero de 43,1 % a 37,5 % y el MRR de 0,508 a 0,461 (Δ −0,047, IC 95 %
+[−0,065; −0,029]). La mejor variante estructural probada (verosimilitud
+asimétrica con prior fijo) deja de dañar (Δ −0,001 [−0,009; +0,007] en los
+pacientes retenidos), pero tampoco mejora.
+
+Sobre 300 pacientes simulados a partir de las mismas anotaciones HPO que usa el
+agente, en cambio, el top-1 sube de 72,0 % a 79,3 % y el MRR de 0,787 a 0,842
+(Δ +0,054, IC [+0,033; +0,078]). No es sobreajuste a los casos de prueba, pero es
+una cota superior optimista: la mejora solo aparece cuando paciente y agente
+describen la enfermedad con la misma fuente. Todo el detalle, con la auditoría
+de circularidad, en [docs/EVALUACION.md](docs/EVALUACION.md) (sección 11). Cada mejora cuantificada en términos
 absolutos y relativos (por subgrupo, por ronda, por pregunta y frente a las
 alternativas), con sus advertencias, en [docs/IMPACTO.md](docs/IMPACTO.md).
 

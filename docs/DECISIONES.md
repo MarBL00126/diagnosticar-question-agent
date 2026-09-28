@@ -18,7 +18,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
 | D-08 | Base de conocimiento propia, fijada por sha256 | 2026-09-26 |
 | D-09 | Sesión guardada en `diagnoses.preguntas_respuestas` | 2026-09-26 |
 | D-10 | Pacientes y médicos, con modo por ronda | 2026-09-26 |
-| D-11 | `fixed_prior` y temperatura 1, elegidos por la evaluación | 2026-09-26 |
+| D-11 | `fixed_prior` y temperatura 1, elegidos por la evaluación (revertida por la evaluación con pacientes reales, nota del 2026-09-28) | 2026-09-26 |
 | D-12 | `claude-cli` en local y staging, API de Anthropic en producción | 2026-09-26 |
 | D-13 | El prompt va por stdin | 2026-09-26 |
 | D-14 | Presupuesto de tiempo por ronda | 2026-09-26 |
@@ -223,6 +223,16 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   convenir: hay que medirlo antes de fijarla ([EVALUACION.md](EVALUACION.md),
   secciones 5, 6 y 8).
 - **Fecha.** 2026-09-26 (evaluación en 46e7daa, valores adoptados en c3d7033).
+- **Nota (2026-09-28): la evaluación con pacientes reales la revirtió.** Todo lo
+  anterior se midió con pacientes simulados a partir de las mismas anotaciones
+  HPO que usa el agente. Con 501 pacientes reales de phenopacket-store (sin el
+  artículo del paciente en la base), la configuración de esta decisión
+  **empeora** el ranking del modelo (Δ MRR −0,047, IC [−0,065; −0,029]), y la que
+  reemplazó daña menos (+0,034 a su favor): `model_sees_present` le gana a
+  `fixed_prior` por +0,046. Ninguna de las dos mejora al modelo. La evidencia, y
+  la variante estructural que deja de dañar (verosimilitud asimétrica con prior
+  fijo), están en [EVALUACION.md](EVALUACION.md), secciones 11.6 a 11.9. Los
+  valores por defecto no se cambiaron todavía: queda como decisión pendiente.
 
 ## D-12. `claude-cli` en local y staging, API de Anthropic en producción
 
