@@ -189,10 +189,12 @@ Con `PREGUNTAS_RERANK_STRATEGY=fixed_prior` (por defecto), cada ronda consulta a
 modelo con `present_hpo_ids` y nada más. Entonces el prior es siempre el primer
 ranking y **todas** las respuestas, "sí" y "no", entran por la verosimilitud:
 un "sí" equivocado pesa como un factor acotado en lugar de reordenar todo el
-ranking del modelo. En los casos de prueba esto dio MRR 0,842 contra 0,799 de
-`model_sees_present`, que manda también los "sí" al modelo
+ranking del modelo. En los casos de prueba simulados esto dio MRR 0,842 contra
+0,799 de `model_sees_present`, que manda también los "sí" al modelo
 ([EVALUACION.md](EVALUACION.md), secciones 5 y 6.3; contexto en
-[DECISIONES.md](DECISIONES.md), D-11).
+[DECISIONES.md](DECISIONES.md), D-11). Con pacientes reales el orden se
+invierte (`model_sees_present` +0,046 de MRR por encima) y ninguna de las dos
+mejora al modelo ([EVALUACION.md](EVALUACION.md), sección 11.6).
 
 Consecuencia para el contrato: `specialties` y `confidence` vienen sin cambios
 del modelo para los hallazgos originales y son iguales en todas las rondas. Lo
@@ -208,6 +210,23 @@ encima de una que no. Lo verifica
 `tests/ranking/test_reranker.py::test_absent_term_never_favours_hypotheses_annotated_with_it`,
 y es la versión cuantitativa de la regla "un hallazgo negado nunca apoya a un
 gen" del prototipo ([CREDITOS.md](CREDITOS.md)).
+
+### 4.6 Qué supone este cálculo
+
+Las respuestas mueven el ranking solo a través de las anotaciones de
+`phenotype.hpoa`. Si las anotaciones de la enfermedad verdadera no mencionan un
+síntoma que el paciente tiene, su «sí» le da a esa enfermedad el mismo factor
+$b$ que a cualquier otra que tampoco lo menciona; si mencionan con frecuencia
+alta un síntoma que el paciente no tiene, su «no» la castiga. El agente rinde
+lo que las anotaciones describan bien a los pacientes reales, y nada más: no
+aprende de los casos ni ve el diagnóstico.
+
+Por eso una evaluación con pacientes simulados a partir de esas mismas
+anotaciones es optimista. La sección 11 de [EVALUACION.md](EVALUACION.md) mide
+el agente sin ese conocimiento compartido: con pacientes reales publicados
+(phenopacket-store), ocultándole al agente la mitad de las anotaciones de la
+que sale el paciente, y con fuentes de curación distintas para el paciente y
+para el agente.
 
 ## 5. Selección de preguntas
 

@@ -1,21 +1,55 @@
 # Impacto del agente de preguntas
 
-Cuánto mejora el agente de preguntas de seguimiento el ranking de genes del
-modelo de diagnostic.ar, dónde y a qué costo, medido sobre pacientes simulados.
+Cuánto cambia el agente de preguntas de seguimiento el ranking de genes del
+modelo de diagnostic.ar: primero con pacientes reales publicados, que es lo más
+parecido a la plataforma que se pudo medir, y después con pacientes simulados,
+que dan una cota superior optimista.
 
 ## Resumen
 
-Sobre 300 pacientes simulados de prueba, con el modelo de diagnostic.ar real y
-respuestas con ruido:
+**Con pacientes reales, las preguntas no mejoran el ranking del modelo, y con
+los valores por defecto actuales lo empeoran.**
 
-- **Mejora la priorización del gen correcto un 6,9 %** (MRR 0,787 → 0,842; IC 95 % [+4,1 %; +10,1 %]) y **acierta el primer puesto en un 10,2 % más de casos** (top-1 72,0 % → 79,3 %; +7,3 pp [+3,7; +11,3]), con 3,25 preguntas en promedio.
-- **Reduce un 26 % los casos en que el gen correcto no queda primero** (28,0 % → 20,7 %) y un 21 % los que quedan fuera del top-5 (13,0 % → 10,3 %).
-- **Pregunta solo cuando hace falta** (135 de 300 casos), y **en esos casos la priorización mejora un 21 %** (MRR 0,583 → 0,704) y el top-1 un 36 % (45,2 % → 61,5 %).
-- **Cuando el modelo deja el gen correcto en los puestos 2 a 5, lo sube al primero en el 58 % de los casos** (26 de 45). A cambio, 6 de los 216 genes que ya estaban primeros bajan al segundo.
-- **Cada pregunta del agente rinde el doble que una de la heurística que usa hoy la pantalla de resultados** (2,1 veces en MRR por pregunta, IC [1,3; 3,9]).
-- **La calibración fue decisiva**: redujo un 82 % los casos en que preguntar empeoraba el ranking (20,7 % → 3,7 %) y a la mitad las preguntas (6,76 → 3,25).
-- **Claude redacta sin romper nada**: las 36 preguntas en vivo pasaron las salvaguardas al primer intento y en 24 notas nunca invirtió un sí en un no.
-- **Límite honesto**: la simulación es circular (cota optimista). Con un paciente que no se ajusta a la base de conocimiento, la mejora cae a +0,018 de MRR y deja de ser significativa. Falta validar con casos reales.
+- **Pacientes reales** (501 casos publicados de phenopacket-store, uno por gen,
+  sin el artículo del paciente en la base del agente): el top-1 baja de 43,1 %
+  a 37,5 % (−5,6 pp, IC 95 % [−8,2; −3,0]) y el MRR de 0,508 a 0,461 (−0,047
+  [−0,065; −0,029], un 9 % menos). El gen correcto baja de puesto en el 17,6 %
+  de los casos y sube en el 8,0 %.
+- **Rango honesto con pacientes reales: de −0,047 a +0,014 de MRR, sin ninguna
+  mejora significativa.** Con el artículo del paciente dentro de la base
+  (circular, porque HPO deriva anotaciones de esos artículos): +0,014 [−0,001;
+  +0,029]. En los 135 pacientes cuyo artículo HPO nunca citó: −0,008 [−0,024;
+  +0,008].
+- **Sin circularidad también en la simulación**: si el agente no conoce la mitad
+  de las anotaciones de las que sale el paciente, −0,041 [−0,072; −0,011]; si el
+  paciente sale de Orphanet y el agente solo conoce OMIM, −0,055 [−0,087;
+  −0,025]; al revés, −0,095 [−0,127; −0,062].
+- **No es un problema de calibración**: ninguna de 44 configuraciones de los
+  parámetros existentes mejora al modelo con pacientes reales (la mejor, +0,005);
+  la que menos daña queda neutra con pacientes reales y sigue dañando en los
+  otros escenarios.
+- **Tampoco alcanza con cambiar la forma del cálculo**: de nueve variantes
+  estructurales, la mejor (no castigar lo que las anotaciones no mencionan y
+  contar cada «sí» una vez) deja de dañar a los pacientes reales retenidos
+  (−0,001 [−0,009; +0,007]; empeora el 4,0 % de los casos contra el 18,3 %), pero
+  no los mejora. Por eso la vista por defecto de la interfaz debería ser el
+  ranking del modelo, no el refinado.
+- **Cota superior optimista, pacientes simulados de las mismas anotaciones que
+  usa el agente**: MRR 0,787 → 0,842 (+6,9 %, IC [+4,1; +10,1]) y top-1 72,0 % →
+  79,3 % (+7,3 pp [+3,7; +11,3]), con 3,25 preguntas. No es sobreajuste a los
+  casos de prueba (ajuste y prueba no comparten genes ni enfermedades), pero sí
+  un resultado que solo se reproduce cuando paciente y agente describen la
+  enfermedad con la misma fuente (+0,054 y +0,055 en los controles).
+- **Claude redacta sin romper nada**: las 36 preguntas en vivo pasaron las
+  salvaguardas al primer intento y en 24 notas nunca invirtió un sí en un no. La
+  calidad del texto no depende de lo anterior.
+
+Qué significa: hoy no hay evidencia de que reordenar los genes con las
+respuestas ayude a un paciente real, y hay evidencia de que, tal como está
+configurado, lo perjudica. El detalle, el método y la auditoría de cada camino
+de circularidad están en la [sección 0](#0-con-pacientes-reales-y-sin-circularidad)
+y en [EVALUACION.md](EVALUACION.md), sección 11. Las secciones 1 a 7 son la
+simulación y deben leerse como cota superior.
 
 ## Cómo leer las cifras
 
@@ -26,11 +60,13 @@ reanalizan esas mismas corridas para expresar cada efecto en términos
 absolutos y relativos, con intervalos de confianza. La comparación con el
 primer prototipo está en [ANTES_Y_DESPUES.md](ANTES_Y_DESPUES.md).
 
-Todas las cifras salen de corridas reales del código del 26/09/2026 (la
-principal se repitió el 28/09/2026 en el commit 325ce70, con resultados
-idénticos caso por caso) y las calcula `python -m eval.impact` a partir de los
-resultados guardados. Las pocas cuentas hechas a mano son restas o cocientes
-directos entre cifras del script. El [apéndice A](#apéndice-a-cifra--fuente)
+Las cifras de la simulación (secciones 1 a 10) salen de corridas reales del
+código del 26/09/2026 (la principal se repitió el 28/09/2026 en el commit
+325ce70, con resultados idénticos caso por caso) y las calcula
+`python -m eval.impact` a partir de los resultados guardados. Las de la sección
+0 y del resumen, de `python -m eval.audit`, `python -m eval.explore` y
+`python -m eval.variants` (28/09/2026). Las pocas cuentas hechas a mano son
+restas o cocientes directos entre cifras de los scripts. El [apéndice A](#apéndice-a-cifra--fuente)
 dice de qué archivo y de qué clave sale cada una.
 
 - **Antes** es el ranking del modelo solo, con los síntomas que informó la
@@ -44,17 +80,76 @@ dice de qué archivo y de qué clave sale cada una.
   sube cuando el gen correcto sube de puesto y pesa más los puestos de arriba.
 - **pp** (puntos porcentuales) no es lo mismo que **% relativo**: pasar de
   72,0 % a 79,3 % son +7,3 pp, o un +10,2 % relativo.
-- **IC 95 %**: intervalo bootstrap pareado (los mismos 300 casos, 2000
+- **IC 95 %**: intervalo bootstrap pareado (los mismos casos, 2000
   remuestreos). Si incluye el 0, la diferencia no es significativa.
 - **Sube / baja / empeora** comparan el puesto final del gen verdadero con el
   que le daba el modelo solo.
 - Configuración: la elegida en la evaluación, que es la del código hoy
   (`fixed_prior`, temperatura 1, cierres 0,9 / 0,05); modo paciente;
   respondedor `default`, salvo que se indique otra cosa.
-- Todo sale de pacientes **simulados**. Las advertencias están en la sección 10
-  y conviene leerlas antes de citar cualquier cifra.
+- La sección 0 sale de pacientes reales y de simulaciones sin circularidad
+  (`python -m eval.audit`, `eval.explore` y `eval.variants`, 28/09/2026). Las secciones
+  1 a 7 salen de pacientes **simulados** a partir de las mismas anotaciones que
+  usa el agente: son una cota superior optimista. Las advertencias están en la
+  sección 10.
 
-## 1. Mejora global en la priorización
+## 0. Con pacientes reales y sin circularidad
+
+Método completo en [EVALUACION.md](EVALUACION.md), sección 11. Misma
+configuración (la del código), mismo re-ranking y mismas reglas de cierre que
+en la simulación; solo cambia de dónde sale el paciente y qué sabe el agente.
+
+| escenario | casos | top-1 antes → después | Δ top-1 [IC 95 %] | MRR antes → después | Δ MRR [IC 95 %] | empeora / mejora |
+|---|---|---|---|---|---|---|
+| **pacientes reales, sin su artículo en la base** | 501 | 43,1 % → 37,5 % | **−5,6 pp [−8,2; −3,0]** | 0,508 → 0,461 | **−0,047 [−0,065; −0,029]** | 17,6 % / 8,0 % |
+| pacientes reales, base completa (circular) | 501 | 43,1 % → 45,3 % | +2,2 pp [−0,2; +4,6] | 0,508 → 0,521 | +0,014 [−0,001; +0,029] | 8,4 % / 13,6 % |
+| pacientes reales cuyo artículo HPO no cita | 135 | 23,0 % → 21,5 % | −1,5 pp [−4,4; +1,5] | 0,308 → 0,300 | −0,008 [−0,024; +0,008] | — |
+| pacientes reales, hasta 5 por gen | 1742 | 43,0 % → 38,6 % | −4,4 pp [−5,7; −3,1] | 0,506 → 0,471 | −0,036 [−0,045; −0,027] | 16,1 % / 8,8 % |
+| simulados, el agente no conoce la mitad de las anotaciones | 300 | 66,7 % → 63,7 % | −3,0 pp [−6,7; +1,0] | 0,755 → 0,714 | −0,041 [−0,072; −0,011] | 20,3 % / 11,7 % |
+| simulados de Orphanet, el agente solo conoce OMIM | 300 | 73,3 % → 69,0 % | −4,3 pp [−8,7; −0,3] | 0,811 → 0,756 | −0,055 [−0,087; −0,025] | 17,7 % / 9,7 % |
+| simulados de OMIM, el agente solo conoce Orphanet | 300 | 70,3 % → 59,3 % | −11,0 pp [−15,0; −6,7] | 0,774 → 0,680 | −0,095 [−0,127; −0,062] | 24,3 % / 10,3 % |
+| *cota superior: simulados de las mismas anotaciones (sección 1)* | 300 | 72,0 % → 79,3 % | +7,3 pp [+3,7; +11,3] | 0,787 → 0,842 | +0,054 [+0,033; +0,078] | 3,7 % / 18,7 % |
+| *controles de fuentes cruzadas: el agente conoce las dos fuentes* | 300 / 300 | 73,3 → 82,0 / 70,3 → 77,0 | +8,7 / +6,7 pp | 0,811 → 0,865 / 0,774 → 0,829 | +0,054 / +0,055 | — |
+
+«Antes» es el modelo solo; «después», el ranking al cerrar la sesión. Con
+pacientes reales, el 82 % de las respuestas es «no sé» (los artículos describen
+pocos rasgos) y casi todo el efecto viene de los «sí»: un «sí» a un rasgo real
+que las anotaciones de su enfermedad no mencionan castiga al gen correcto.
+
+- **El gen correcto pierde el primer puesto en 37 pacientes reales y lo gana en
+  9.** La heurística que usa hoy la pantalla de resultados también empeora, pero
+  menos (−0,024 de MRR [−0,036; −0,013]); el agente le queda por debajo
+  (−0,022 [−0,039; −0,007]).
+- **La calibración hecha en la simulación no se sostiene**: con pacientes reales,
+  la configuración anterior daña menos que la elegida (+0,034 de MRR a su favor
+  [+0,015; +0,053]) y mandarle los «sí» al modelo (`model_sees_present`) queda
+  neutro (−0,001 [−0,014; +0,012]), cuando en la simulación era la peor opción.
+  Ninguna mejora al modelo.
+- **Exploración** (44 configuraciones, elegida con la mitad de los pacientes
+  reales y medida en la otra mitad): la mejor queda neutra (−0,002 [−0,020;
+  +0,014]) y en los otros escenarios daña (−0,046 a −0,093). No hay un ajuste de
+  los parámetros actuales que haga útil el re-ranking.
+- **Variantes estructurales** ([EVALUACION.md](EVALUACION.md), sección 11.8;
+  Δ MRR contra el modelo, pacientes reales retenidos por gen / B / C_orpha /
+  C_omim / simulación):
+
+  | variante | reales retenidos (251) | empeora | B | C_orpha | C_omim | simulación |
+  |---|---|---|---|---|---|---|
+  | actual (`fixed_prior`, verosimilitud calibrada) | −0,044 [−0,068; −0,020] | 18,3 % | −0,041 | −0,055 | −0,095 | +0,054 |
+  | los «sí» al modelo y nada más (V1) | −0,007 [−0,024; +0,010] | 9,6 % | −0,043 | −0,016 | −0,025 | −0,015 |
+  | la elegida en la exploración (V4) | −0,002 [−0,020; +0,014] | 9,6 % | −0,066 | −0,046 | −0,093 | +0,018 |
+  | **verosimilitud asimétrica con prior fijo, k = 0,3 (V3fp)** | **−0,001 [−0,009; +0,007]** | **4,0 %** | +0,004 | +0,001 | −0,022 | +0,025 |
+
+  V3fp es la única que no daña en los pacientes reales, B y C_orpha; en C_omim
+  daña poco (−0,022 [−0,039; −0,006]). Ninguna mejora a los pacientes reales,
+  tampoco restringiendo a los casos con al menos un «sí» o un «no». V3fp se
+  eligió después de ver todos los escenarios: falta confirmarla con casos nuevos.
+- **El modelo también está más débil fuera de su terreno**: acierta el top-1 en
+  el 43,1 % de los pacientes reales contra el 72,0 % de los simulados, y deja el
+  gen correcto fuera de su top-50 en el 23 % (contra el 1,3 %). Ese margen es el
+  que las preguntas deberían aprovechar y hoy no aprovechan.
+
+## 1. Mejora global en la priorización (simulación)
 
 | métrica | sin preguntas | con el agente | cambio absoluto [IC 95 %] | cambio relativo [IC 95 %] |
 |---|---|---|---|---|
@@ -90,7 +185,7 @@ segundo): son 22 casos netos, los +7,3 pp de top-1. La mejora se concentra
 arriba (top-1 a top-5). El top-10 y el top-20 casi no cambian, porque el agente
 reordena los 50 genes que el modelo ya consideraba y no trae genes nuevos.
 
-## 2. Dónde actúa: pregunta solo cuando hace falta
+## 2. Dónde actúa: pregunta solo cuando hace falta (simulación)
 
 El agente no pregunta en todos los casos, y eso diluye el promedio global.
 
@@ -122,7 +217,7 @@ El agente usa la confianza del modelo como filtro: cuando el primer gen ya super
 0,9, casi siempre es el correcto y preguntar no tiene mucho para aportar;
 cuando no, pregunta, y ahí el ranking mejora un 21 % en MRR.
 
-## 3. Rendimiento por ronda y por pregunta
+## 3. Rendimiento por ronda y por pregunta (simulación)
 
 **Agente, ronda por ronda** (preguntas promediadas sobre los 300 casos, incluidos
 los que no preguntan):
@@ -155,7 +250,7 @@ Por pregunta, el agente rinde **2,1 veces** lo que la heurística actual en MRR
 una pregunta al azar en MRR (IC [3,8; 42]; el intervalo es muy ancho porque la
 mejora del azar es casi cero).
 
-## 4. Frente a las alternativas
+## 4. Frente a las alternativas (simulación)
 
 La heurística de referencia es la que usa hoy la pantalla de resultados: preguntar
 por los síntomas anotados más frecuentes del primer gen (y luego del segundo)
@@ -198,7 +293,7 @@ xychart-beta
   contra 6 del agente. El agente compensa con creces: 28 genes llegan al primer
   puesto contra 13.
 
-## 5. Robustez
+## 5. Robustez (simulación)
 
 Mismos casos y configuración; cambia el respondedor o el modo.
 
@@ -231,8 +326,8 @@ error al 5 % de lo no anotado. Ahí:
 Qué significa: el beneficio del agente depende de que los pacientes tengan los
 síntomas con las frecuencias que dice el HPO. Si los pacientes reales se
 apartan de las anotaciones tanto como este respondedor, preguntar aporta poco.
-Si se parecen más, el efecto se acerca al de la primera fila. Sin datos reales
-no se puede saber dónde caen.
+Si se parecen más, el efecto se acerca al de la primera fila. Con pacientes
+reales (sección 0) caen por debajo de este respondedor: el efecto es negativo.
 
 **Sin ruido** en las respuestas, el techo del método en esta simulación es
 +0,089 de MRR y +11,0 pp de top-1: con el ruido del respondedor por defecto (10 %
@@ -240,7 +335,13 @@ de respuestas invertidas y 20 % de «no sé») se conserva el 61 % de esa mejora
 (0,054 / 0,089). **En modo médico** (sin el filtro de síntomas que requieren
 estudios) el resultado es el mismo que en modo paciente, dentro del ruido.
 
-## 6. Por qué importó la calibración
+## 6. Por qué importó la calibración (simulación)
+
+**Advertencia**: esta calibración se hizo y se confirmó con pacientes simulados
+de las mismas anotaciones que usa el agente. Con pacientes reales se invierte:
+la configuración anterior daña menos que la elegida (+0,034 de MRR a su favor,
+IC [+0,015; +0,053]) y ninguna de las dos mejora al modelo (sección 0). Lo que
+sigue describe por qué la calibración ayudó dentro de la simulación.
 
 La primera configuración del código mandaba al modelo cada síntoma respondido
 «sí» (`model_sees_present`) y aplanaba su ranking con temperatura 3. La elegida
@@ -288,7 +389,7 @@ de la configuración elegida):
   conjunto de ajuste dentro del margen de ruido
   ([EVALUACION.md](EVALUACION.md), sección 6.3).
 
-## 7. Dónde ayudan más las preguntas
+## 7. Dónde ayudan más las preguntas (simulación)
 
 ### 7.1 Según el puesto inicial del gen correcto
 
@@ -407,24 +508,27 @@ del modelo no es un gen (`-`).
 
 ## 10. Cómo leer estos números: limitaciones
 
+- **La advertencia más importante: con pacientes reales el agente no mejora el
+  ranking y, como está configurado, lo empeora** (−0,047 de MRR; sección 0).
+  Todo lo que dicen las secciones 1 a 7 vale para pacientes que tienen sus
+  síntomas con las frecuencias que dice el HPO.
 - **La simulación es circular y da una cota optimista.** Los pacientes se
   generan con las mismas anotaciones HPO con las que el agente calcula la
-  verosimilitud. Un agente que modela el mundo igual que el simulador tiene
-  ventaja, aunque los parámetros del respondedor difieren de los del agente.
+  verosimilitud, con la misma forma de cálculo. Separando esas fuentes, la
+  mejora desaparece (sección 0 y [EVALUACION.md](EVALUACION.md), sección 11).
 - **Pacientes simulados, no reales.** Llegan con términos HPO exactos. Los
   reales llegan con términos extraídos de texto libre, menos específicos y con
   errores: hoy el extractor, por ejemplo, no detecta negaciones.
-- **El modelo está en su terreno.** Los casos salen de enfermedades conocidas,
-  probablemente parecidas a los datos con que se entrenó el modelo: acierta el
-  top-1 en el 72 % de los casos, bastante más de lo esperable con pacientes
-  reales. Eso deja más margen a las preguntas, pero la temperatura 1 (confiar en
-  el ranking del modelo) podría dejar de convenir si el modelo está más
-  sobreconfiado con casos reales.
+- **El modelo está en su terreno.** Los casos salen de las mismas anotaciones
+  HPO con las que se generaron los pacientes sintéticos que entrenaron al
+  modelo: acierta el top-1 en el 72 % de los casos simulados y en el 43 % de los
+  reales. Con pacientes reales, una temperatura mayor que 1 empeora todavía más
+  (sección 0 y [EVALUACION.md](EVALUACION.md), sección 11.6).
 - **Solo enfermedades de un único gen**, con al menos 8 anotaciones y el gen en
   el vocabulario del modelo.
 - **Con el respondedor pesimista la mejora casi desaparece** (+0,018 de MRR, no
   significativa) y los casos que empeoran lo hacen por más puestos (sección 5).
-  Es la advertencia más importante de este documento.
+  Los pacientes reales se apartan de las anotaciones todavía más.
 - **Tamaño de muestra.** 300 casos alcanzan para los efectos globales, pero los
   cambios relativos amplifican la incertidumbre (+10,2 % de top-1, IC [+5,1 %;
   +16,6 %]). Los subgrupos son chicos (7 casos entre los puestos 21 y 50), y los
@@ -437,7 +541,12 @@ del modelo no es un gen (`-`).
 - **La evaluación en vivo es chica** (15 llamadas más 4) y no hubo revisión
   médica de las preguntas.
 
-**Qué lo validaría.** Casos reales en staging, con médicos y con diagnóstico
+**Qué falta validar.** La validación con casos publicados ya se hizo (sección
+0) y fue negativa. Antes de volver a medir con pacientes de la plataforma hace
+falta cambiar cómo el re-ranking usa las respuestas
+([EVALUACION.md](EVALUACION.md), secciones 11.8 y 11.9) y comprobar el cambio con los
+pacientes reales de phenopacket-store, separados por gen. Recién después tiene
+sentido medir con casos reales en staging, con médicos y con diagnóstico
 genético confirmado, registrando (con consentimiento) el puesto del gen
 confirmado antes y después de las preguntas. Con la dispersión observada en la
 simulación (desvío del cambio de MRR por caso: 0,196), detectar una mejora como
@@ -450,8 +559,36 @@ más llamadas.
 
 ## Apéndice A: cifra → fuente
 
-`python -m eval.impact` imprime cada cifra con una clave. Los archivos están en
-`eval/results/` (fuera de git; se regeneran con los comandos del apéndice B).
+**Sección 0 y resumen (pacientes reales y escenarios sin circularidad).**
+`python -m eval.audit`, `python -m eval.explore` y `python -m eval.variants`
+escriben cada cifra en `eval/results/audit/summary.json`,
+`eval/results/audit/explore/summary.json` y
+`eval/results/audit/variants/summary.json`;
+la clave es la ruta dentro de ese JSON. «Un 9 % menos» es 0,047 / 0,508.
+
+| cifra | valor | archivo | clave |
+|---|---|---|---|
+| pacientes reales, sin su artículo: top-1 y MRR antes → después | 43,1 → 37,5 %; 0,508 → 0,461 | `audit/summary.json` | `runs.A.policies.{none,agent}` |
+| ídem, Δ top-1 y Δ MRR | −5,6 pp; −0,047 | `audit/summary.json` | `runs.A.comparisons.agent_vs_none.{top1,mrr}` |
+| ídem, empeora / mejora, pierden / ganan el 1.º | 17,6 % / 8,0 %; 37 / 9 | `audit/summary.json` | `runs.A.movement.agent_vs_none` |
+| ídem, frente a la heurística; heurística frente al modelo | −0,022; −0,024 | `audit/summary.json` | `runs.A.comparisons.{agent_vs_most_frequent_unreported,most_frequent_unreported_vs_none}` |
+| respuestas sí / no / no sé | 428 / 87 / 2335 | `audit/summary.json` | `runs.A.answers` |
+| base completa | +0,014 | `audit/summary.json` | `runs.A_full_kb.comparisons.agent_vs_none` |
+| 135 pacientes cuyo artículo HPO no cita | −0,008 | `audit/summary.json` | `subsets.A.article_not_cited` |
+| hasta 5 por gen | −0,036 | `audit/summary.json` | `runs.A_cap5` |
+| anotaciones retenidas | −0,041 | `audit/summary.json` | `runs.B` |
+| fuentes cruzadas y controles | −0,055 / −0,095; +0,054 / +0,055 | `audit/summary.json` | `runs.C_orpha`, `runs.C_omim`, `runs.C_*_control` |
+| configuración anterior y `model_sees_present` frente a la actual, pacientes reales | +0,034; +0,046 | `audit/summary.json` | `cross_run.S_before_tuning_minus_A`, `cross_run.S_msp_minus_A` |
+| `model_sees_present` sola | −0,001 | `audit/summary.json` | `runs.S_msp.comparisons.agent_vs_none` |
+| exploración: mejor de la grilla, mitad retenida, otros escenarios | +0,005; −0,002; −0,046 a −0,093 | `audit/explore/summary.json` | `grid[].all_delta_vs_none`, `held_out_half.chosen_vs_none`, `elsewhere` |
+| gen fuera del top-50 del modelo: reales / simulados | 23 % / 1,3 % | `audit/summary.json` | `runs.{A,simulated}.policies.none.top50` |
+| variantes estructurales, pacientes reales retenidos: Δ MRR y empeora | ver sección 0 | `audit/variants/summary.json` | `variants.<variante>.A.held_out.{mrr,worse}` |
+| ídem, casos con al menos un «sí» o «no» | ver [EVALUACION.md](EVALUACION.md), 11.8 | `audit/variants/summary.json` | `variants.<variante>.A.held_out_informative` |
+| variantes en B, C y la simulación | ver sección 0 | `audit/variants/summary.json` | `variants.<variante>.{B,C_orpha,C_omim,simulated}.all.mrr` |
+
+**Secciones 1 a 10 (simulación).** `python -m eval.impact` imprime cada cifra
+con una clave. Los archivos están en `eval/results/` (fuera de git; se
+regeneran con los comandos del apéndice B).
 
 | cifra | valor | archivo | clave de `eval.impact` |
 |---|---|---|---|
@@ -513,6 +650,10 @@ P=eval/configs/defaults_before_tuning.json
 # (strategy=model_sees_present -> test_ablation_msp.json; temperature=3 -> test_ablation_t3.json;
 #  confident_threshold=0.8 y min_information_gain=0.01 -> test_ablation_default_stops.json)
 .venv/bin/python -m eval.impact --json eval/results/impact.json
+# sección 0: pacientes reales (baja phenopacket-store 0.1.27 la primera vez) y escenarios sin circularidad
+.venv/bin/python -m eval.audit      # ~10 min con 4 procesos
+.venv/bin/python -m eval.explore    # ~14 min
+.venv/bin/python -m eval.variants   # ~11 min
 ```
 
 La evaluación completa, con la grilla de ajuste y la prueba en vivo, está en

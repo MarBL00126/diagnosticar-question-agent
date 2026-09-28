@@ -21,7 +21,7 @@ import random
 import time
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
-from typing import Any
+from typing import Any, Protocol
 
 from eval.answerer import AnswererConfig, SimulatedPatient
 from eval.cases import Case
@@ -29,6 +29,7 @@ from eval.harness import TOP_K, Pipeline, round_service, settings_for, stable_se
 
 from diagnosticar_preguntas.api.schemas import AnswerIn, RoundRequest, RoundResponse
 from diagnosticar_preguntas.domain import (
+    AnswerValue,
     CandidateTerm,
     Evidence,
     Mode,
@@ -46,6 +47,12 @@ QUESTION_POLICIES = POLICIES[1:]
 MISSING_FREQUENCY_ORDER = 0.5
 # Baselines carry no information gain; this keeps the "no useful questions" rule out of their way.
 BASELINE_GAIN = 1.0
+
+
+class Patient(Protocol):
+    """Whoever answers the questions: a simulated family or a real record."""
+
+    def answer(self, hpo_id: str) -> AnswerValue: ...
 
 
 class RecordingSelector:
@@ -217,7 +224,9 @@ def run_case(
     early_stop: bool = False,
     llm: LLMProvider | None = None,
     max_request_rounds: int = 4,
+    patient: Patient | None = None,
 ) -> CaseTrace:
+    """``patient`` answers the questions; by default a ``SimulatedPatient`` of ``answerer``."""
     if policy == "none":
         return model_only(case, model)
     selector = RecordingSelector(selector_for(policy, pipeline, case))
@@ -228,7 +237,8 @@ def run_case(
         llm=llm or TemplateProvider(),
         settings=settings_for(pipeline.config, early_stop=early_stop),
     )
-    patient = SimulatedPatient(pipeline.kb, case, answerer, mode)
+    if patient is None:
+        patient = SimulatedPatient(pipeline.kb, case, answerer, mode)
     answers: list[AnswerIn] = []
     trace = CaseTrace(case.case_id, policy, [])
     for round_number in range(1, max_request_rounds + 1):

@@ -3,7 +3,8 @@
 Este documento describe cómo se evaluó el agente de preguntas de seguimiento de
 diagnostic.ar, qué resultados dio y qué valores por defecto se adoptaron a
 partir de ellos. Todas las cifras salen de corridas reales del código en `eval/`
-(26/09/2026) y se pueden reproducir con los comandos del final. El modelo
+(26/09/2026; la sección 11, del 28/09/2026) y se pueden reproducir con los
+comandos de las secciones 10 y 11.10. El modelo
 evaluado se describe en [ARQUITECTURA.md](ARQUITECTURA.md) y las decisiones que
 salieron de acá, en [DECISIONES.md](DECISIONES.md) (D-11). Las mismas corridas,
 expresadas como mejoras absolutas y relativas con intervalos de confianza (por
@@ -15,7 +16,21 @@ faltante 0,3, umbral de confianza 0,9 y ganancia mínima 0,05. «Configuración
 anterior» se refiere a los valores por defecto que tenía el código hasta el commit
 46e7daa, guardados en `eval/configs/defaults_before_tuning.json`.
 
-**Resumen.** Con la configuración anterior del código, las preguntas no
+**Lo primero que hay que leer: la sección 11.** Las secciones 2 a 8 miden el
+agente con pacientes simulados a partir de las mismas anotaciones HPO que usa el
+agente, y esa simulación es optimista por construcción. Con 501 pacientes
+reales publicados (phenopacket-store), el agente con los valores por defecto
+actuales **empeora** el ranking del modelo: top-1 43,1 % → 37,5 % (−5,6 pp, IC
+95 % [−8,2; −3,0]) y MRR 0,508 → 0,461 (Δ −0,047 [−0,065; −0,029]); en el
+subconjunto más limpio, −0,008 [−0,024; +0,008], neutro. También empeora cuando
+se le ocultan al agente las anotaciones de las que sale el paciente (−0,041) o
+cuando el paciente viene de otra fuente de curación (−0,055 y −0,095). El 0,842
+de abajo no es sobreajuste a los casos de prueba, pero es una cota superior que
+los pacientes reales no alcanzan (sección 11.7). Cambiar la forma en que las
+respuestas reordenan los genes (sección 11.8) puede dejar de dañar, pero ninguna
+variante probada mejora a los pacientes reales.
+
+**Resumen de la simulación.** Con la configuración anterior del código, las preguntas no
 mejoraban el ranking del modelo de diagnostic.ar: tras tres rondas, el MRR del gen
 verdadero cae de 0,787 a 0,759 (Δ −0,029, IC 95 % [−0,063; +0,006]), y bajo un
 paciente menos parecido al modelo de verosimilitud cae mucho más (Δ −0,112). Con
@@ -134,9 +149,12 @@ de los del agente (frecuencia faltante 0,6 contra 0,3/0,5; espurios 0,02 contra
 un fondo de 0,02–0,1; errores del 10 % contra un piso de 0,02; «no sé» reales), y
 la variante **`dropout`** rompe el supuesto central: el paciente solo puede tener
 el 70 % de los rasgos documentados y dice «sí» por error al 5 % de lo no
-anotado. La variante `dropout` es la mejor aproximación disponible a «el mundo
-no es como lo describe la base de conocimiento»; la validación con pacientes
-reales sigue pendiente (sección 9).
+anotado. La variante `dropout` era, al escribir esta sección, la mejor
+aproximación disponible a «el mundo no es como lo describe la base de
+conocimiento». Que los parámetros difieran no alcanza: con los errores y los
+espurios del respondedor, un «sí» a un término no anotado llega con probabilidad
+0,116, muy cerca del fondo 0,1 que eligió el ajuste, y la forma del cálculo es la
+misma. La sección 11 mide el agente sin este supuesto, con pacientes reales.
 
 ## 4. Políticas comparadas
 
@@ -487,20 +505,27 @@ ahora los valores por defecto del código:
 5. `epsilon` (0,02) y `p_unknown` (0,2) sin cambios.
 
 Los cambios 1 y 2 son los que pasan de «no mejora y a veces daña» a una
-mejora significativa. **Advertencia sobre T = 1**: en estos casos el modelo está
+mejora significativa **en la simulación**. Con pacientes reales (sección 11.6)
+el cambio 1 se invierte: `model_sees_present` supera a `fixed_prior` por +0,046
+de MRR, y la configuración anterior completa supera a la elegida por +0,034,
+aunque ninguna mejora al modelo. Los valores por defecto no se cambiaron tras
+la auditoría; la evidencia está en la sección 11. **Advertencia sobre T = 1**: en estos casos el modelo está
 en su terreno (72 % de top-1) y conviene confiar en él. Con pacientes reales es
 probable que esté más sobreconfiado, y ahí una temperatura mayor podría volver
 a convenir. Antes de fijarla definitivamente hay que medirla con casos reales.
 
 ## 9. Limitaciones
 
-- **Circularidad** (sección 3): pacientes y agente comparten la base HPO; los
-  resultados son una cota optimista. La variante `dropout` muestra que el
-  beneficio se reduce mucho (+0,054 → +0,018 de MRR) cuando el paciente no se
-  ajusta a las anotaciones.
+- **Circularidad** (secciones 3 y 11): pacientes y agente comparten la base
+  HPO; los resultados de las secciones 5 a 8 son una cota optimista. Medida sin
+  esa circularidad, la mejora desaparece o se vuelve un daño: −0,047 de MRR con
+  pacientes reales, −0,041 con anotaciones retenidas, −0,055 y −0,095 con
+  fuentes cruzadas (sección 11).
 - **Distribución de los casos**: vienen de anotaciones de enfermedades
-  conocidas, probablemente parecidas a los datos de entrenamiento del modelo, y
-  con términos HPO exactos. Los pacientes reales llegan con términos extraídos
+  conocidas, las mismas de las que salen los pacientes sintéticos con que se
+  entrenó el modelo (sección 11.2, camino c), y con términos HPO exactos: el
+  modelo acierta el top-1 en el 72,0 % de los casos simulados y en el 43,1 % de
+  los reales. Los pacientes reales llegan con términos extraídos
   de texto libre, con errores (el extractor, por ejemplo, no detecta negaciones)
   y menos específicos.
 - **Solo enfermedades monogénicas** con al menos 8 anotaciones y con el gen en
@@ -521,6 +546,8 @@ a convenir. Antes de fijarla definitivamente hay que medirla con casos reales.
 - El agente solo reordena los 50 genes que devuelve el modelo.
 
 ## 10. Cómo reproducir
+
+Para las evaluaciones sin circularidad, ver la sección 11.10.
 
 Requisitos: `data/kb.sqlite` construida (`make kb`), el servicio del modelo de
 diagnostic.ar escuchando (por defecto `http://127.0.0.1:18021`, o
@@ -553,3 +580,393 @@ elegida modificada en un solo campo (`strategy`, `temperature`, o
 Tiempos de pared de esta corrida: casos 1 s, grilla 326 s, las diez
 simulaciones de PRUEBA y de verificación 102 s, evaluación en vivo 321 s (en una
 máquina de 16 núcleos). Los tests del arnés están en `tests/eval/`.
+
+## 11. Auditoría de circularidad y evaluación con pacientes reales
+
+Esta sección responde dos preguntas sobre el resultado de la sección 6: **cómo
+entran las respuestas en la predicción** y **si el MRR de 0,842 es sobreajuste,
+dado que los pacientes sintéticos se generan conociendo la enfermedad
+verdadera**. Para contestar la segunda se midió el agente en tres escenarios
+donde el paciente no sale de las mismas anotaciones que usa el agente, entre
+ellos 501 pacientes reales publicados. Todas las corridas usan los valores por
+defecto actuales del código (nada se reajustó), el proveedor de plantillas (sin
+LLM), el servicio real del modelo de diagnostic.ar y las mismas métricas e
+intervalos (bootstrap pareado, 2000 remuestreos) que el resto del documento.
+Código: `eval/audit.py`, `eval/phenopackets.py`, `eval/kb_views.py`,
+`eval/explore.py` y `eval/variants.py` (28/09/2026).
+
+**Resumen.** El 0,842 no es sobreajuste a los casos de prueba, pero sí una cota
+optimista por construcción: el simulador comparte los supuestos del agente. La
+mejora (+0,054 de MRR) aparece solo cuando el paciente y el agente describen la
+enfermedad con las mismas anotaciones. Con pacientes reales, con la mitad de las
+anotaciones ocultas al agente o con otra fuente de curación, **las preguntas no
+mejoran el ranking del modelo y, con los valores por defecto actuales, lo
+empeoran**: Δ MRR −0,047 [−0,065; −0,029] en pacientes reales, −0,041 en B,
+−0,055 y −0,095 en C. Ninguna de las 44 configuraciones exploradas con los
+parámetros existentes da una mejora con pacientes reales; la mejor queda neutra.
+Entre nueve variantes estructurales (11.8), una verosimilitud que no castiga lo
+no anotado y cuenta cada «sí» una vez (V3fp, k = 0,3) deja de dañar en pacientes
+reales (−0,001 [−0,009; +0,007]), en B y en C_orpha, pero tampoco mejora; nada de
+lo probado ayuda a pacientes reales.
+
+### 11.1 Cómo entran las respuestas en la predicción
+
+1. **El modelo se consulta con lo que informó la familia, nada más.** Con la
+   estrategia por defecto (`fixed_prior`), cada ronda le manda al modelo de
+   diagnostic.ar solo `present_hpo_ids`, los hallazgos informados antes de las
+   preguntas. Las respuestas nunca llegan al modelo. El modelo devuelve la
+   probabilidad de sus 50 primeros genes.
+2. **Prior.** Esas probabilidades se templan con la temperatura $T$ (1 por
+   defecto, es decir, se usan tal cual renormalizadas sobre los 50) y se reparten
+   en partes iguales entre las enfermedades anotadas de cada gen, las
+   hipótesis: $\pi(g, d) = \pi(g) / |D(g)|$.
+3. **Cada respuesta multiplica cada hipótesis por la probabilidad de esa
+   respuesta si el paciente tuviera esa enfermedad**, calculada con las
+   anotaciones de `phenotype.hpoa`: «sí» a $t$ multiplica por $P(t \mid d)$,
+   «no» por $1 - P(t \mid d)$ y «no sé» no cambia nada. $P(t \mid d)$ es el
+   noisy-OR de las frecuencias anotadas de $t$ y de sus descendientes en $d$
+   (0,3 si la frecuencia no está indicada), con un piso de fondo $b = 0{,}1$;
+   vale $\varepsilon = 0{,}02$ si $d$ excluye $t$ (o un ancestro) con `NOT` o
+   `Excluded`; vale $b$ si $d$ no dice nada de $t$; y todo se recorta a
+   $[\varepsilon, 1 - \varepsilon]$ ([ARQUITECTURA.md](ARQUITECTURA.md), 4.2). Los
+   hallazgos negados de la extracción (`absent_hpo_ids`) entran igual que un
+   «no».
+4. **Puntaje del gen**: la suma de sus hipótesis, renormalizada sobre los 50
+   genes:
+
+   $$w(g, d) \propto \pi(g, d) \prod_{t\,\text{«sí»}} P(t \mid d) \prod_{t\,\text{«no»}} \bigl(1 - P(t \mid d)\bigr), \qquad \text{puntaje}(g) = \sum_d w(g, d)$$
+
+5. **Qué se muestra.** La interfaz muestra ese orden («Con tus respuestas»). La
+   salida del modelo no se toca y sigue disponible («Original»). `specialties` y
+   `confidence` son las del modelo para los hallazgos originales.
+
+Ejemplo con dos genes: A (prior 0,6, su enfermedad anota $t$ con frecuencia 0,9)
+y B (prior 0,4, no dice nada de $t$). Un «sí» deja A: 0,6·0,9 = 0,54 y B:
+0,4·0,1 = 0,04, o sea **A 0,93 / B 0,07**. Un «no» deja A: 0,6·0,1 = 0,06 y B:
+0,4·0,9 = 0,36, o sea **A 0,14 / B 0,86**. Una sola respuesta mueve un factor 9
+entre dos genes, y todo el peso sale de lo que las anotaciones dicen de $t$. Si
+el paciente tiene un síntoma que las anotaciones de su enfermedad no mencionan,
+su «sí» lo castiga igual que un «no» a un síntoma anotado que no tiene. Esa es
+la fragilidad que mide esta sección.
+
+### 11.2 Caminos de fuga o circularidad
+
+| camino | riesgo | evidencia | impacto medido | mitigación |
+|---|---|---|---|---|
+| **a. El paciente simulado sale de las mismas anotaciones que usa el agente** | alto | `eval/answerer.py` sortea los hallazgos latentes del paciente de las anotaciones positivas de la enfermedad verdadera con sus frecuencias, y `eval/cases.py` saca de ahí los hallazgos informados. La probabilidad marginal de «sí» es el mismo noisy-OR de frecuencias en $t$ y sus descendientes que usa `ranking/likelihood.py`: salvo los parámetros de ruido, el agente interpreta las respuestas con el mismo modelo que las generó. | Con paciente y agente sobre la misma fuente la mejora se reproduce: +0,054 (simulación), +0,054 y +0,055 (controles de C). Separando lo que sabe el agente de lo que tiene el paciente: −0,041 (B), −0,055 y −0,095 (C), −0,047 (A). Toda la mejora depende de compartir las anotaciones. | Evaluaciones A, B y C (11.3 a 11.5) |
+| **b. Hiperparámetros ajustados sobre el simulador** | medio | AJUSTE y PRUEBA salen del mismo generador y del mismo respondedor. El fondo elegido, 0,1, es el borde de la grilla {0,02; 0,05; 0,1} y el valor más cercano a la tasa efectiva de «sí» espurios del respondedor, 0,02·0,9 + 0,98·0,1 = 0,116. No todo coincide: la frecuencia faltante elegida (0,3) se aleja de la del respondedor (0,6), y `p_unknown` (0,2, igual al del respondedor) solo reescala la ganancia. `fixed_prior` se eligió por +0,042 en el simulador. | Con pacientes reales la elección de estrategia se invierte: `model_sees_present` supera a `fixed_prior` por +0,046 [+0,030; +0,062], y la configuración anterior a la calibración supera a la elegida por +0,034 [+0,015; +0,053]. T = 1 sigue siendo mejor que 2 y 3 (11.6). | Sensibilidad y exploración, solo informadas (11.6); no se cambió ningún valor por defecto |
+| **c. La línea de base del modelo está en su terreno** | alto para el nivel absoluto, bajo para el incremento | La red en la que se basa el modelo de diagnostic.ar se entrenó solo con pacientes sintéticos generados de las anotaciones HPO («Solving the Diagnostic Odyssey with Synthetic Phenotype Data», bioRxiv 10.64898/2026.03.19.712946). Los casos simulados salen de esas mismas anotaciones. | top-1 del modelo: 72,0 % en la simulación contra 43,1 % con pacientes reales; gen verdadero en el top-50: 98,7 % contra 77,0 %. | Se informa aparte; lo que se mide es el incremento del agente sobre el modelo |
+| **d. Sesgo de selección** | medio | Solo enfermedades de un gen (OMIM: 6630 de 6886 vinculadas a un gen; ORPHA: 3030 de 4102), con ≥ 8 anotaciones positivas (4545 y 1573) y el gen en el vocabulario del modelo (4427 y 1571); un caso por gen. Favorece enfermedades bien anotadas, justo donde el agente sabe más. Que el gen esté en el top-50 del modelo **no** es un filtro (4 de 300 casos quedan afuera). | No medible por separado dentro de la simulación. Con otra selección (casos publicados, un gen causal, ≥ 6 rasgos) el efecto es negativo (11.3). | A con 501 genes y con hasta 5 pacientes por gen |
+| **e. La identidad del gen o de la enfermedad llega al agente** | bajo | El agente recibe solo `present_hpo_ids`, `absent_hpo_ids` y `answers` (`RoundRequest`); el modelo se consulta solo con términos HPO; la política al azar se siembra con el id del caso, no con el gen. Test nuevo: `tests/eval/test_decircularised.py::test_the_agent_hears_only_the_reported_findings_and_the_patients_answers`. Única vía indirecta: el hallazgo negado se sortea entre términos que la enfermedad verdadera no respalda. | Efecto del hallazgo negado (y de los términos que el modelo no conoce) antes de cualquier respuesta: +0,000005 de MRR en la simulación; −0,006 [−0,011; −0,001] en A, donde el negado viene del registro real. | No hace falta |
+| **f. Higiene de la partición AJUSTE / PRUEBA** | bajo | 0 genes y 0 enfermedades compartidos (500 genes distintos en 500 casos). El ajuste terminó antes de la primera corrida de prueba (`tuning_grid.json` el 26/09 a las 11:16:50; los `test_*.json` desde las 11:17:37), y `eval/answerer.py`, `eval/cases.py` y `eval/tune.py` no cambiaron desde el commit ea4b766. Ambas particiones salen del mismo simulador (punto b). | No hay sobreajuste a los casos de prueba. | — |
+| **g. Anotaciones HPO derivadas de los mismos artículos** (afecta a A) | alto para A | HPO deriva parte de sus anotaciones de los casos publicados de phenopacket-store: las anotaciones de la enfermedad citan el artículo del paciente en 366 de los 501 casos (73 %; 7266 de 10 377 fenopaquetes de toda la colección). | Con el artículo en la base: +0,014 [−0,001; +0,029]; sin él: −0,047 [−0,065; −0,029]. En los 135 casos cuyo artículo HPO no cita, sin necesidad de enmascarar nada: −0,008 [−0,024; +0,008]. El modelo también se beneficia: top-1 50,5 % con artículo citado contra 23,0 % sin él. | A saca de la base del agente, caso por caso, las filas que citan el artículo |
+
+### 11.3 A. Pacientes reales: phenopacket-store
+
+**Datos.** [phenopacket-store](https://github.com/monarch-initiative/phenopacket-store)
+(Monarch Initiative), release 0.1.27, archivo `all_phenopackets.zip`, sha256
+`d0c70005bb09b87035087516252b6b539fbc0415be7c664b73c9cde7eedf205a`
+(verificado; `eval/phenopackets.py` lo baja a `data/phenopacket-store/`, fuera de
+git, y rechaza otro hash). Son fenopaquetes GA4GH curados de artículos
+publicados: rasgos HPO observados, rasgos explícitamente excluidos, variantes
+causales con su gen y el PMID del artículo.
+
+**Casos.** De 10 377 fenopaquetes quedan 5590 (501 genes): se excluyen 69 sin gen
+causal, 1306 con el gen fuera del vocabulario del modelo y 3412 con menos de 6
+rasgos observados que sean anomalías fenotípicas de la base (0 tenían más de un
+gen causal, 0 tenían menos de 3 rasgos no emparentados y en 0 el modelo no
+reconocía ningún término). Para que unos pocos genes no dominen (STXBP1 tiene 462
+fenopaquetes), la corrida principal toma **un paciente por gen** (501); la
+variante toma hasta 5 por gen (1742). Mediana de 10 rasgos observados y 4
+excluidos por paciente.
+
+- **Lo que informa la familia**: de 3 a 6 rasgos observados no emparentados,
+  sorteados de forma uniforme con semilla fija (123 / 136 / 121 / 121 casos con
+  3 / 4 / 5 / 6), y un rasgo excluido no emparentado con ellos si el registro
+  tiene alguno (424 de 501).
+- **Respuestas: el registro real.** «Sí» si el término preguntado o un
+  descendiente fue observado; «no» si él o un ancestro fue excluido; si no,
+  **«no sé»**, porque que un artículo no mencione un hallazgo no dice que el
+  paciente no lo tenga. Variante de sensibilidad, que no representa a un
+  paciente real: lo no registrado se contesta «no».
+- **Base del agente sin el artículo del paciente** (camino g): para cada caso se
+  reconstruyen las anotaciones de las enfermedades del gen sin las filas de
+  `phenotype.hpoa` que citan el PMID del paciente, con la misma regla de lectura
+  y fusión que el build de la base (verificado: sin sacar nada, la
+  reconstrucción coincide con la base en las 12 974 enfermedades). En 49 de los
+  501 casos el gen se queda sin ninguna enfermedad anotada.
+
+**¿El modelo se entrenó con phenopacket-store?** No hay evidencia directa: el
+preprint del modelo dice que se entrenó solo con pacientes sintéticos generados
+a partir de las anotaciones HPO y no menciona phenopacket-store. Pero esas
+anotaciones incluyen las derivadas de estos artículos (camino g), así que la
+exposición indirecta es probable, y la línea de base del modelo en A puede ser
+optimista. Lo que se mide acá es el incremento del agente sobre el modelo.
+
+| corrida (modo paciente salvo indicación) | casos | top-1 modelo | top-1 agente | Δ top-1 (pp) | Δ MRR agente − modelo | Δ MRR agente − heurística | preguntas | sí / no / no sé |
+|---|---|---|---|---|---|---|---|---|
+| simulación (sección 6.1), referencia | 300 | 72,0 | 79,3 | +7,3 [+3,7; +11,3] | +0,054 [+0,033; +0,078] | +0,026 [+0,006; +0,045] | 3,25 | 292 / 494 / 189 |
+| **A: un paciente por gen, base sin el artículo** | 501 | 43,1 | 37,5 | **−5,6 [−8,2; −3,0]** | **−0,047 [−0,065; −0,029]** | −0,022 [−0,039; −0,007] | 5,69 | 428 / 87 / 2335 |
+| A con la base completa (incluye el artículo) | 501 | 43,1 | 45,3 | +2,2 [−0,2; +4,6] | +0,014 [−0,001; +0,029] | +0,013 [+0,002; +0,026] | 5,50 | 459 / 90 / 2208 |
+| A, solo los 135 casos cuyo artículo HPO no cita | 135 | 23,0 | 21,5 | −1,5 [−4,4; +1,5] | −0,008 [−0,024; +0,008] | −0,008 [−0,029; +0,010] | 6,62 | 113 / 21 / 760 |
+| A, sin los 23 genes de AJUSTE | 478 | 43,3 | 37,2 | −6,1 [−8,8; −3,3] | −0,051 [−0,070; −0,032] | −0,025 [−0,042; −0,009] | 5,66 | 409 / 82 / 2215 |
+| A en modo médico | 501 | 43,1 | 37,5 | −5,6 [−8,2; −3,0] | −0,046 [−0,064; −0,028] | −0,026 [−0,042; −0,010] | 5,62 | 418 / 81 / 2315 |
+| A, hasta 5 pacientes por gen | 1742 | 43,0 | 38,6 | −4,4 [−5,7; −3,1] | −0,036 [−0,045; −0,027] | −0,018 [−0,026; −0,010] | 5,69 | 1404 / 368 / 8134 |
+| A, lo no registrado = «no» (sensibilidad) | 501 | 43,1 | 37,5 | −5,6 [−8,6; −2,8] | −0,058 [−0,083; −0,035] | −0,019 [−0,037; −0,002] | 5,39 | 515 / 2185 / 0 |
+
+- **Con pacientes reales el agente empeora el ranking del modelo**: MRR 0,508 →
+  0,461, top-5 58,1 % → 54,3 %, top-10 64,1 % → 61,5 %. El gen correcto baja en
+  el 17,6 % de los casos y sube en el 8,0 %; pierde el primer puesto en 37 casos
+  y lo gana en 9. La heurística actual también empeora (−0,024 [−0,036; −0,013])
+  pero menos, porque sus preguntas mueven menos el ranking.
+- **Las respuestas son las que empeoran**, no el hallazgo negado: antes de
+  cualquier respuesta el cambio es −0,006 [−0,011; −0,001]; las respuestas
+  agregan −0,041 [−0,059; −0,023]. En los 334 casos en que pregunta, Δ MRR
+  −0,070 [−0,098; −0,044].
+- **El 82 % de las respuestas es «no sé»** (2335 de 2850; en la simulación, el
+  19 %): los artículos describen pocos rasgos. Casi todo el efecto viene de los
+  428 «sí». Un «sí» a un rasgo real que las anotaciones de la enfermedad no
+  mencionan castiga al gen correcto (factor $b$ = 0,1 contra hasta 0,98 de los
+  genes que sí lo anotan).
+- **Enmascarar el artículo es pesimista en un extremo y la base completa es
+  circular en el otro.** En los 49 casos cuyo gen se queda sin anotaciones el
+  daño es grande (−0,172 [−0,266; −0,088]); en los 452 restantes, −0,033
+  [−0,050; −0,017]. Con el artículo en la base, la mejora en los 366 casos que lo
+  citan es +0,022 [+0,004; +0,040]: el agente mejora cuando las anotaciones
+  describen a ese mismo paciente. El caso más limpio, los 135 pacientes cuyo
+  artículo HPO nunca citó, da −0,008 [−0,024; +0,008]: neutro.
+- Ni el modo médico (que deja preguntar hallazgos que requieren estudios), ni
+  más pacientes por gen, ni sacar los genes de AJUSTE cambian la conclusión.
+
+### 11.4 B. Anotaciones retenidas
+
+Para cada uno de los 300 casos de PRUEBA, las anotaciones positivas de la
+enfermedad verdadera se parten al azar en dos mitades (semilla fija). El
+paciente (hallazgos informados y respuestas, con el respondedor `default`) sale
+solo de la mitad B; el agente solo ve la mitad A, más los `NOT` de la
+enfermedad. El control `B_control` usa los mismos pacientes con la base completa.
+
+| corrida | top-1 modelo → agente | Δ top-1 (pp) | Δ MRR agente − modelo | Δ MRR agente − heurística | sí / no / no sé |
+|---|---|---|---|---|---|
+| B: el agente no conoce los rasgos del paciente | 66,7 → 63,7 | −3,0 [−6,7; +1,0] | **−0,041 [−0,072; −0,011]** | −0,015 [−0,040; +0,010] | 184 / 780 / 248 |
+| B_control: base completa | 66,7 → 68,3 | +1,7 [−1,7; +5,3] | −0,005 [−0,034; +0,023] | +0,002 [−0,025; +0,027] | 208 / 733 / 250 |
+
+- Ocultarle al agente los rasgos del paciente cuesta −0,036 [−0,056; −0,018] de
+  MRR (B − control) y deja el efecto en negativo; el top-5 y el top-10 caen
+  6,7 pp.
+- Aun con la base completa, un paciente que solo expresa la mitad de los rasgos
+  anotados borra la mejora (−0,005). Es el mismo fenómeno que el respondedor
+  `dropout` de la sección 6.4 (70 % de los rasgos: +0,018), llevado al 50 %.
+
+### 11.5 C. Fuentes de curación cruzadas
+
+Genes con enfermedades anotadas en las dos fuentes: el paciente sale de las
+anotaciones de Orphanet y el agente solo conoce las enfermedades OMIM del gen
+(`C_orpha`), o al revés (`C_omim`). Se excluyen los 200 genes de AJUSTE; de 1068
+y 2108 genes elegibles se sortean 300 por dirección. Los controles dan al agente
+las dos fuentes.
+
+| corrida | top-1 modelo → agente | Δ top-1 (pp) | Δ MRR agente − modelo | agente − control |
+|---|---|---|---|---|
+| C_orpha: paciente ORPHA, agente solo OMIM | 73,3 → 69,0 | −4,3 [−8,7; −0,3] | **−0,055 [−0,087; −0,025]** | −0,109 [−0,141; −0,080] |
+| control (las dos fuentes) | 73,3 → 82,0 | +8,7 [+5,0; +12,3] | +0,054 [+0,033; +0,076] | — |
+| C_omim: paciente OMIM, agente solo ORPHA | 70,3 → 59,3 | −11,0 [−15,0; −6,7] | **−0,095 [−0,127; −0,062]** | −0,149 [−0,184; −0,116] |
+| control (las dos fuentes) | 70,3 → 77,0 | +6,7 [+3,3; +10,3] | +0,055 [+0,034; +0,077] | — |
+
+Dos curaciones independientes de la misma enfermedad alcanzan para que las
+preguntas pasen de +0,054 a −0,055 o −0,095. Los controles reproducen con
+exactitud la mejora de la simulación: la ganancia es la de un agente que razona
+con la misma descripción de la que salió el paciente.
+
+### 11.6 Sensibilidad a los parámetros ajustados en el simulador
+
+Solo informativa: **no se cambió ningún valor por defecto**.
+
+**Un parámetro por vez, sobre A** (Δ MRR agente − modelo; entre corchetes, el
+cambio contra la configuración actual):
+
+| variante | Δ MRR vs modelo | contra la configuración actual |
+|---|---|---|
+| actual (`fixed_prior`, T = 1, fondo 0,1, ε 0,02) | −0,047 [−0,065; −0,029] | — |
+| T = 2 | −0,117 [−0,142; −0,092] | −0,070 [−0,090; −0,052] |
+| T = 3 | −0,150 [−0,179; −0,121] | −0,103 [−0,127; −0,080] |
+| fondo 0,05 | −0,056 [−0,075; −0,038] | −0,009 [−0,018; −0,001] |
+| frecuencia faltante 0,5 | −0,052 [−0,070; −0,034] | −0,005 [−0,013; +0,002] |
+| `model_sees_present` | −0,001 [−0,014; +0,012] | +0,046 [+0,030; +0,062] |
+| configuración anterior a la calibración | −0,012 [−0,030; +0,003] | +0,034 [+0,015; +0,053] |
+
+`model_sees_present` en B y C: −0,069, −0,074 y −0,098 (peor o igual que
+`fixed_prior`: −0,028 [−0,050; −0,008], −0,020 [−0,039; −0,001] y −0,003
+[−0,026; +0,020]). Con pacientes reales casi todas las respuestas útiles son «sí»,
+y mandárselas al modelo es inocuo; en B y C predominan los «no», que en las dos
+estrategias pasan por la verosimilitud.
+
+**Exploración con la mitad de los pacientes reales** (`python -m eval.explore`).
+Grilla de 44 configuraciones: estrategia × T {0,5; 1} × fondo {0,1; 0,2; 0,3;
+0,5} × ε {0,02; 0,1; 0,2} (ε ≤ fondo). Los genes de A se parten al azar en dos
+mitades; la configuración se elige en la primera (250 pacientes) y se informa en
+la segunda (251), que no participó de la elección, y en B, C y la simulación.
+
+- Ninguna configuración mejora al modelo con pacientes reales: sobre los 501, el
+  mejor Δ MRR de la grilla es +0,005 y el peor −0,050.
+- La elegida (`model_sees_present`, T = 1, fondo 0,1, ε = 0,1) en la mitad
+  retenida: **−0,002 [−0,020; +0,014]** contra el modelo, frente a −0,044
+  [−0,068; −0,020] de la configuración actual (diferencia +0,041 [+0,022;
+  +0,062]). Deja de dañar, pero no mejora.
+- Fuera de A no sirve: B −0,066 [−0,098; −0,036], C_orpha −0,046 [−0,076;
+  −0,019], C_omim −0,093 [−0,126; −0,060]. En la simulación, +0,018 [−0,006;
+  +0,043], la mitad de lo que da la configuración actual.
+
+Lo que muestra: ajustar los parámetros del re-ranking no alcanza. El problema es
+estructural: la verosimilitud trata el silencio de las anotaciones como evidencia
+en contra, con factores de hasta 10 por respuesta, y las anotaciones HPO no
+describen a los pacientes reales con esa precisión.
+
+### 11.7 Veredicto: ¿es sobreajuste el 0,84?
+
+- **No es sobreajuste a los casos de prueba.** AJUSTE y PRUEBA no comparten
+  genes ni enfermedades, el ajuste se hizo antes de mirar PRUEBA, y los
+  controles de C, con casos nuevos de genes fuera de AJUSTE, reproducen la
+  mejora (+0,054 y +0,055).
+- **Es optimismo del simulador, que comparte los supuestos del agente.** Los
+  pacientes se generan con las mismas anotaciones y la misma forma de
+  probabilidad (noisy-OR de frecuencias) que usa el agente para interpretar las
+  respuestas. En ese mundo, preguntar por ganancia de información y actualizar
+  con Bayes es casi óptimo, y +0,054 es lo que vale. Apenas el paciente sale de
+  otra descripción de la misma enfermedad (otra fuente, la mitad de las
+  anotaciones o un artículo publicado), la mejora desaparece y, con los valores
+  por defecto actuales, se vuelve un daño de 0,04 a 0,10 de MRR.
+- **Los hiperparámetros también se ajustaron a ese mundo.** `fixed_prior` y los
+  cierres elegidos en el simulador son peores que los anteriores con pacientes
+  reales (+0,034 a favor de la configuración anterior), aunque ninguna de las dos
+  mejora al modelo.
+- **Cambiar la forma del cálculo no cambia la conclusión** (11.8): la mejor
+  variante estructural deja de dañar a los pacientes reales, pero no los ayuda.
+- **La mejor estimación con pacientes reales es «no mejora»**: entre −0,047
+  (sin el artículo, pesimista) y +0,014 (con el artículo, circular), con −0,008
+  [−0,024; +0,008] en el subconjunto más limpio. El 0,842 no debe citarse como el
+  efecto esperado en la plataforma; es una cota superior bajo un supuesto que los
+  datos reales no cumplen.
+
+### 11.8 Variantes estructurales de cómo entran las respuestas
+
+La sensibilidad (11.6) mostró que el daño no se arregla con los parámetros. Acá
+se cambia **la forma** en que las respuestas reordenan los genes; la selección
+de preguntas es la misma en todas (ganancia de información con la verosimilitud
+del código). Código: `eval/variants.py`, que reemplaza el re-ranker por caso
+con una subclase de `BayesianReranker` (sin tocar `src/`). $p$ es el noisy-OR de
+las frecuencias anotadas del término o sus descendientes para la enfermedad
+(0,3 si no está indicada), sin piso de fondo ni recorte.
+
+| variante | qué hace |
+|---|---|
+| **V1** enriquecer | Cada «sí» se le manda al modelo (`model_sees_present`) y nada más reordena: decide el modelo con los síntomas extra. |
+| **V2** V1 + exclusiones explícitas | Además, un hallazgo presente (informado o «sí») multiplica por ε = 0,02 las enfermedades que lo excluyen (`NOT` o `Excluded` en el término o un ancestro). Todo lo demás, y todo «no», es neutro. |
+| V2 literal | V1, y un «no» multiplica por ε las enfermedades que excluyen el término. Es la redacción original del pedido; castiga a las enfermedades que coinciden con la respuesta, y se corrió solo para mostrarlo. |
+| **V3** verosimilitud asimétrica, $k$ = 0,3 o 0,5 | `model_sees_present`; un «sí» multiplica las enfermedades que lo anotan por $1 + k\,p$ y las que lo excluyen por ε; un «no» (o un negado informado) multiplica las que lo anotan por $1 - k\,p$. **Lo no anotado queda neutro** (factor 1). Equivale a una verosimilitud con $P(t \mid d) = (1 + k\,p)/2$ para lo anotado y 1/2, sin información, para lo demás. |
+| **V3fp** | V3 con `fixed_prior`: los «sí» no se le mandan al modelo, así cada uno cuenta una sola vez. |
+| V4 | La elegida en la exploración (11.6): `model_sees_present`, ε = 0,1. |
+| V5 / V5 anterior | Los valores por defecto actuales / la configuración anterior a la calibración. |
+
+Evaluación: A con la base sin el artículo del paciente, partida por gen en las
+mismas dos mitades que la exploración (250 pacientes para elegir, **251
+retenidos para informar**); B; C en las dos direcciones; y la simulación de
+PRUEBA como referencia. Δ MRR contra el modelo solo, con IC 95 % pareado;
+«empeora» es el porcentaje de casos en que el gen correcto terminó más abajo que
+en el ranking del modelo; «con respuestas» restringe a los casos con al menos un
+«sí» o un «no» (en A, el 82 % de las respuestas es «no sé»).
+
+| variante | A retenidos: Δ MRR | Δ top-1 (pp) | Δ top-5 (pp) | empeora | A retenidos con respuestas: Δ MRR (n) | B | C_orpha | C_omim | simulación |
+|---|---|---|---|---|---|---|---|---|---|
+| V1 | −0,007 [−0,024; +0,010] | −1,6 [−4,8; +1,2] | +1,2 [−0,4; +3,2] | 9,6 % | −0,013 [−0,047; +0,019] (122) | −0,043 [−0,067; −0,021] | −0,016 [−0,040; +0,006] | −0,025 [−0,044; −0,007] | −0,015 [−0,041; +0,009] |
+| V2 | −0,006 [−0,024; +0,010] | −1,6 [−4,8; +1,2] | +1,2 [−0,4; +3,2] | 9,2 % | −0,013 [−0,046; +0,018] (123) | −0,044 [−0,068; −0,021] | −0,015 [−0,039; +0,008] | −0,026 [−0,047; −0,007] | −0,015 [−0,041; +0,009] |
+| V2 literal | −0,007 [−0,024; +0,010] | −1,6 [−4,8; +1,2] | +1,2 [−0,4; +3,2] | 9,6 % | −0,013 [−0,047; +0,019] (122) | −0,044 [−0,068; −0,021] | −0,016 [−0,039; +0,008] | −0,025 [−0,044; −0,007] | −0,018 [−0,043; +0,006] |
+| V3, k = 0,3 | −0,013 [−0,032; +0,004] | −2,4 [−5,6; +0,8] | −0,4 [−2,4; +1,2] | 10,8 % | −0,028 [−0,065; +0,008] (122) | −0,033 [−0,059; −0,008] | −0,024 [−0,050; +0,001] | −0,040 [−0,064; −0,018] | +0,004 [−0,022; +0,029] |
+| V3, k = 0,5 | −0,018 [−0,037; +0,000] | −3,6 [−6,8; −0,4] | −0,4 [−2,4; +1,2] | 12,4 % | −0,038 [−0,074; −0,003] (123) | −0,040 [−0,066; −0,015] | −0,020 [−0,047; +0,007] | −0,047 [−0,072; −0,024] | +0,022 [−0,004; +0,047] |
+| **V3fp, k = 0,3** | **−0,001 [−0,009; +0,007]** | +0,0 [−1,6; +1,6] | −0,4 [−1,2; +0,0] | **4,0 %** | −0,002 [−0,019; +0,014] (122) | **+0,004 [−0,008; +0,016]** | **+0,001 [−0,014; +0,017]** | −0,022 [−0,039; −0,006] | +0,025 [+0,012; +0,039] |
+| V3fp, k = 0,5 | −0,005 [−0,015; +0,005] | −0,8 [−2,8; +1,2] | −0,4 [−1,2; +0,0] | 5,6 % | −0,010 [−0,031; +0,009] (123) | +0,000 [−0,015; +0,016] | −0,007 [−0,028; +0,013] | −0,044 [−0,065; −0,022] | +0,036 [+0,020; +0,054] |
+| V4 | −0,002 [−0,020; +0,014] | −1,2 [−4,4; +2,0] | +0,8 [−1,2; +2,8] | 9,6 % | −0,005 [−0,043; +0,030] (118) | −0,066 [−0,098; −0,036] | −0,046 [−0,076; −0,019] | −0,093 [−0,126; −0,060] | +0,018 [−0,006; +0,043] |
+| V5 (actual) | −0,044 [−0,068; −0,020] | −6,0 [−9,6; −2,4] | −4,0 [−6,8; −1,6] | 18,3 % | −0,087 [−0,136; −0,043] (126) | −0,041 [−0,072; −0,011] | −0,055 [−0,087; −0,025] | −0,095 [−0,127; −0,062] | +0,054 [+0,033; +0,078] |
+| V5 anterior | −0,012 [−0,033; +0,010] | −2,0 [−5,6; +1,6] | −1,6 [−4,4; +0,8] | 13,9 % | −0,017 [−0,045; +0,011] (180) | −0,221 [−0,269; −0,171] | −0,251 [−0,300; −0,201] | −0,283 [−0,334; −0,233] | −0,029 [−0,063; +0,006] |
+
+Qué dice la tabla:
+
+- **Ninguna variante mejora a los pacientes reales retenidos.** La mejor queda en
+  −0,001 [−0,009; +0,007]; restringido a los casos con respuestas, tampoco
+  aparece un efecto escondido por la dilución (el mejor, −0,002). Con la regla
+  fijada de antemano (la mayor MRR en la mitad de selección) se elegiría V4, que
+  daña en B y en C.
+- **Mandarle los «sí» al modelo (V1, V2) es inocuo con pacientes reales, que no
+  se equivocan, y dañino en B y C_omim**: ahí el 10 % de las respuestas
+  simuladas está invertido, así que cerca de la mitad de los «sí» son falsos en
+  B y uno de cada cuatro en C_omim (estimado a partir de los conteos de
+  respuestas), y un «sí» falso reordena todo el ranking del modelo. Las exclusiones explícitas casi
+  nunca se disparan (V2 ≈ V1), y la versión literal de V2 también da lo mismo que
+  V1: su daño lógico existe, pero es raro.
+- **La verosimilitud asimétrica funciona solo sin contar dos veces cada «sí»**:
+  V3 con `model_sees_present` daña en todos los escenarios, y V3fp no.
+- **V3fp con k = 0,3 es la única variante que no daña en A, B y C_orpha**, y la
+  que menos casos empeora (4,0 % contra 18,3 % de la actual). Daña poco pero de
+  forma significativa en C_omim (−0,022 [−0,039; −0,006], contra −0,095 de la
+  actual) y conserva algo menos de la mitad de la mejora simulada (+0,025). Es,
+  en la práctica, un re-ranking que casi no mueve el ranking con pacientes
+  reales: con $k \to 0$ converge al modelo.
+- Se eligió después de ver A, B y C; la mitad retenida de A no alcanza para
+  confirmarla y hace falta un conjunto nuevo (por ejemplo, genes o casos de una
+  release posterior de phenopacket-store) antes de tratarla como validada.
+
+### 11.9 Qué implica
+
+Solo evidencia; no se cambió código de `src/` ni valores por defecto.
+
+1. **La interfaz no debería mostrar el ranking refinado como vista por
+   defecto.** Con los valores actuales empeora el puesto del gen correcto en el
+   17,6 % de los pacientes reales y lo mejora en el 8,0 %; con la mejor variante
+   estructural queda neutro, no mejor. La vista por defecto debería ser la del
+   modelo («Original»), con el refinado como opción secundaria, si se mantiene.
+2. **Si se mantiene el re-ranking, cambiarlo por V3fp con k = 0,3.** Es el
+   único cambio que deja de dañar a los pacientes reales y a B y C_orpha. El
+   cambio en `src/` sería:
+   - Estrategia: sin cambios, `RerankStrategy.FIXED_PRIOR`
+     (`PREGUNTAS_RERANK_STRATEGY=fixed_prior`), temperatura 1.
+   - `ranking/likelihood.py`: que `DiseaseProfile` exponga, además de lo que
+     tiene, el noisy-OR sin piso ni recorte de cada término anotado
+     (`frequency(t) -> float | None`) y si la enfermedad excluye el término o un
+     ancestro (`excludes(t) -> bool`).
+   - `ranking/reranker.py`: `RerankConfig` suma `answer_weighting` (enum nuevo
+     `AnswerWeighting`, valores `calibrated`, el actual, y `asymmetric`, el nuevo
+     valor por defecto), `answer_weight` k = 0,3 y `exclusion_factor` = 0,02.
+     Con `asymmetric`, `_log_likelihood` recibe también todos los hallazgos
+     presentes y suma: $\log \varepsilon$ por cada hallazgo presente (informado
+     o «sí») que la enfermedad excluye; $\log(1 + k\,p)$ por cada presente que
+     el modelo no vio (los «sí», y los términos que el modelo no conoce) y la
+     enfermedad anota; $\log(1 - k\,p)$ por cada ausente («no» y negados
+     informados) que la enfermedad anota; 0 en todo otro caso.
+   - Sin cambios: la selección de preguntas (su verosimilitud, fondo 0,1,
+     frecuencia faltante 0,3, ε 0,02), las reglas de cierre y la garantía de la
+     sección 4.5 de ARQUITECTURA.md (un «no» nunca favorece a una enfermedad que
+     anota el término: su factor es ≤ 1 y el de las demás, 1).
+   - Variables de entorno sugeridas: `PREGUNTAS_ANSWER_WEIGHTING=asymmetric`,
+     `PREGUNTAS_ANSWER_WEIGHT=0.3`.
+3. **Las preguntas pueden seguir siendo útiles como guía para la consulta**
+   (qué conviene averiguar), algo que esta evaluación no mide. Lo que no está
+   demostrado es que reordenar los genes con las respuestas ayude.
+
+### 11.10 Cómo reproducir
+
+```sh
+.venv/bin/python -m eval.audit             # A, B, C y sensibilidad: 20 corridas en ~10 min con 4 procesos
+                                           # (baja phenopacket-store 0.1.27 la primera vez y verifica el sha256)
+.venv/bin/python -m eval.explore           # exploración de 44 configuraciones: ~14 min
+.venv/bin/python -m eval.variants          # variantes estructurales (11.8): 50 corridas, ~11 min
+.venv/bin/python -m eval.audit --summary-only   # rehace eval/results/audit/summary.json sin simular
+```
+
+Las trazas quedan en `eval/results/audit/<corrida>.json` (formato de
+`eval.run_simulation`) y cada cifra de esta sección en
+`eval/results/audit/summary.json`, `eval/results/audit/explore/summary.json` y
+`eval/results/audit/variants/summary.json` (clave
+`variants.<variante>.<escenario>.{held_out,held_out_informative,all,informative}`).
+Requiere lo mismo que la sección 10: la base (`make kb`, que deja
+`data/sources/phenotype.hpoa`) y el servicio del modelo. Los tests de estos
+módulos están en `tests/eval/test_decircularised.py`.
