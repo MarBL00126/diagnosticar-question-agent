@@ -91,10 +91,7 @@ def summarize(task: SummaryTask) -> str:
             if task.answers
             else "No se sumaron respuestas, así que la lista quedó como la ordenó el modelo."
         )
-        return (
-            f"{opening} Llevá esta información a la consulta para conversarla con el médico, "
-            "que va a decidir qué estudios tienen sentido."
-        )
+        return f"{opening} Llevá esta información a la consulta para conversarla con el médico."
     parts = []
     for value, name in (
         (AnswerValue.YES, "sí"),
@@ -115,7 +112,7 @@ def summarize(task: SummaryTask) -> str:
         if risers
         else " El orden de los primeros genes no cambió respecto del modelo."
     )
-    return f"{answers}{moves} Orientación para estudios dirigidos, no un diagnóstico."
+    return f"{answers}{moves} Es una orientación, no un diagnóstico."
 
 
 def _as_phrase(label: str) -> str:

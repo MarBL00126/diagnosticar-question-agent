@@ -135,7 +135,6 @@ def summary_request(task: SummaryTask) -> LLMRequest[SummaryDraft]:
             }
             for position, g in enumerate(task.top_genes, start=1)
         ],
-        "especialidades_sugeridas": list(task.specialties),
         "correcciones": list(task.corrections),
     }
     return LLMRequest(
