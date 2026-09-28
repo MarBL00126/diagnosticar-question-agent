@@ -6,11 +6,12 @@ from diagnosticar_preguntas.ranking.likelihood import (
     LikelihoodModel,
 )
 from diagnosticar_preguntas.ranking.model_client import HttpModelClient, NoKnownHpoIdsError
-from diagnosticar_preguntas.ranking.reranker import BayesianReranker, RerankConfig
+from diagnosticar_preguntas.ranking.reranker import AnswerWeighting, BayesianReranker, RerankConfig
 from diagnosticar_preguntas.ranking.strategy import RerankStrategy, model_query
 
 __all__ = [
     "UNANNOTATED_DISEASE",
+    "AnswerWeighting",
     "BayesianReranker",
     "HttpModelClient",
     "LikelihoodConfig",

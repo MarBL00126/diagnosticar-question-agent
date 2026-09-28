@@ -25,10 +25,17 @@ before its background floor and clipping.
   by 1. Equivalent to a likelihood with ``P(t | d) = (1 + k·p) / 2`` for
   annotated diseases and 1/2, no information, for the others.
 * ``V3fp_k``: V3 with ``fixed_prior``: the "sí" answers are not sent to the
-  model, so each counts once.
+  model, so each counts once. With k = 0.3 it is the code default since
+  2026-09-28 (``AnswerWeighting.ASYMMETRIC``).
 * ``V4``: the configuration ``eval.explore`` picked (``model_sees_present``,
-  epsilon 0.1) with the code's likelihood.
-* ``V5``: the code defaults; ``V5_before``: the configuration before tuning.
+  epsilon 0.1) with the calibrated likelihood.
+* ``V5``: the code defaults until 2026-09-28 (``fixed_prior``, calibrated);
+  ``V5_before``: the configuration before tuning.
+
+V1, V2, V3fp, V4 and V5 run the code's own re-ranker (V1 and V2 are the
+asymmetric weighting with k = 0 under ``model_sees_present``, with and without
+exclusions); only V2_literal and V3, which the code cannot express, use
+``WeightedReranker``.
 
 Scenarios: A (real patients without their article in the knowledge base), B
 (annotation hold-out), C (cross-source, both directions) and the simulated
@@ -36,7 +43,7 @@ TEST split, all from ``eval.audit``, whose ``none`` traces are the baseline.
 A is split by gene into the halves of ``eval.explore``: the variant with the
 best MRR on the selection half is the one this run would recommend, and every
 variant is reported on the held-out half. Writes
-``eval/results/audit/variants/``; nothing here changes a default.
+``eval/results/audit/variants/``.
 """
 
 from __future__ import annotations
@@ -50,21 +57,22 @@ from typing import Any
 
 from eval.cases import annotated_phenotypes, eligible_diseases, load, model_vocabulary
 from eval.explore import gene_halves
-from eval.harness import AgentConfig, open_kb
+from eval.harness import CALIBRATED_DEFAULTS, AgentConfig, open_kb
 from eval.metrics import Trajectory, paired_bootstrap, reciprocal
 from eval.report import trajectories
 
-from diagnosticar_preguntas.domain import Evidence, ModelRanking, Posterior
 from diagnosticar_preguntas.kb.store import KnowledgeBase
-from diagnosticar_preguntas.ranking.likelihood import LikelihoodConfig, LikelihoodModel
-from diagnosticar_preguntas.ranking.reranker import BayesianReranker, UnseenEvidence
+from diagnosticar_preguntas.ranking.likelihood import LikelihoodModel
+from diagnosticar_preguntas.ranking.reranker import (
+    AnswerWeighting,
+    BayesianReranker,
+    ResolvedEvidence,
+)
 from diagnosticar_preguntas.ranking.strategy import RerankStrategy
 from eval import audit
 
 VARIANTS_DIR = audit.AUDIT_DIR / "variants"
 EPSILON = 0.02
-# Background and clipping this small leave the likelihood's noisy-OR untouched.
-RAW = LikelihoodConfig(background=1e-9, missing_frequency=0.3, epsilon=1e-9)
 MSP = RerankStrategy.MODEL_SEES_PRESENT
 FIXED = RerankStrategy.FIXED_PRIOR
 SCENARIOS = ("A", "B", "C_orpha", "C_omim", "simulated")
@@ -86,78 +94,56 @@ class Weighting:
 
 
 class WeightedReranker(BayesianReranker):
-    """``BayesianReranker`` whose likelihood is replaced by the factors of a ``Weighting``.
+    """The two variants ``src`` cannot express, as a ``BayesianReranker`` with other factors.
 
-    The base class multiplies in only what the model did not see; these
-    variants decide per kind of evidence instead, so each round's evidence is
-    classified in ``rerank``: every present finding (for exclusions), the ones
-    to reward (answered "sí", or unknown to the model), and every absent one.
-    ``reported`` are the findings of the request's ``present_hpo_ids``.
+    ``V3`` rewards a "sí" even when the model already saw it, and
+    ``V2_literal`` penalises the diseases that agree with a "no"; the code's
+    ``AnswerWeighting.ASYMMETRIC`` counts each "sí" once and only penalises a
+    present finding a disease excludes. The factors use the same
+    ``DiseaseProfile.frequency`` and ``excludes`` as the code. ``reported`` are
+    the findings of the request's ``present_hpo_ids``; every other present
+    finding came from a "sí".
     """
 
-    def __init__(
-        self,
-        kb: KnowledgeBase,
-        weighting: Weighting,
-        reported: frozenset[str],
-    ) -> None:
-        super().__init__(kb, LikelihoodModel(kb, RAW))
-        self._view = kb
+    def __init__(self, kb: KnowledgeBase, weighting: Weighting, reported: frozenset[str]) -> None:
+        super().__init__(kb, LikelihoodModel(kb))
         self._weighting = weighting
         self._reported = kb.resolve_all(reported)
-        self._exclusions: dict[str, frozenset[str]] = {}
-        self._present: frozenset[str] = frozenset()
-        self._rewarded: frozenset[str] = frozenset()
-        self._absent: frozenset[str] = frozenset()
 
-    def rerank(self, ranking: ModelRanking, evidence: Evidence) -> Posterior:
-        kb = self._view
-        self._present = kb.resolve_all(evidence.present)
-        unknown = kb.resolve_all(ranking.unknown_hpo_ids) & self._present
-        self._rewarded = (self._present - self._reported) | unknown
-        self._absent = kb.resolve_all(evidence.absent)
-        return super().rerank(ranking, evidence)
-
-    def _excludes(self, disease: str, hpo_id: str) -> bool:
-        roots = self._exclusions.get(disease)
-        if roots is None:
-            roots = frozenset(a.hpo_id for a in self._view.annotations(disease) if a.negated)
-            self._exclusions[disease] = roots
-        return bool(roots) and (
-            hpo_id in roots or not roots.isdisjoint(self._view.ancestors(hpo_id))
-        )
-
-    def _log_likelihood(self, disease: str, unseen: UnseenEvidence) -> float:
+    def _log_likelihood(self, disease: str, evidence: ResolvedEvidence) -> float:
         weighting = self._weighting
-        annotated = self._likelihood.profile(disease).supported
+        profile = self._likelihood.profile(disease)
+        rewarded = (evidence.present - self._reported) | evidence.unseen_present
         total = 0.0
-        for hpo_id in self._present:
-            p = annotated.get(hpo_id)
-            if p is None:
+        for hpo_id in evidence.present:
+            frequency = profile.frequency(hpo_id)
+            if frequency is None:
                 if (
                     weighting.exclusion is not None
                     and not weighting.exclusion_on_no
-                    and self._excludes(disease, hpo_id)
+                    and profile.excludes(hpo_id)
                 ):
                     total += math.log(weighting.exclusion)
-            elif weighting.reward is not None and hpo_id in self._rewarded:
-                total += math.log1p(weighting.reward * p)
-        for hpo_id in self._absent:
-            p = annotated.get(hpo_id)
-            if p is None:
+            elif weighting.reward is not None and hpo_id in rewarded:
+                total += math.log1p(weighting.reward * frequency)
+        for hpo_id in evidence.absent:
+            frequency = profile.frequency(hpo_id)
+            if frequency is None:
                 if (
                     weighting.exclusion is not None
                     and weighting.exclusion_on_no
-                    and self._excludes(disease, hpo_id)
+                    and profile.excludes(hpo_id)
                 ):
                     total += math.log(weighting.exclusion)
             elif weighting.penalty is not None:
-                total += math.log1p(-weighting.penalty * p)
+                total += math.log1p(-weighting.penalty * frequency)
         return total
 
 
 @dataclass(frozen=True, slots=True)
 class Variant:
+    """A re-ranking to evaluate: a code configuration, or ``weighting`` on top of it."""
+
     name: str
     description: str
     config: AgentConfig
@@ -170,39 +156,53 @@ class Variant:
         return lambda case, kb: WeightedReranker(kb, weighting, frozenset(case.present))
 
 
-def _config(strategy: RerankStrategy) -> AgentConfig:
-    return AgentConfig(strategy=strategy)
+def _asymmetric(strategy: RerankStrategy, weight: float, exclusion: float) -> AgentConfig:
+    return AgentConfig(
+        strategy=strategy,
+        answer_weighting=AnswerWeighting.ASYMMETRIC,
+        answer_weight=weight,
+        exclusion_factor=exclusion,
+    )
 
 
 VARIANTS = (
-    Variant("V1", "enrich only", _config(MSP), Weighting()),
-    Variant("V2", "enrich + explicit exclusions", _config(MSP), Weighting(exclusion=EPSILON)),
+    Variant("V1", "enrich only", _asymmetric(MSP, 0.0, 1.0)),
+    Variant("V2", "enrich + explicit exclusions", _asymmetric(MSP, 0.0, EPSILON)),
     Variant(
         "V2_literal",
         "enrich + a 'no' punishes the diseases that exclude the term (as first worded)",
-        _config(MSP),
+        AgentConfig(strategy=MSP),
         Weighting(exclusion=EPSILON, exclusion_on_no=True),
     ),
     *(
         Variant(
-            f"V3{suffix}_k{k:g}".replace(".", ""),
-            f"asymmetric likelihood, k={k:g}, {strategy.value}",
-            _config(strategy),
+            f"V3_k{k:g}".replace(".", ""),
+            f"asymmetric likelihood, k={k:g}, model_sees_present, 'sí' counted twice",
+            AgentConfig(strategy=MSP),
             Weighting(reward=k, penalty=k, exclusion=EPSILON),
         )
-        for strategy, suffix in ((MSP, ""), (FIXED, "fp"))
+        for k in (0.3, 0.5)
+    ),
+    *(
+        Variant(
+            f"V3fp_k{k:g}".replace(".", ""),
+            f"asymmetric likelihood, k={k:g}, fixed_prior"
+            + (" (code default)" if k == 0.3 else ""),
+            _asymmetric(FIXED, k, EPSILON),
+        )
         for k in (0.3, 0.5)
     ),
     Variant(
         "V4",
-        "exploration's choice: model_sees_present, epsilon 0.1",
-        AgentConfig(strategy=MSP, epsilon=0.1),
+        "exploration's choice: model_sees_present, epsilon 0.1, calibrated",
+        replace(CALIBRATED_DEFAULTS, strategy=MSP, epsilon=0.1),
     ),
-    Variant("V5", "code defaults (fixed_prior, tuned)", AgentConfig()),
+    Variant("V5", "fixed_prior, calibrated (code default until 2026-09-28)", CALIBRATED_DEFAULTS),
     Variant(
         "V5_before",
-        "configuration before tuning",
-        AgentConfig(
+        "configuration before tuning (calibrated)",
+        replace(
+            CALIBRATED_DEFAULTS,
             strategy=MSP,
             temperature=3.0,
             background=0.05,

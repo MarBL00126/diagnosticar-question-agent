@@ -54,7 +54,7 @@ esquemas.
 | `status` | `"questions"` o `"finished"`. |
 | `finish_reason` | `null` o `"user_finished"`, `"max_rounds"`, `"confident"`, `"no_useful_questions"`. |
 | `questions[]` | `id` (`r<ronda>-<hpo_id>`), `hpo_id`, `label` (etiqueta oficial en español, para chips como "No presenta: …"), `text`, `help`, y solo en modo médico `genes_if_yes` / `genes_if_no` (hasta 5 genes que suben con cada respuesta) y `rationale`; en modo paciente esos tres son `null`. |
-| `ranking[]` | Hasta 50 genes: `gene_id`, `gene_symbol`, `score` (refinado, suma 1), `model_score`, `model_rank`. Mismos campos iniciales que un resultado de `/rank-genes`. |
+| `ranking[]` | Hasta 50 genes: `gene_id`, `gene_symbol`, `score` (refinado, suma 1), `model_score`, `model_rank`. Mismos campos iniciales que un resultado de `/rank-genes`. Con pacientes reales publicados, el orden refinado no mejoró al del modelo ([EVALUACION.md](EVALUACION.md), sección 11): la vista por defecto debería ser la del modelo (`model_rank`), con el refinado como opción. |
 | `specialties`, `confidence` | Tal cual del modelo, para los hallazgos originales: no cambian entre rondas. |
 | `interpreted_answers[]` | Por respuesta: `answer`, `effective_answer` y `note_summary`. Es lo que se reenvía como `reading`. |
 | `summary` | Resumen de cierre para conversar con el médico (solo al terminar). |
@@ -134,7 +134,12 @@ Agente (servicio `question-agent` de `docker-compose.yml`): compose fija
 `PREGUNTAS_MODEL_SERVICE_TIMEOUT_S`, `PREGUNTAS_LLM_TIMEOUT_S`,
 `PREGUNTAS_LLM_EFFORT`, `PREGUNTAS_LLM_QUESTION_EFFORT`, `PREGUNTAS_MAX_CONCURRENT_ROUNDS`, `PREGUNTAS_LOG_LEVEL`,
 `CLAUDE_CODE_OAUTH_TOKEN` y `ANTHROPIC_API_KEY`. El resto usa los valores por
-defecto del agente ([README](../README.md#configuración)).
+defecto del agente ([README](../README.md#configuración)). Entre ellos, cómo
+reordenan las respuestas los genes: `PREGUNTAS_ANSWER_WEIGHTING` (`asymmetric`,
+o `calibrated`, la anterior) y `PREGUNTAS_ANSWER_WEIGHT` (`0.3`), junto con
+`PREGUNTAS_RERANK_STRATEGY` (`fixed_prior`); para cambiarlos en la plataforma
+hay que agregarlos a la lista de variables que compose deja pasar
+([DECISIONES.md](DECISIONES.md), D-17).
 
 **Invariante de tiempos.** El backend tiene que esperar más que el peor caso
 del agente: cola (`PREGUNTAS_QUEUE_TIMEOUT_S`, 10 s) + presupuesto de la ronda

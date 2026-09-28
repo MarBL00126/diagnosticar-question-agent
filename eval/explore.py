@@ -8,7 +8,8 @@ single answer pushes the ranking: strategy, temperature, and the likelihood's
 background and epsilon. The patients are split by gene into two seeded
 halves. The configuration with the highest MRR on the first half is then
 reported on the second half, on B and C, and on the simulated TEST split, none
-of which took part in the choice, next to the code defaults.
+of which took part in the choice, next to ``CALIBRATED_DEFAULTS``. The grid
+keeps the calibrated answer weighting, the one the audit measured.
 
 Nothing here changes a default: these are the same patients that measure the
 agent, so a configuration picked here needs a fresh set of cases to be
@@ -27,7 +28,7 @@ from dataclasses import replace
 from typing import Any
 
 from eval.cases import annotated_phenotypes, eligible_diseases, load, model_vocabulary
-from eval.harness import AgentConfig, open_kb, stable_seed
+from eval.harness import CALIBRATED_DEFAULTS, AgentConfig, open_kb, stable_seed
 from eval.metrics import METRICS, Trajectory, paired_bootstrap, reciprocal
 from eval.report import trajectories
 
@@ -50,7 +51,7 @@ CHECKS = {
 
 def grid() -> list[AgentConfig]:
     return [
-        AgentConfig(strategy=s, temperature=t, background=b, epsilon=e)
+        replace(CALIBRATED_DEFAULTS, strategy=s, temperature=t, background=b, epsilon=e)
         for s, t, b, e in itertools.product(STRATEGIES, TEMPERATURES, BACKGROUNDS, EPSILONS)
         if e <= b
     ]

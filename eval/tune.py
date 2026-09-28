@@ -13,6 +13,10 @@ Every configuration is played once without early stopping; the stop rules
 grid of values. Among configurations within ``MRR_TOLERANCE`` of the best, the
 one that changes the fewest code defaults wins.
 
+The grid is over the calibrated answer weighting (``CALIBRATED_DEFAULTS``),
+the one it was run for; the asymmetric weighting that replaced it came from
+the evaluation on published case reports (docs/EVALUACION.md, section 11.8).
+
     python -m eval.tune [--out eval/results/tuning_grid.json]
 
 Writes the whole grid and ``eval/results/chosen_config.json``.
@@ -30,7 +34,7 @@ from pathlib import Path
 from typing import Any
 
 from eval.cases import load
-from eval.harness import RESULTS_DIR, AgentConfig
+from eval.harness import CALIBRATED_DEFAULTS, RESULTS_DIR, AgentConfig
 from eval.metrics import NO_STOPS, StopRules, apply_stops, summarize
 from eval.policies import CaseTrace
 from eval.run_simulation import simulate
@@ -53,7 +57,7 @@ MRR_TOLERANCE = 0.005
 
 def stage1_configs() -> list[AgentConfig]:
     return [
-        AgentConfig(strategy=s, temperature=t, background=b, missing_frequency=m)
+        replace(CALIBRATED_DEFAULTS, strategy=s, temperature=t, background=b, missing_frequency=m)
         for s, t, b, m in itertools.product(
             STRATEGIES, TEMPERATURES, BACKGROUNDS, MISSING_FREQUENCIES
         )
@@ -76,7 +80,7 @@ def stage3_configs(best: AgentConfig) -> list[AgentConfig]:
 
 
 def changes_from_default(config: AgentConfig) -> int:
-    default = AgentConfig().to_dict()
+    default = CALIBRATED_DEFAULTS.to_dict()
     return sum(1 for key, value in config.to_dict().items() if default[key] != value)
 
 
@@ -108,7 +112,7 @@ def final_row(traces: Sequence[CaseTrace], rules: StopRules) -> dict[str, Any]:
 
 def evaluate(results: dict[tuple[AgentConfig, str], list[CaseTrace]]) -> list[dict[str, Any]]:
     """One row per config: never stopping early, plus the MRR under the code's stop rules."""
-    default = AgentConfig()
+    default = CALIBRATED_DEFAULTS
     default_rules = StopRules(default.confident_threshold, default.min_information_gain)
     rows = []
     for (config, _), traces in results.items():
@@ -174,7 +178,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     stops = stop_grid(all_traces[(best, "agent")])
     # p_unknown only rescales the gains, i.e. it is min_information_gain in disguise; keep it.
     chosen_stops = best_of([r for r in stops if r["p_unknown"] == RUN_P_UNKNOWN])
-    default_stops = stop_grid(all_traces[(AgentConfig(), "agent")])
+    default_stops = stop_grid(all_traces[(CALIBRATED_DEFAULTS, "agent")])
     chosen = replace(
         best,
         confident_threshold=chosen_stops["confident_threshold"],

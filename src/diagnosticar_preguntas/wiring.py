@@ -18,7 +18,7 @@ from diagnosticar_preguntas.kb.store import KnowledgeBase
 from diagnosticar_preguntas.llm.factory import build_provider
 from diagnosticar_preguntas.ranking.likelihood import LikelihoodModel
 from diagnosticar_preguntas.ranking.model_client import HttpModelClient
-from diagnosticar_preguntas.ranking.reranker import BayesianReranker
+from diagnosticar_preguntas.ranking.reranker import BayesianReranker, RerankConfig
 from diagnosticar_preguntas.selection.selector import InformationGainSelector
 
 
@@ -43,6 +43,12 @@ def patient_vocabulary(kb: KnowledgeBase) -> PatientVocabulary:
     return PatientVocabulary(kb.genes(), kb.disease_name)
 
 
+def rerank_config(settings: Settings) -> RerankConfig:
+    return RerankConfig(
+        answer_weighting=settings.answer_weighting, answer_weight=settings.answer_weight
+    )
+
+
 def build_service(settings: Settings) -> Service:
     """Wire the real components. Raises ``KnowledgeBaseError`` if the KB is missing or stale."""
     kb = KnowledgeBase.open(settings.kb_path)
@@ -50,7 +56,7 @@ def build_service(settings: Settings) -> Service:
     model = HttpModelClient(settings.model_service_url, timeout=settings.model_service_timeout_s)
     rounds = RoundService(
         model=model,
-        reranker=BayesianReranker(kb, likelihood),
+        reranker=BayesianReranker(kb, likelihood, rerank_config(settings)),
         selector=InformationGainSelector(kb, likelihood),
         labels=kb,
         llm=build_provider(settings),

@@ -7,11 +7,22 @@ que dan una cota superior optimista.
 
 ## Resumen
 
-**Con pacientes reales, las preguntas no mejoran el ranking del modelo, y con
-los valores por defecto actuales lo empeoran.**
+**Con pacientes reales, las preguntas no mejoran el ranking del modelo.** Con la
+ponderación que el agente usaba hasta el 28/09/2026 lo empeoraban; con la
+asimétrica, hoy por defecto, quedan neutras.
 
-- **Pacientes reales** (501 casos publicados de phenopacket-store, uno por gen,
-  sin el artículo del paciente en la base del agente): el top-1 baja de 43,1 %
+- **Configuración por defecto desde el 28/09/2026** (ponderación asimétrica,
+  [DECISIONES.md](DECISIONES.md) D-17), medida con el código nuevo: con los 251
+  pacientes reales retenidos, MRR 0,500 → 0,499 (**−0,001 [−0,009; +0,007]**),
+  top-1 sin cambio (+0,0 pp [−1,6; +1,6]); el gen correcto baja en el 4,0 % de
+  los casos y sube en el 3,2 %. Con los 501: −0,001 [−0,006; +0,005]. Sin daño con
+  anotaciones retenidas (+0,004) ni con Orphanet → OMIM (+0,001); daño chico con
+  OMIM → Orphanet (−0,022 [−0,039; −0,006]). En la simulación, +0,025 [+0,012;
+  +0,039].
+
+- **Pacientes reales con la ponderación calibrada** (hasta el 28/09; 501 casos
+  publicados de phenopacket-store, uno por gen, sin el artículo del paciente en
+  la base del agente): el top-1 baja de 43,1 %
   a 37,5 % (−5,6 pp, IC 95 % [−8,2; −3,0]) y el MRR de 0,508 a 0,461 (−0,047
   [−0,065; −0,029], un 9 % menos). El gen correcto baja de puesto en el 17,6 %
   de los casos y sube en el 8,0 %.
@@ -32,8 +43,9 @@ los valores por defecto actuales lo empeoran.**
   estructurales, la mejor (no castigar lo que las anotaciones no mencionan y
   contar cada «sí» una vez) deja de dañar a los pacientes reales retenidos
   (−0,001 [−0,009; +0,007]; empeora el 4,0 % de los casos contra el 18,3 %), pero
-  no los mejora. Por eso la vista por defecto de la interfaz debería ser el
-  ranking del modelo, no el refinado.
+  no los mejora. Es la que hoy usa el código por defecto. Como no mejora, la
+  vista por defecto de la interfaz debería ser el ranking del modelo, no el
+  refinado.
 - **Cota superior optimista, pacientes simulados de las mismas anotaciones que
   usa el agente**: MRR 0,787 → 0,842 (+6,9 %, IC [+4,1; +10,1]) y top-1 72,0 % →
   79,3 % (+7,3 pp [+3,7; +11,3]), con 3,25 preguntas. No es sobreajuste a los
@@ -84,9 +96,11 @@ dice de qué archivo y de qué clave sale cada una.
   remuestreos). Si incluye el 0, la diferencia no es significativa.
 - **Sube / baja / empeora** comparan el puesto final del gen verdadero con el
   que le daba el modelo solo.
-- Configuración: la elegida en la evaluación, que es la del código hoy
-  (`fixed_prior`, temperatura 1, cierres 0,9 / 0,05); modo paciente;
-  respondedor `default`, salvo que se indique otra cosa.
+- Configuración de las secciones 1 a 7: la elegida en la evaluación
+  (`fixed_prior`, temperatura 1, cierres 0,9 / 0,05) con la ponderación
+  calibrada, la del código hasta el 28/09/2026; modo paciente; respondedor
+  `default`, salvo que se indique otra cosa. Hoy el código pondera las
+  respuestas de forma asimétrica (sección 0).
 - La sección 0 sale de pacientes reales y de simulaciones sin circularidad
   (`python -m eval.audit`, `eval.explore` y `eval.variants`, 28/09/2026). Las secciones
   1 a 7 salen de pacientes **simulados** a partir de las mismas anotaciones que
@@ -135,15 +149,17 @@ que las anotaciones de su enfermedad no mencionan castiga al gen correcto.
 
   | variante | reales retenidos (251) | empeora | B | C_orpha | C_omim | simulación |
   |---|---|---|---|---|---|---|
-  | actual (`fixed_prior`, verosimilitud calibrada) | −0,044 [−0,068; −0,020] | 18,3 % | −0,041 | −0,055 | −0,095 | +0,054 |
+  | calibrada (`fixed_prior`, por defecto hasta el 28/09) | −0,044 [−0,068; −0,020] | 18,3 % | −0,041 | −0,055 | −0,095 | +0,054 |
   | los «sí» al modelo y nada más (V1) | −0,007 [−0,024; +0,010] | 9,6 % | −0,043 | −0,016 | −0,025 | −0,015 |
   | la elegida en la exploración (V4) | −0,002 [−0,020; +0,014] | 9,6 % | −0,066 | −0,046 | −0,093 | +0,018 |
-  | **verosimilitud asimétrica con prior fijo, k = 0,3 (V3fp)** | **−0,001 [−0,009; +0,007]** | **4,0 %** | +0,004 | +0,001 | −0,022 | +0,025 |
+  | **verosimilitud asimétrica con prior fijo, k = 0,3 (V3fp, por defecto desde el 28/09)** | **−0,001 [−0,009; +0,007]** | **4,0 %** | +0,004 | +0,001 | −0,022 | +0,025 |
 
   V3fp es la única que no daña en los pacientes reales, B y C_orpha; en C_omim
   daña poco (−0,022 [−0,039; −0,006]). Ninguna mejora a los pacientes reales,
   tampoco restringiendo a los casos con al menos un «sí» o un «no». V3fp se
   eligió después de ver todos los escenarios: falta confirmarla con casos nuevos.
+  Ya en el código, la corrida con los valores por defecto nuevos reproduce estas
+  cifras traza por traza ([EVALUACION.md](EVALUACION.md), sección 11.10).
 - **El modelo también está más débil fuera de su terreno**: acierta el top-1 en
   el 43,1 % de los pacientes reales contra el 72,0 % de los simulados, y deja el
   gen correcto fuera de su top-50 en el 23 % (contra el 1,3 %). Ese margen es el
@@ -585,6 +601,8 @@ la clave es la ruta dentro de ese JSON. «Un 9 % menos» es 0,047 / 0,508.
 | variantes estructurales, pacientes reales retenidos: Δ MRR y empeora | ver sección 0 | `audit/variants/summary.json` | `variants.<variante>.A.held_out.{mrr,worse}` |
 | ídem, casos con al menos un «sí» o «no» | ver [EVALUACION.md](EVALUACION.md), 11.8 | `audit/variants/summary.json` | `variants.<variante>.A.held_out_informative` |
 | variantes en B, C y la simulación | ver sección 0 | `audit/variants/summary.json` | `variants.<variante>.{B,C_orpha,C_omim,simulated}.all.mrr` |
+| configuración por defecto desde el 28/09 (resumen) | −0,001 retenidos; −0,001 los 501; 4,0 % / 3,2 %; +0,004; +0,001; −0,022; +0,025 | `audit/variants/summary.json` | `variants.V3fp_k03.A.{held_out,all}`, `variants.V3fp_k03.{B,C_orpha,C_omim,simulated}.all` |
+| mismas trazas por el camino normal de `eval.run_simulation` | 300 de 300 | `test_defaults_asymmetric.json` | [EVALUACION.md](EVALUACION.md), sección 11.10 |
 
 **Secciones 1 a 10 (simulación).** `python -m eval.impact` imprime cada cifra
 con una clave. Los archivos están en `eval/results/` (fuera de git; se

@@ -127,3 +127,39 @@ def test_profiles_are_cached_per_disease(model: LikelihoodModel) -> None:
 def test_inconsistent_configuration_is_rejected(kwargs: dict[str, float]) -> None:
     with pytest.raises(ValueError):
         LikelihoodConfig(**kwargs)
+
+
+def test_frequency_is_the_noisy_or_before_floor_and_clipping(model: LikelihoodModel) -> None:
+    assert model.profile(DISEASE_A).frequency(SEIZURE) == pytest.approx(1.0)
+    assert model.profile(DISEASE_A).frequency(BLINDNESS) == pytest.approx(0.025)
+    assert model.profile(DISEASE_C2).frequency(VISUAL_IMPAIRMENT) == pytest.approx(
+        1 - (1 - 0.5) * (1 - 0.545)
+    )
+    assert model.profile(DISEASE_C1).frequency(SEIZURE) == pytest.approx(0.8)
+    assert model.profile(DISEASE_B).frequency(LACTIC_ACIDOSIS) == pytest.approx(0.5)
+
+
+def test_frequency_is_none_when_nothing_is_annotated(model: LikelihoodModel) -> None:
+    assert model.profile(DISEASE_C1).frequency(GENERALIZED_SEIZURE) is None
+    assert model.profile(DISEASE_B).frequency(SEIZURE) is None
+    assert model.profile(DISEASE_E).frequency(LACTIC_ACIDOSIS) is None
+    assert model.profile(UNANNOTATED_DISEASE).frequency(SEIZURE) is None
+
+
+def test_excludes_covers_the_negated_term_and_its_descendants(model: LikelihoodModel) -> None:
+    assert model.profile(DISEASE_B).excludes(SEIZURE)
+    assert model.profile(DISEASE_B).excludes(FOCAL_SEIZURE)
+    assert not model.profile(DISEASE_B).excludes(NERVOUS_PHYSIOLOGY)
+    assert model.profile(DISEASE_E).excludes(HYPOTONIA)
+    assert not model.profile(DISEASE_A).excludes(SEIZURE)
+    assert not model.profile(UNANNOTATED_DISEASE).excludes(SEIZURE)
+
+
+def test_excludes_is_exactly_when_probability_is_epsilon(
+    tiny_kb: KnowledgeBase, model: LikelihoodModel
+) -> None:
+    for disease in (DISEASE_A, DISEASE_B, DISEASE_C1, DISEASE_C2, DISEASE_E):
+        profile = model.profile(disease)
+        for term in tiny_kb.term_ids():
+            expected = profile.probability(term) == pytest.approx(CONFIG.epsilon)
+            assert profile.excludes(term) is expected, (disease, term)

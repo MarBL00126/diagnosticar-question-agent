@@ -18,6 +18,11 @@ For disease ``d`` and term ``t``, ``P(t | d)`` follows the ontology:
 
 Every value is finally clipped to ``[epsilon, 1 - epsilon]``, which models
 answer noise: a single "no" never rules a disease out completely.
+
+The re-ranker's default weighting does not use ``P(t | d)`` itself but its two
+ingredients, which ``DiseaseProfile`` also exposes: ``frequency`` (the
+noisy-OR before the background floor and the clipping) and ``excludes`` (a
+``NOT`` applies). The question selector always uses ``P(t | d)``.
 """
 
 from __future__ import annotations
@@ -57,12 +62,14 @@ class DiseaseProfile:
         self,
         *,
         supported: Mapping[str, float],
+        frequencies: Mapping[str, float],
         annotated: frozenset[str],
         excluded: frozenset[str],
         kb: KnowledgeBase,
         config: LikelihoodConfig,
     ) -> None:
         self._supported = supported
+        self._frequencies = frequencies
         self._excluded = excluded
         self._kb = kb
         self.annotated = annotated
@@ -77,11 +84,30 @@ class DiseaseProfile:
     def probability(self, hpo_id: str) -> float:
         if (value := self._supported.get(hpo_id)) is not None:
             return value
-        if self._excluded and (
-            hpo_id in self._excluded or not self._excluded.isdisjoint(self._kb.ancestors(hpo_id))
-        ):
+        if self._negated(hpo_id):
             return self._excluded_value
         return self.default
+
+    def frequency(self, hpo_id: str) -> float | None:
+        """Noisy-OR of the frequencies annotated to the term or a descendant.
+
+        Before the background floor and the clipping of ``probability``;
+        ``None`` when the disease annotates neither the term nor a descendant.
+        """
+        return self._frequencies.get(hpo_id)
+
+    def excludes(self, hpo_id: str) -> bool:
+        """A ``NOT`` on the term or an ancestor applies: ``probability`` is ``epsilon``.
+
+        A positive annotation of the term or a descendant takes precedence, as
+        in ``probability``.
+        """
+        return hpo_id not in self._supported and self._negated(hpo_id)
+
+    def _negated(self, hpo_id: str) -> bool:
+        return bool(self._excluded) and (
+            hpo_id in self._excluded or not self._excluded.isdisjoint(self._kb.ancestors(hpo_id))
+        )
 
     def deviations(self, index: Mapping[str, int]) -> Iterator[tuple[int, float]]:
         """Positions in ``index`` whose probability is not ``default``, with that probability.
@@ -144,12 +170,14 @@ class LikelihoodModel:
             annotated.add(annotation.hpo_id)
             for term in (annotation.hpo_id, *self.kb.ancestors(annotation.hpo_id)):
                 absent_all[term] = absent_all.get(term, 1.0) * (1.0 - frequency)
+        frequencies = {term: 1.0 - none_present for term, none_present in absent_all.items()}
         supported = {
-            term: config.clip(max(config.background, 1.0 - none_present))
-            for term, none_present in absent_all.items()
+            term: config.clip(max(config.background, frequency))
+            for term, frequency in frequencies.items()
         }
         return DiseaseProfile(
             supported=supported,
+            frequencies=frequencies,
             annotated=frozenset(annotated),
             excluded=frozenset(excluded),
             kb=self.kb,

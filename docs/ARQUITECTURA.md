@@ -21,7 +21,7 @@ respuestas hasta el momento. Los componentes se conectan por los protocolos de
 | Salvaguardas | `agent/guardrails.py` | Revisa todo texto del LLM antes de que llegue a una persona. |
 | Cliente del modelo | `ranking/model_client.py` | `POST /rank-genes` del modelo de diagnostic.ar, con errores tipados. |
 | Estrategia | `ranking/strategy.py` | Qué hallazgos se le mandan al modelo (`fixed_prior` o `model_sees_present`). |
-| Verosimilitud | `ranking/likelihood.py` | `P(síntoma \| enfermedad)` con la semántica de la ontología. |
+| Verosimilitud | `ranking/likelihood.py` | `P(síntoma \| enfermedad)` con la semántica de la ontología, y sus ingredientes: la frecuencia anotada y las exclusiones. |
 | Re-ranker | `ranking/reranker.py` | Posterior bayesiana sobre pares gen–enfermedad. |
 | Selector | `selection/` | Términos preguntables, ganancia de información, diversificación. |
 | Capa LLM | `llm/` | Proveedores de Claude y de plantillas detrás de una misma interfaz, prompts y esquemas de salida. |
@@ -60,8 +60,9 @@ flowchart TD
    no se usan como evidencia y no se vuelven a preguntar.
 4. **Modelo.** `POST /rank-genes` con `top_k` 50. Con la estrategia por defecto,
    `fixed_prior`, se mandan siempre los mismos `present_hpo_ids` (sección 4.4).
-5. **Re-ranking.** El ranking del modelo es el prior; la evidencia que el modelo
-   no vio entra como verosimilitud (sección 4).
+5. **Re-ranking.** El ranking del modelo es el prior; cada respuesta lo
+   reordena solo a través de lo que las anotaciones dicen del síntoma
+   (sección 4).
 6. **Cierre.** En este orden: `finish` pedido → `user_finished`; `round` mayor
    que `PREGUNTAS_MAX_ROUNDS` → `max_rounds`; primer gen con puntaje ≥ 0,9 →
    `confident`; lista corta vacía o ninguna ganancia ≥ 0,05 bits →
@@ -171,30 +172,72 @@ $$
   todo una enfermedad.
 
 $b$, $f_{\text{falt}}$ y $\varepsilon$ son constantes de `LikelihoodConfig`,
-elegidas en la evaluación.
+elegidas en la evaluación. La **selección de preguntas** usa siempre
+$P(t \mid d)$. El re-ranking por defecto usa solo dos de sus ingredientes, que
+`DiseaseProfile` expone aparte: la frecuencia anotada
+$p(t, d) = 1 - \prod_{a \in A^+(d,t)} (1 - f_a)$, sin piso ni recorte
+(`frequency`, `None` si $A^+(d,t)$ es vacío), y si $d$ excluye $t$ (`excludes`,
+el caso NOT de la fórmula).
 
 ### 4.3 Posterior
 
-$$w(g, d) \propto \pi(g, d) \prod_{t \in P'} P(t \mid d) \prod_{t \in A} \bigl(1 - P(t \mid d)\bigr), \qquad \text{puntaje}(g) = \sum_{d} w(g, d)$$
+$P$ son todos los hallazgos presentes (informados y respondidos «sí»), $P'$ los
+presentes que el modelo **no vio** (los que no se le mandaron y los que devolvió
+como desconocidos, `unknown_hpo_ids`) y $A$ todos los ausentes (respondidos «no»
+y negados de la extracción; el modelo nunca los recibe). «No sé» no cuenta. El
+puntaje de un gen es la suma de sus hipótesis, y los puntajes suman 1 sobre los
+50 genes; el `model_score` y `model_rank` de cada gen quedan en la respuesta
+para comparar.
 
-$A$ son todos los hallazgos ausentes (el modelo solo recibe hallazgos
-presentes) y $P'$ los presentes que el modelo **no vio**: los que no se le
-mandaron y los que devolvió como desconocidos (`unknown_hpo_ids`). Así ningún
-hallazgo cuenta dos veces. Los puntajes suman 1 sobre los 50 genes; el
-`model_score` y `model_rank` de cada gen quedan en la respuesta para comparar.
+**Ponderación asimétrica (por defecto, `PREGUNTAS_ANSWER_WEIGHTING=asymmetric`).**
+Solo lo que las anotaciones de una enfermedad dicen de un hallazgo la mueve:
+
+$$w(g, d) \propto \pi(g, d) \prod_{\substack{t \in P\\ d \text{ excluye } t}} x \prod_{\substack{t \in P'\\ p(t,d) \neq \text{—}}} \bigl(1 + k\,p(t, d)\bigr) \prod_{\substack{t \in A\\ p(t,d) \neq \text{—}}} \bigl(1 - k\,p(t, d)\bigr)$$
+
+con $k = 0{,}3$ (`PREGUNTAS_ANSWER_WEIGHT`) y $x = 0{,}02$
+(`RerankConfig.exclusion_factor`); todo otro par (hallazgo, enfermedad) tiene
+factor 1. **Que las anotaciones de una enfermedad no mencionen un hallazgo no
+cuenta ni a favor ni en contra.** Con el ejemplo de dos genes de
+[EVALUACION.md](EVALUACION.md) (11.1), A anota $t$ con frecuencia 0,9 y B no dice
+nada: un «sí» multiplica a A por 1,27 y deja a B igual; un «no» multiplica a A
+por 0,73. Una respuesta mueve un gen a lo sumo un 30 %, no un factor 9.
+Equivale a una verosimilitud con $P(t \mid d) = (1 + k\,p)/2$ para lo anotado y
+1/2 (sin información) para lo demás, más la exclusión. Un hallazgo presente que
+la enfermedad excluye la castiga aunque el modelo lo haya visto, porque el
+modelo no conoce las exclusiones; un «sí» que el modelo vio (con
+`model_sees_present`) no se premia otra vez. Con $k = 0$ y $x = 1$ el ranking es
+el del modelo (test
+`tests/ranking/test_reranker.py::test_with_no_weight_and_no_exclusion_the_ranking_is_the_models`).
+
+**Ponderación calibrada (`PREGUNTAS_ANSWER_WEIGHTING=calibrated`).** La
+verosimilitud completa de 4.2:
+
+$$w(g, d) \propto \pi(g, d) \prod_{t \in P'} P(t \mid d) \prod_{t \in A} \bigl(1 - P(t \mid d)\bigr)$$
+
+Aquí lo no mencionado sí cuenta: un «sí» a un hallazgo que la enfermedad no
+anota la multiplica por $b = 0{,}1$, contra hasta 0,98 de las que lo anotan. Fue
+la ponderación por defecto hasta el 28/09/2026: la mejor con pacientes simulados
+a partir de las anotaciones (+0,054 de MRR), y la que más dañaba con pacientes
+reales publicados (−0,047). La asimétrica deja de dañarlos (−0,001 [−0,009;
++0,007] en los pacientes retenidos) pero tampoco los mejora
+([EVALUACION.md](EVALUACION.md), secciones 11.8 y 11.10;
+[DECISIONES.md](DECISIONES.md), D-17).
 
 ### 4.4 `FIXED_PRIOR`: el modelo solo ve los hallazgos originales
 
 Con `PREGUNTAS_RERANK_STRATEGY=fixed_prior` (por defecto), cada ronda consulta al
 modelo con `present_hpo_ids` y nada más. Entonces el prior es siempre el primer
-ranking y **todas** las respuestas, "sí" y "no", entran por la verosimilitud:
-un "sí" equivocado pesa como un factor acotado en lugar de reordenar todo el
-ranking del modelo. En los casos de prueba simulados esto dio MRR 0,842 contra
-0,799 de `model_sees_present`, que manda también los "sí" al modelo
-([EVALUACION.md](EVALUACION.md), secciones 5 y 6.3; contexto en
-[DECISIONES.md](DECISIONES.md), D-11). Con pacientes reales el orden se
-invierte (`model_sees_present` +0,046 de MRR por encima) y ninguna de las dos
-mejora al modelo ([EVALUACION.md](EVALUACION.md), sección 11.6).
+ranking y **todas** las respuestas, "sí" y "no", entran por el re-ranking: un
+"sí" equivocado pesa como un factor acotado (a lo sumo 1,3 con la ponderación
+asimétrica) en lugar de reordenar todo el ranking del modelo, y cada "sí" cuenta
+una sola vez. Con la ponderación calibrada, en los casos de prueba simulados
+esto dio MRR 0,842 contra 0,799 de `model_sees_present`, que manda también los
+"sí" al modelo ([EVALUACION.md](EVALUACION.md), secciones 5 y 6.3; contexto en
+[DECISIONES.md](DECISIONES.md), D-11). Con pacientes reales ese orden se
+invierte (sección 11.6 de EVALUACION.md). Con la ponderación asimétrica,
+`fixed_prior` es la combinación que no daña; mandarle los "sí" al modelo y
+además premiarlos los cuenta dos veces y daña en todos los escenarios (sección
+11.8).
 
 Consecuencia para el contrato: `specialties` y `confidence` vienen sin cambios
 del modelo para los hallazgos originales y son iguales en todas las rondas. Lo
@@ -202,11 +245,14 @@ que refinan las respuestas es `ranking[].score`.
 
 ### 4.5 Garantía: un hallazgo negado nunca favorece a un gen que lo tiene
 
-Un "no" sobre $t$ multiplica cada hipótesis por $1 - P(t \mid d)$. Si $d$ tiene
-$t$ (o un descendiente) anotado, $P(t \mid d) \ge b$ y el factor es a lo sumo
-$1 - b$; si no lo tiene, el factor es $1 - b$; si lo excluye, $1 - \varepsilon$.
-Por lo tanto negar un hallazgo nunca sube una hipótesis que lo presenta por
-encima de una que no. Lo verifica
+Con la ponderación asimétrica, un "no" sobre $t$ multiplica cada hipótesis que
+anota $t$ (o un descendiente) por $1 - k\,p \le 1$ y todas las demás, incluidas
+las que lo excluyen, por 1. Con la calibrada, lo multiplica por
+$1 - P(t \mid d)$: si $d$ tiene $t$ anotado, $P(t \mid d) \ge b$ y el factor es
+a lo sumo $1 - b$; si no lo tiene, $1 - b$; si lo excluye, $1 - \varepsilon$. En
+las dos, negar un hallazgo nunca sube una hipótesis que lo presenta por encima
+de una que no. Lo verifica, para cada término de la base de prueba y cada par de
+hipótesis y con las dos ponderaciones,
 `tests/ranking/test_reranker.py::test_absent_term_never_favours_hypotheses_annotated_with_it`,
 y es la versión cuantitativa de la regla "un hallazgo negado nunca apoya a un
 gen" del prototipo ([CREDITOS.md](CREDITOS.md)).
@@ -214,11 +260,13 @@ gen" del prototipo ([CREDITOS.md](CREDITOS.md)).
 ### 4.6 Qué supone este cálculo
 
 Las respuestas mueven el ranking solo a través de las anotaciones de
-`phenotype.hpoa`. Si las anotaciones de la enfermedad verdadera no mencionan un
-síntoma que el paciente tiene, su «sí» le da a esa enfermedad el mismo factor
-$b$ que a cualquier otra que tampoco lo menciona; si mencionan con frecuencia
-alta un síntoma que el paciente no tiene, su «no» la castiga. El agente rinde
-lo que las anotaciones describan bien a los pacientes reales, y nada más: no
+`phenotype.hpoa`. Con la ponderación calibrada, si las anotaciones de la
+enfermedad verdadera no mencionan un síntoma que el paciente tiene, su «sí» la
+castiga por un factor 10 frente a las que lo mencionan; esa es la razón de que
+dañara a los pacientes reales. La asimétrica deja ese caso neutro, pero sigue
+castigando (como mucho un 30 % por respuesta) a la enfermedad verdadera cuando
+el paciente dice «no» a un síntoma frecuente que no tiene. El agente rinde lo
+que las anotaciones describan bien a los pacientes reales, y nada más: no
 aprende de los casos ni ve el diagnóstico.
 
 Por eso una evaluación con pacientes simulados a partir de esas mismas
