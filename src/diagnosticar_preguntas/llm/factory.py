@@ -15,12 +15,14 @@ def build_provider(settings: Settings) -> LLMProvider:
             return ClaudeCliProvider(
                 model=settings.llm_model,
                 effort=settings.llm_effort,
+                question_effort=settings.llm_question_effort,
                 timeout_s=settings.llm_timeout_s,
             )
         case LLMProviderName.ANTHROPIC:
             return AnthropicProvider(
                 model=settings.llm_model,
                 effort=settings.llm_effort,
+                question_effort=settings.llm_question_effort,
                 timeout_s=settings.llm_timeout_s,
             )
         case LLMProviderName.TEMPLATE:

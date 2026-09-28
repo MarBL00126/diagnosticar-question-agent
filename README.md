@@ -77,7 +77,8 @@ trabajo (el entorno gana; un valor vacío cuenta como no definido). Fuente:
 | `PREGUNTAS_LLM_PROVIDER` | `claude-cli` | `claude-cli` (`claude -p`, suscripción), `anthropic` (API de Claude) o `template` (sin LLM). |
 | `PREGUNTAS_LLM_MODEL` | `claude-opus-5` | Modelo de Claude. |
 | `PREGUNTAS_LLM_TIMEOUT_S` | `60` | Tope de una llamada al LLM; nunca recibe más de lo que le queda a la ronda. |
-| `PREGUNTAS_LLM_EFFORT` | `high` | `low`, `medium`, `high`, `xhigh` o `max`. |
+| `PREGUNTAS_LLM_EFFORT` | `high` | Esfuerzo para leer notas y escribir el resumen: `low`, `medium`, `high`, `xhigh` o `max`. |
+| `PREGUNTAS_LLM_QUESTION_EFFORT` | `medium` | Esfuerzo para redactar las preguntas de cada ronda (medido en [docs/EVALUACION_ESFUERZO.md](docs/EVALUACION_ESFUERZO.md)). |
 | `PREGUNTAS_SHORTLIST_SIZE` | `8` | Síntomas candidatos que el selector le pasa a Claude por ronda. |
 | `PREGUNTAS_QUESTIONS_PER_ROUND` | `3` | Preguntas por ronda (1 a 3, límite del contrato). |
 | `PREGUNTAS_MAX_ROUNDS` | `3` | Rondas con preguntas (1 a 3, límite del contrato). |

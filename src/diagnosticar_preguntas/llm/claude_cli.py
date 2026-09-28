@@ -38,6 +38,7 @@ from diagnosticar_preguntas.llm.provider import (
     LLMRefusalError,
     LLMRequest,
     LLMTimeoutError,
+    effort_for,
     log_call,
 )
 
@@ -57,11 +58,13 @@ class ClaudeCliProvider:
         model: str,
         effort: Effort,
         timeout_s: float,
+        question_effort: Effort | None = None,
         binary: str | None = None,
         runner: Runner = subprocess.run,
     ) -> None:
         self._model = model
         self._effort = effort
+        self._question_effort = question_effort
         self._timeout_s = timeout_s
         self._binary = binary or os.environ.get("CLAUDE_BINARY") or shutil.which("claude")
         self._runner = runner
@@ -80,7 +83,7 @@ class ClaudeCliProvider:
             "--model",
             self._model,
             "--effort",
-            self._effort,
+            effort_for(request.task, self._effort, self._question_effort),
             "--append-system-prompt",
             request.system,
             "--output-format",

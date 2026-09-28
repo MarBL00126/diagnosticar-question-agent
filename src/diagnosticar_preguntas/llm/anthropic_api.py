@@ -25,6 +25,7 @@ from diagnosticar_preguntas.llm.provider import (
     LLMRefusalError,
     LLMRequest,
     LLMTimeoutError,
+    effort_for,
     log_call,
 )
 
@@ -43,11 +44,13 @@ class AnthropicProvider:
         model: str,
         effort: Effort,
         timeout_s: float,
+        question_effort: Effort | None = None,
         client: anthropic.Anthropic | None = None,
         max_tokens: int = DEFAULT_MAX_TOKENS,
     ) -> None:
         self._model = model
         self._effort = effort
+        self._question_effort = question_effort
         self._max_tokens = max_tokens
         self._timeout_s = timeout_s
         # The round service falls back to templates on its own; SDK retries would only
@@ -91,7 +94,7 @@ class AnthropicProvider:
                 messages=[{"role": "user", "content": request.user}],
                 thinking={"type": "adaptive"},
                 output_config={
-                    "effort": self._effort,
+                    "effort": effort_for(request.task, self._effort, self._question_effort),
                     "format": {"type": "json_schema", "schema": transform_schema(request.output)},
                 },
                 fallbacks="default",

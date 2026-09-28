@@ -132,7 +132,7 @@ Agente (servicio `question-agent` de `docker-compose.yml`): compose fija
 `PREGUNTAS_LLM_PROVIDER` (`claude-cli`) y `PREGUNTAS_LLM_MODEL`
 (`claude-opus-5`), y deja pasar, solo si están definidas,
 `PREGUNTAS_MODEL_SERVICE_TIMEOUT_S`, `PREGUNTAS_LLM_TIMEOUT_S`,
-`PREGUNTAS_LLM_EFFORT`, `PREGUNTAS_MAX_CONCURRENT_ROUNDS`, `PREGUNTAS_LOG_LEVEL`,
+`PREGUNTAS_LLM_EFFORT`, `PREGUNTAS_LLM_QUESTION_EFFORT`, `PREGUNTAS_MAX_CONCURRENT_ROUNDS`, `PREGUNTAS_LOG_LEVEL`,
 `CLAUDE_CODE_OAUTH_TOKEN` y `ANTHROPIC_API_KEY`. El resto usa los valores por
 defecto del agente ([README](../README.md#configuración)).
 

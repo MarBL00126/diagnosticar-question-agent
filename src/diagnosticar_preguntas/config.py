@@ -66,6 +66,9 @@ class Settings(BaseSettings):
     llm_model: str = "claude-opus-5"
     llm_timeout_s: float = Field(default=60.0, gt=0)
     llm_effort: Effort = "high"
+    # Measured in docs/EVALUACION_ESFUERZO.md: medium drafts questions as well and
+    # 24% faster, but reads notes less cautiously and summarises worse.
+    llm_question_effort: Effort = "medium"
 
     shortlist_size: int = Field(default=8, ge=1)
     questions_per_round: int = Field(default=QUESTIONS_PER_ROUND, ge=1, le=QUESTIONS_PER_ROUND)
