@@ -261,7 +261,10 @@ def correr_sesion(presentes, ausentes, modo="paciente"):
             for ia in resultado["interpreted_answers"]:
                 lecturas.setdefault(
                     ia["hpo_id"],
-                    {"effective_answer": ia["effective_answer"], "note_summary": ia["note_summary"]},
+                    {
+                        "effective_answer": ia["effective_answer"],
+                        "note_summary": ia["note_summary"],
+                    },
                 )
             if resultado["status"] == "finished":
                 return resultado
