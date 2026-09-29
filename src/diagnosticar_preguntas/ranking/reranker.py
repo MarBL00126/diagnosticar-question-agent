@@ -28,7 +28,14 @@ from diagnosticar_preguntas.ranking.likelihood import UNANNOTATED_DISEASE, Likel
 class AnswerWeighting(StrEnum):
     """How the evidence reweights each disease. ``p`` is ``DiseaseProfile.frequency``.
 
-    ``ASYMMETRIC`` (default): only what a disease's annotations say moves it.
+    ``NONE`` (default): nothing reweights the diseases. The ranking is the
+    model's, tempered and split over each gene's diseases so that question
+    selection still has hypotheses; with ``RerankStrategy.MODEL_SEES_PRESENT``
+    the "sí" answers reach it through the model's query, and "no" answers and
+    negated findings are only recorded. No weighting improved the model on
+    published case reports (``docs/EVALUACION.md``, sections 11.8 to 11.11).
+
+    ``ASYMMETRIC``: only what a disease's annotations say moves it.
     Every present finding the disease excludes (``NOT`` on it or an ancestor)
     multiplies it by ``exclusion_factor``; every present finding the model did
     not see and the disease annotates, by ``1 + answer_weight * p``; every
@@ -44,6 +51,7 @@ class AnswerWeighting(StrEnum):
     which fits patients drawn from the annotations and hurt real ones.
     """
 
+    NONE = "none"
     ASYMMETRIC = "asymmetric"
     CALIBRATED = "calibrated"
 
@@ -61,7 +69,7 @@ class RerankConfig:
 
     top_n: int = 50
     temperature: float = 1.0
-    answer_weighting: AnswerWeighting = AnswerWeighting.ASYMMETRIC
+    answer_weighting: AnswerWeighting = AnswerWeighting.NONE
     answer_weight: float = 0.3
     exclusion_factor: float = 0.02
 
@@ -165,8 +173,10 @@ class BayesianReranker:
         return Posterior(genes=tuple(genes), hypotheses=tuple(hypotheses))
 
     def _log_likelihood(self, disease: str, evidence: ResolvedEvidence) -> float:
-        profile = self._likelihood.profile(disease)
         config = self.config
+        if config.answer_weighting is AnswerWeighting.NONE:
+            return 0.0
+        profile = self._likelihood.profile(disease)
         if config.answer_weighting is AnswerWeighting.CALIBRATED:
             present = sum(math.log(profile.probability(t)) for t in evidence.unseen_present)
             absent = sum(math.log1p(-profile.probability(t)) for t in evidence.absent)

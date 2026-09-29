@@ -7,16 +7,17 @@ every present finding, which the model does not know. Each strategy is then
 just a choice of what to send to the model, selected with
 ``PREGUNTAS_RERANK_STRATEGY``:
 
-``FIXED_PRIOR`` (default)
+``MODEL_SEES_PRESENT`` (default)
+    Every round sends all present findings, original and answered "sí". The
+    model re-ranks with everything positive it knows; only the "no" answers,
+    negated findings, model-unknown terms and exclusions go through the
+    re-ranker, and with the default ``AnswerWeighting.NONE`` not even those:
+    the ranking is the model's (``docs/DECISIONES.md``, D-18).
+``FIXED_PRIOR``
     Every round sends only the findings reported before the questions. The
     prior stays the first ranking and every answer, "sí" or "no", goes
     through the re-ranker, so a wrong "sí" weighs as one bounded factor and
     each "sí" counts once (``docs/EVALUACION.md``, sections 6.3 and 11.8).
-``MODEL_SEES_PRESENT``
-    Every round sends all present findings, original and answered "sí". The
-    model re-ranks with everything positive it knows; only the "no" answers,
-    negated findings, model-unknown terms and exclusions go through the
-    re-ranker.
 """
 
 from __future__ import annotations

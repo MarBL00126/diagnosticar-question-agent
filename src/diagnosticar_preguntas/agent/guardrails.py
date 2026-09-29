@@ -120,6 +120,14 @@ _ADVICE_IN_SUMMARY = (
 )
 # A word start not preceded by "-" either, so the gene MT-TC does not read as "TC".
 _ADVICE = re.compile(rf"(?<![\w-])(?:{'|'.join(_ADVICE_IN_SUMMARY)})\w*")
+# A clinician rationale that says what a "no" would do: "(no)" after genes, "con un no",
+# "si la respuesta es no", "un «no»". A "no" does not reach the ranking by default.
+_NO_MOVES_GENES = re.compile(
+    r"\(\s*no\s*\)"
+    r"|\b(?:con|ante|si es|si la respuesta es)\s+(?:un\s+)?[«\"“']?no(?![\wáéíóúñ])"
+    r"|\bun\s+[«\"“']no[»\"”']",
+    re.IGNORECASE,
+)
 
 # Words of disease names that say nothing about which disease it is.
 _GENERIC_NAME_WORDS = (
@@ -393,4 +401,9 @@ def question_problems(question: QuestionDraft, rules: QuestionRules) -> list[str
             problems.append("falta el fundamento para el médico")
         elif len(rationale) > MAX_RATIONALE_CHARS:
             problems.append(f"el fundamento supera {MAX_RATIONALE_CHARS} caracteres")
+        if _NO_MOVES_GENES.search(rationale):
+            problems.append(
+                "el fundamento dice qué pasaría con un «no»: tiene que decir de qué genes"
+                " es típico el síntoma, porque un «no» no cambia la lista"
+            )
     return problems

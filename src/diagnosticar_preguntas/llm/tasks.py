@@ -6,6 +6,7 @@ directly, so both paths see exactly the same case data.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from diagnosticar_preguntas.domain import AnswerValue, CandidateTerm, GeneScore, Mode
@@ -59,13 +60,21 @@ class AnsweredTerm:
 
 @dataclass(frozen=True, slots=True)
 class SummaryTask:
-    """Close the session. ``top_genes`` carry the posterior score and the model's rank."""
+    """Close the session with the answers and the genes at the top of the final ranking.
+
+    ``ranks_before`` is each gene's rank for the findings reported before any
+    question (a gene outside that top 50 is missing), or ``None`` when it is
+    unknown; the summary then says nothing about how the order changed.
+    ``negatives_move_ranking`` is false when "no" answers were only recorded.
+    """
 
     mode: Mode
     finish_reason: str
     answers: tuple[AnsweredTerm, ...]
     top_genes: tuple[GeneScore, ...]
     corrections: tuple[str, ...] = ()
+    ranks_before: Mapping[str, int] | None = None
+    negatives_move_ranking: bool = True
 
 
 Task = QuestionTask | NotesTask | SummaryTask

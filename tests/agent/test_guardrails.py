@@ -48,7 +48,7 @@ def q(
     hpo_id: str = "HP:0001738",
     text: str = "¿Presenta esteatorrea?",
     help: str | None = None,
-    rationale: str = "Separa CFTR (sí) de DNAH5 (no).",
+    rationale: str = "Típico de CFTR y SCNN1A.",
 ) -> QuestionDraft:
     return QuestionDraft(hpo_id=hpo_id, text=text, help=help, rationale=rationale)
 
@@ -138,6 +138,29 @@ def test_clinician_questions_need_a_rationale() -> None:
     result = check(q(rationale="  "))
 
     assert any("fundamento" in v for v in result.violations)
+
+
+@pytest.mark.parametrize(
+    "rationale",
+    [
+        "Separa CFTR (sí) de DNAH5 (no).",
+        "Favorece a DNAH5 con un no.",
+        "Si la respuesta es no, sube DNAH5.",
+        "Un «no» descarta a CFTR.",
+    ],
+)
+def test_a_rationale_may_not_say_what_a_no_would_do(rationale: str) -> None:
+    result = check(q(rationale=rationale))
+
+    assert any("un «no» no cambia la lista" in v for v in result.violations)
+
+
+@pytest.mark.parametrize(
+    "rationale",
+    ["Típico de CFTR y SCNN1A.", "Típico de CFTR; no es típico de DNAH5.", "Separa CFTR de DNAH5."],
+)
+def test_a_rationale_about_which_genes_the_symptom_fits_passes(rationale: str) -> None:
+    assert check(q(rationale=rationale)).violations == ()
 
 
 def test_clinician_text_may_name_genes_and_diseases() -> None:

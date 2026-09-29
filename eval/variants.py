@@ -9,7 +9,8 @@ disease (0.3 when unstated), the quantity ``ranking/likelihood.py`` uses
 before its background floor and clipping.
 
 * ``V1`` enrich only: every "sí" is sent to the model (``model_sees_present``)
-  and nothing else reweights the genes; the model alone decides.
+  and nothing else reweights the genes; the model alone decides. The code
+  default since 2026-09-28 (``AnswerWeighting.NONE``, docs/DECISIONES.md D-18).
 * ``V2`` explicit exclusions: V1, plus every present finding (reported or
   "sí") multiplies by epsilon the diseases that exclude it (``NOT`` or
   ``Excluded`` on the term or an ancestor). Every other disease, and every
@@ -25,15 +26,15 @@ before its background floor and clipping.
   by 1. Equivalent to a likelihood with ``P(t | d) = (1 + k·p) / 2`` for
   annotated diseases and 1/2, no information, for the others.
 * ``V3fp_k``: V3 with ``fixed_prior``: the "sí" answers are not sent to the
-  model, so each counts once. With k = 0.3 it is the code default since
-  2026-09-28 (``AnswerWeighting.ASYMMETRIC``).
+  model, so each counts once (``AnswerWeighting.ASYMMETRIC``; with k = 0.3,
+  briefly the code default on 2026-09-28).
 * ``V4``: the configuration ``eval.explore`` picked (``model_sees_present``,
   epsilon 0.1) with the calibrated likelihood.
 * ``V5``: the code defaults until 2026-09-28 (``fixed_prior``, calibrated);
   ``V5_before``: the configuration before tuning.
 
-V1, V2, V3fp, V4 and V5 run the code's own re-ranker (V1 and V2 are the
-asymmetric weighting with k = 0 under ``model_sees_present``, with and without
+V1, V2, V3fp, V4 and V5 run the code's own re-ranker (V2 is the asymmetric
+weighting with k = 0 under ``model_sees_present``, which leaves only the
 exclusions); only V2_literal and V3, which the code cannot express, use
 ``WeightedReranker``.
 
@@ -166,7 +167,11 @@ def _asymmetric(strategy: RerankStrategy, weight: float, exclusion: float) -> Ag
 
 
 VARIANTS = (
-    Variant("V1", "enrich only", _asymmetric(MSP, 0.0, 1.0)),
+    Variant(
+        "V1",
+        "enrich only (code default)",
+        AgentConfig(strategy=MSP, answer_weighting=AnswerWeighting.NONE),
+    ),
     Variant("V2", "enrich + explicit exclusions", _asymmetric(MSP, 0.0, EPSILON)),
     Variant(
         "V2_literal",
@@ -186,8 +191,7 @@ VARIANTS = (
     *(
         Variant(
             f"V3fp_k{k:g}".replace(".", ""),
-            f"asymmetric likelihood, k={k:g}, fixed_prior"
-            + (" (code default)" if k == 0.3 else ""),
+            f"asymmetric likelihood, k={k:g}, fixed_prior",
             _asymmetric(FIXED, k, EPSILON),
         )
         for k in (0.3, 0.5)

@@ -28,10 +28,10 @@ def test_defaults_match_the_contract(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.allow_unauthenticated is False
 
 
-def test_ranking_defaults_are_the_tuned_configuration() -> None:
+def test_ranking_defaults_send_the_answers_to_the_model_and_keep_the_tuned_rest() -> None:
     settings = Settings(_env_file=None)  # type: ignore[call-arg]
     chosen = {
-        "strategy": "fixed_prior",
+        "strategy": "model_sees_present",
         "temperature": 1.0,
         "background": 0.1,
         "missing_frequency": 0.3,
@@ -53,17 +53,28 @@ def test_ranking_defaults_are_the_tuned_configuration() -> None:
     } == chosen
 
 
-def test_answers_are_weighted_asymmetrically_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_by_default_no_answer_reweights_the_ranking(monkeypatch: pytest.MonkeyPatch) -> None:
     for name in ("PREGUNTAS_ANSWER_WEIGHTING", "PREGUNTAS_ANSWER_WEIGHT"):
         monkeypatch.delenv(name, raising=False)
 
     settings = Settings(_env_file=None)  # type: ignore[call-arg]
     config = rerank_config(settings)
 
-    assert settings.answer_weighting is AnswerWeighting.ASYMMETRIC
-    assert settings.answer_weight == 0.3
+    assert settings.answer_weighting is AnswerWeighting.NONE
+    assert settings.rerank_strategy is RerankStrategy.MODEL_SEES_PRESENT
     assert config == RerankConfig()
     assert (config.answer_weight, config.exclusion_factor, config.temperature) == (0.3, 0.02, 1.0)
+
+
+@pytest.mark.parametrize("weighting", ["none", "asymmetric", "calibrated"])
+def test_every_answer_weighting_can_be_chosen(
+    monkeypatch: pytest.MonkeyPatch, weighting: str
+) -> None:
+    monkeypatch.setenv("PREGUNTAS_ANSWER_WEIGHTING", weighting)
+
+    config = rerank_config(Settings(_env_file=None))  # type: ignore[call-arg]
+
+    assert config.answer_weighting is AnswerWeighting(weighting)
 
 
 def test_the_answer_weighting_is_read_from_the_environment(

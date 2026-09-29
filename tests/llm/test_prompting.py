@@ -5,7 +5,7 @@ import re
 
 from llm_fakes import question_task
 
-from diagnosticar_preguntas.domain import AnswerValue, Mode
+from diagnosticar_preguntas.domain import AnswerValue, GeneScore, Mode
 from diagnosticar_preguntas.llm.prompting import (
     RULES_FROM_PROTOTYPE,
     _load,
@@ -106,3 +106,42 @@ def test_rules_from_the_prototype_point_at_existing_prompt_rules() -> None:
         prompt = _load(name)
         if number:
             assert f"\n{number}. " in prompt
+
+
+def test_candidates_carry_their_associated_genes_and_nothing_about_a_no() -> None:
+    payload = data_of(question_request(question_task()).user)
+
+    assert isinstance(payload, dict)
+    for candidate in payload["candidatos"]:
+        assert "genes_asociados" in candidate
+        assert "suben_con_no" not in candidate and "suben_con_si" not in candidate
+
+
+def test_the_clinician_prompt_asks_for_association_not_for_what_a_no_would_do() -> None:
+    prompt = system_prompt(Mode.CLINICIAN, QuestionTask)
+
+    assert "de qué genes candidatos es típico el síntoma" in prompt
+    assert "(no)" not in prompt
+
+
+def test_the_summary_gets_the_ranks_before_the_questions_and_whether_a_no_moves_the_list() -> None:
+    gene = GeneScore("CFTR", 0.7, 0.7, 1)
+    known = SummaryTask(
+        Mode.CLINICIAN,
+        "user_finished",
+        (),
+        (gene,),
+        ranks_before={"DNAH5": 1},
+        negatives_move_ranking=False,
+    )
+    unknown = SummaryTask(Mode.CLINICIAN, "user_finished", (), (gene,))
+
+    with_ranks = data_of(summary_request(known).user)
+    without_ranks = data_of(summary_request(unknown).user)
+    assert isinstance(with_ranks, dict) and isinstance(without_ranks, dict)
+
+    assert with_ranks["genes"] == [
+        {"gen": "CFTR", "puesto_actual": 1, "puntaje": 0.7, "puesto_antes_de_las_preguntas": None}
+    ]
+    assert with_ranks["los_no_mueven_la_lista"] is False
+    assert "puesto_antes_de_las_preguntas" not in without_ranks["genes"][0]

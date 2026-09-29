@@ -24,7 +24,8 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
 | D-14 | Presupuesto de tiempo por ronda | 2026-09-26 |
 | D-15 | El trabajo vive en el repositorio de Mariano, en ramas propias | 2026-09-26 |
 | D-16 | El resumen no recomienda estudios | 2026-09-28 |
-| D-17 | Ponderación asimétrica de respuestas | 2026-09-28 |
+| D-17 | Ponderación asimétrica de respuestas (reemplazada por D-18) | 2026-09-28 |
+| D-18 | Las respuestas solo llegan al modelo | 2026-09-28 |
 
 ---
 
@@ -232,9 +233,9 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   reemplazó daña menos (+0,034 a su favor): `model_sees_present` le gana a
   `fixed_prior` por +0,046. Ninguna de las dos mejora al modelo. La evidencia, y
   la variante estructural que deja de dañar (verosimilitud asimétrica con prior
-  fijo), están en [EVALUACION.md](EVALUACION.md), secciones 11.6 a 11.9. La
-  estrategia `fixed_prior` y T = 1 se mantienen; lo que cambió es cómo pesan las
-  respuestas (D-17).
+  fijo), están en [EVALUACION.md](EVALUACION.md), secciones 11.6 a 11.9. Primero
+  cambió cómo pesan las respuestas (D-17) y después, que solo llegan al modelo
+  (D-18); `fixed_prior` y la ponderación calibrada siguen disponibles.
 
 ## D-12. `claude-cli` en local y staging, API de Anthropic en producción
 
@@ -367,4 +368,49 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   casos de una release posterior de phenopacket-store) antes de darla por
   validada. La corrida de confirmación con el código nuevo reproduce las cifras
   ([EVALUACION.md](EVALUACION.md), sección 11.10).
+- **Fecha.** 2026-09-28.
+- **Nota (2026-09-28): reemplazada por D-18** el mismo día. La ponderación
+  asimétrica sigue disponible con `PREGUNTAS_ANSWER_WEIGHTING=asymmetric` y
+  `PREGUNTAS_RERANK_STRATEGY=fixed_prior`.
+
+## D-18. Las respuestas solo llegan al modelo
+
+- **Contexto.** La auditoría con pacientes reales publicados
+  ([EVALUACION.md](EVALUACION.md), sección 11) mostró que ninguna forma de
+  reordenar los genes con las respuestas mejora al modelo: la calibrada (D-11)
+  los empeoraba y la asimétrica (D-17) queda neutra. Las dos usan las
+  anotaciones HPO para decidir qué significa una respuesta, y esas anotaciones
+  no describen bien a los pacientes reales. Mate decidió que el agente solo le
+  mande las respuestas al modelo y que el ranking sea el del modelo. Cómo hacer
+  que el propio modelo use los síntomas negados se investiga aparte, en el
+  modelo.
+- **Decisión.** Por defecto, `PREGUNTAS_RERANK_STRATEGY=model_sees_present` y
+  `PREGUNTAS_ANSWER_WEIGHTING=none` (`AnswerWeighting.NONE`): cada «sí» efectivo
+  se suma a la consulta del modelo y el ranking que se muestra es el del propio
+  modelo para esa consulta (`model_rank` coincide con el puesto). Las respuestas
+  «no» y los hallazgos negados de la extracción (`absent_hpo_ids`) se aceptan y
+  quedan registrados para la consulta (`interpreted_answers`), pero no tocan el
+  ranking. La selección de preguntas no cambia: sigue eligiendo por ganancia de
+  información con su verosimilitud, y nada ya informado, respondido o negado se
+  vuelve a preguntar. En modo médico, `genes_if_no` va vacío y el fundamento
+  dice de qué genes es típico el síntoma, nunca qué haría un «no» (una
+  salvaguarda lo exige). Las ponderaciones `asymmetric` y `calibrated` siguen
+  disponibles.
+- **Alternativas.** La ponderación asimétrica con prior fijo (D-17): neutra con
+  pacientes reales, sin daño en anotaciones retenidas ni en Orphanet → OMIM. La
+  calibrada (D-11): mejor con pacientes simulados, dañina con reales. Seguir
+  usando los «no» con las exclusiones explícitas (variante V2): da lo mismo que
+  no usarlos.
+- **Consecuencias.** Es la variante V1 de la evaluación. Con pacientes reales
+  queda aproximadamente neutra, igual que la asimétrica; en anotaciones
+  retenidas (B) y con pacientes de OMIM y un agente que solo conoce Orphanet
+  (C_omim) empeora al modelo, porque ahí las respuestas simuladas tienen un
+  10 % de errores y un «sí» falso reordena toda la lista del modelo; en la
+  simulación ya no hay mejora ([EVALUACION.md](EVALUACION.md), sección 11.11).
+  `specialties` y `confidence` cambian entre rondas a medida que llegan «sí». El
+  resumen de cierre compara con el ranking de los hallazgos informados, que el
+  agente pide en una segunda llamada al modelo solo cuando el presupuesto de la
+  ronda la cubre. La interfaz no debe decir que un «no» reordena algo, y para
+  mostrar cómo cambió la lista tiene que compararla con el ranking anterior a
+  las preguntas, no con `model_rank`.
 - **Fecha.** 2026-09-28.

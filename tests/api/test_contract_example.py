@@ -79,12 +79,24 @@ def test_example_genes_per_answer_only_in_clinician_mode(example: dict[str, Any]
             assert (question.rationale is not None) is clinician
 
 
-def test_example_specialties_and_confidence_do_not_change_between_rounds(
-    example: dict[str, Any],
-) -> None:
+def test_example_rankings_are_the_models_own_order(example: dict[str, Any]) -> None:
+    for key in ("round1_response", "round1_response_medico", "round2_response"):
+        ranking = example[key]["ranking"]
+        assert [g["model_rank"] for g in ranking] == list(range(1, len(ranking) + 1))
+
+
+def test_example_shows_the_yes_reaching_the_model(example: dict[str, Any]) -> None:
     first, last = example["round1_response"], example["round2_response"]
 
-    assert (first["specialties"], first["confidence"]) == (last["specialties"], last["confidence"])
+    assert first["confidence"] != last["confidence"]
+    assert [g["model_score"] for g in first["ranking"]] != [
+        g["model_score"] for g in last["ranking"]
+    ]
+
+
+def test_example_clinician_questions_never_list_genes_for_a_no(example: dict[str, Any]) -> None:
+    for question in example["round1_response_medico"]["questions"]:
+        assert question["genes_if_no"] == []
 
 
 @pytest.mark.skipif(not real_kb_path().is_file(), reason="data/kb.sqlite not built")

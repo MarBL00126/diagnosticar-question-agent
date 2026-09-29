@@ -13,7 +13,7 @@ from functools import cache
 from importlib import resources
 from typing import Any
 
-from diagnosticar_preguntas.domain import Mode
+from diagnosticar_preguntas.domain import GeneScore, Mode
 from diagnosticar_preguntas.llm.provider import LLMRequest
 from diagnosticar_preguntas.llm.schemas import NotesDraft, RoundDraft, SummaryDraft
 from diagnosticar_preguntas.llm.tasks import (
@@ -87,8 +87,7 @@ def question_request(task: QuestionTask) -> LLMRequest[RoundDraft]:
                 "etiqueta_en": c.label_en,
                 "informacion": round(c.information_gain, 3),
                 "p_si": round(c.p_yes, 2),
-                "suben_con_si": list(c.genes_yes),
-                "suben_con_no": list(c.genes_no),
+                "genes_asociados": list(c.genes_yes),
                 "requiere_estudio": c.requires_testing,
             }
             for c in task.candidates
@@ -126,15 +125,8 @@ def summary_request(task: SummaryTask) -> LLMRequest[SummaryDraft]:
             {"sintoma": a.label, "respuesta": a.answer.value, "nota": a.note_summary}
             for a in task.answers
         ],
-        "genes": [
-            {
-                "gen": g.gene_symbol,
-                "puesto_actual": position,
-                "puesto_del_modelo": g.model_rank,
-                "puntaje": round(g.score, 3),
-            }
-            for position, g in enumerate(task.top_genes, start=1)
-        ],
+        "los_no_mueven_la_lista": task.negatives_move_ranking,
+        "genes": [_summary_gene(task, g, position) for position, g in enumerate(task.top_genes, 1)],
         "correcciones": list(task.corrections),
     }
     return LLMRequest(
@@ -143,3 +135,14 @@ def summary_request(task: SummaryTask) -> LLMRequest[SummaryDraft]:
         output=SummaryDraft,
         task=task,
     )
+
+
+def _summary_gene(task: SummaryTask, gene: GeneScore, position: int) -> dict[str, Any]:
+    entry: dict[str, Any] = {
+        "gen": gene.gene_symbol,
+        "puesto_actual": position,
+        "puntaje": round(gene.score, 3),
+    }
+    if task.ranks_before is not None:
+        entry["puesto_antes_de_las_preguntas"] = task.ranks_before.get(gene.gene_symbol)
+    return entry

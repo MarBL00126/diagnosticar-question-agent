@@ -104,9 +104,13 @@ class QuestionOut(_Strict):
 
     ``genes_if_yes``, ``genes_if_no`` and ``rationale`` are only filled in
     clinician mode (``null`` for patients). ``genes_if_yes`` are the genes
-    (at most five, strongest first) whose refined score rises if the answer
-    is "sí"; ``genes_if_no`` those that rise if it is "no". Either may be an
-    empty list when no gene moves noticeably that way.
+    associated with the symptom in the knowledge base (at most five, most
+    associated first): "genes asociados al síntoma; el modelo puede subirlos
+    si la respuesta es sí". ``genes_if_no`` is always an empty list with the
+    default answer weighting, where a "no" is recorded and moves nothing; with
+    another weighting it holds the genes that rise if the answer is "no".
+    ``rationale`` says which candidates the symptom is typical of, never what a
+    "no" would do.
     """
 
     id: str
@@ -163,14 +167,17 @@ class RoundResponse(_Strict):
     summary, note summaries) were written for; it always equals the
     request's ``mode``.
 
-    ``specialties`` and ``confidence`` come unchanged from the diagnostic.ar
-    model. With the default re-ranking strategy (``fixed_prior``) the model
-    is queried every round with the findings reported before any question
-    (``present_hpo_ids``) only, and the agent applies every answer
-    afterwards. So both describe the original findings and stay the same
-    from round to round: ``confidence`` is the model's confidence on the
-    original findings, not a confidence in ``ranking``, and ``specialties``
-    ignore the answers. What the answers refine is ``ranking`` (``score``).
+    ``specialties`` and ``confidence`` come unchanged from this round's call
+    to the diagnostic.ar model. With the default strategy
+    (``model_sees_present``) that call carries the findings reported before
+    any question plus every effective "sí", so both change from round to round
+    as "sí" answers arrive. With the default answer weighting (``none``)
+    ``ranking`` is the model's own order for that call: ``model_rank`` equals
+    the position and ``score`` is ``model_score`` renormalised over the 50
+    genes. "No" answers and ``absent_hpo_ids`` are recorded
+    (``interpreted_answers``) but do not move it. With ``fixed_prior`` the
+    model only ever sees ``present_hpo_ids`` and the answers act through the
+    re-ranker instead.
     """
 
     round: int
