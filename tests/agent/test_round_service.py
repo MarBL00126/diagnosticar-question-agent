@@ -41,12 +41,21 @@ from diagnosticar_preguntas.llm.provider import (
 )
 from diagnosticar_preguntas.llm.tasks import NotesTask, QuestionTask, SummaryTask
 from diagnosticar_preguntas.llm.template import TemplateProvider
+from diagnosticar_preguntas.ranking.reranker import AnswerWeighting
 from diagnosticar_preguntas.ranking.strategy import RerankStrategy
 
 FIRST_THREE = ("HP:0001738", "HP:0001696", "HP:0002099")
 # After yes_no_answers() the first two shortlist terms are known, leaving these.
 ROUND_TWO = ("HP:0002099", "HP:0000765")
 NOTE = "creo que no, no estoy segura"
+
+
+class FailsAfterFirstCall(FakeModel):
+    def rank(self, hpo_ids: Any, top_k: int) -> Any:
+        if self.calls:
+            self.calls.append((list(hpo_ids), top_k))
+            raise ModelUnavailableError("model service down")
+        return super().rank(hpo_ids, top_k)
 
 
 class RoundTwoSelector(FakeSelector):
@@ -138,17 +147,41 @@ class TestFirstRound:
 
 
 class TestStrategy:
-    def test_by_default_the_model_only_ever_sees_the_reported_findings(self) -> None:
+    def test_by_default_the_model_sees_the_reported_findings_and_every_effective_yes(
+        self,
+    ) -> None:
         model = FakeModel()
 
         round_two(model=model).run(request(round=2, answers=yes_no_answers()))
+
+        assert model.calls == [(sorted([*PRESENT, "HP:0001738"]), 50)]
+
+    def test_a_yes_downgraded_by_its_note_does_not_reach_the_model(self) -> None:
+        model = FakeModel()
+        llm = ScriptedLLM(
+            notes=[notes(("HP:0001738", False, "no está segura"))],
+            questions=[round_draft(*ROUND_TWO)],
+        )
+
+        round_two(llm, model=model).run(request(round=2, answers=answers_with_note()))
+
+        assert model.calls == [(sorted(PRESENT), 50)]
+
+    def test_fixed_prior_only_ever_sends_the_reported_findings(self) -> None:
+        model = FakeModel()
+
+        round_two(model=model, rerank_strategy=RerankStrategy.FIXED_PRIOR).run(
+            request(round=2, answers=yes_no_answers())
+        )
 
         assert model.calls == [(sorted(PRESENT), 50)]
 
     def test_every_answer_reaches_the_reranker_as_evidence_the_model_did_not_see(self) -> None:
         reranker = FakeReranker()
 
-        round_two(reranker=reranker).run(request(round=2, answers=yes_no_answers()))
+        round_two(reranker=reranker, rerank_strategy=RerankStrategy.FIXED_PRIOR).run(
+            request(round=2, answers=yes_no_answers())
+        )
 
         evidence = reranker.evidence[0]
         assert evidence.present == {"HP:0002205", "HP:0004322", "HP:0001738"}
@@ -328,7 +361,7 @@ class TestModes:
         for q in response.questions:
             assert (q.genes_if_yes, q.genes_if_no, q.rationale) == (None, None, None)
 
-    def test_clinician_mode_shows_at_most_five_genes_per_answer_and_the_rationale(self) -> None:
+    def test_clinician_mode_shows_at_most_five_associated_genes_and_the_rationale(self) -> None:
         wide = candidate(
             "HP:0001738",
             genes_yes=("G1", "G2", "G3", "G4", "G5", "G6"),
@@ -340,8 +373,19 @@ class TestModes:
 
         only = response.questions[0]
         assert only.genes_if_yes == ["G1", "G2", "G3", "G4", "G5"]
-        assert only.genes_if_no == ["G7", "G8"]
+        assert only.genes_if_no == []
         assert only.rationale == "Separa CFTR de DNAH5."
+
+    @pytest.mark.parametrize("weighting", [AnswerWeighting.ASYMMETRIC, AnswerWeighting.CALIBRATED])
+    def test_genes_that_rise_on_a_no_are_shown_only_when_a_no_moves_the_ranking(
+        self, weighting: AnswerWeighting
+    ) -> None:
+        llm = ScriptedLLM(questions=[round_draft("HP:0001738")])
+        selector = FakeSelector([candidate("HP:0001738", genes_no=("G7", "G8"))])
+
+        response = service(llm, selector=selector, answer_weighting=weighting).run(request())
+
+        assert response.questions[0].genes_if_no == ["G7", "G8"]
 
     def test_patient_mode_drops_findings_that_need_a_study(self) -> None:
         shortlist = [*SHORTLIST[:3], candidate("HP:0012236", 0.9, requires_testing=True)]
@@ -484,6 +528,56 @@ class TestSummary:
         assert not hasattr(task, "specialties")
         assert response.summary == summary().summary
         assert response.versions.llm_model == "claude-opus-5"
+
+    def test_the_summary_compares_with_the_ranking_before_the_questions(self) -> None:
+        model = FakeModel()
+        llm = ScriptedLLM(summaries=[summary()])
+
+        service(llm, model=model).run(request(round=2, finish=True, answers=yes_no_answers()))
+
+        assert model.calls == [(sorted([*PRESENT, "HP:0001738"]), 50), (sorted(PRESENT), 50)]
+        task = llm.tasks(SummaryTask)[0]
+        assert task.ranks_before == {"CFTR": 1, "DNAH5": 2, "SCNN1A": 3}
+        assert task.negatives_move_ranking is False
+
+    def test_without_answers_sent_to_the_model_its_ranking_is_the_baseline(self) -> None:
+        model = FakeModel()
+        llm = ScriptedLLM(summaries=[summary()])
+
+        service(
+            llm,
+            model=model,
+            rerank_strategy=RerankStrategy.FIXED_PRIOR,
+            answer_weighting=AnswerWeighting.ASYMMETRIC,
+        ).run(request(round=2, finish=True, answers=yes_no_answers()))
+
+        assert model.calls == [(sorted(PRESENT), 50)]
+        assert llm.tasks(SummaryTask)[0].ranks_before == {"CFTR": 1, "DNAH5": 2, "SCNN1A": 3}
+        assert llm.tasks(SummaryTask)[0].negatives_move_ranking is True
+
+    def test_the_baseline_is_skipped_when_the_budget_cannot_absorb_another_model_call(
+        self,
+    ) -> None:
+        model = FakeModel()
+        llm = ScriptedLLM(summaries=[summary()])
+
+        service(llm, model=model, model_service_timeout_s=80.0).run(
+            request(round=2, finish=True, answers=yes_no_answers())
+        )
+
+        assert len(model.calls) == 1
+        assert llm.tasks(SummaryTask)[0].ranks_before is None
+
+    def test_a_failed_baseline_call_still_closes_the_session(self) -> None:
+        model = FailsAfterFirstCall()
+        llm = ScriptedLLM(summaries=[summary()])
+
+        response = service(llm, model=model).run(
+            request(round=2, finish=True, answers=yes_no_answers())
+        )
+
+        assert response.summary == summary().summary
+        assert llm.tasks(SummaryTask)[0].ranks_before is None
 
     def test_a_patient_summary_naming_a_gene_is_retried_then_templated(self) -> None:
         leaky = summary("Todo apunta a CFTR.")

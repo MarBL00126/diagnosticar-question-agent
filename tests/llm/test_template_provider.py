@@ -61,11 +61,17 @@ def test_patient_questions_about_studies_offer_no_se() -> None:
     assert draft.help is not None and "No sé" in draft.help
 
 
-def test_clinician_rationale_names_the_genes_it_separates() -> None:
+def test_clinician_rationale_names_the_genes_the_symptom_is_typical_of() -> None:
     draft = phrase_question(CANDIDATES[0], Mode.CLINICIAN)
 
     assert draft.text == "¿Presenta insuficiencia pancreática exocrina?"
-    assert draft.rationale == "Separa CFTR (sí) de DNAH5 (no)."
+    assert draft.rationale == "Típico de CFTR."
+
+
+def test_clinician_rationale_never_says_what_a_no_would_do() -> None:
+    for candidate in CANDIDATES:
+        rationale = phrase_question(candidate, Mode.CLINICIAN).rationale
+        assert "(no)" not in rationale and "con un no" not in rationale
 
 
 def test_acronym_labels_keep_their_case() -> None:
@@ -101,12 +107,20 @@ ANSWERS = (
 )
 
 
-def summary_task(mode: Mode, answers: tuple[AnsweredTerm, ...] = ANSWERS[:1]) -> SummaryTask:
+def summary_task(
+    mode: Mode,
+    answers: tuple[AnsweredTerm, ...] = ANSWERS[:1],
+    *,
+    ranks_before: dict[str, int] | None = None,
+    negatives_move_ranking: bool = True,
+) -> SummaryTask:
     return SummaryTask(
         mode=mode,
         finish_reason="user_finished",
         answers=answers,
         top_genes=(GeneScore("CFTR", 0.7, 0.3, 2), GeneScore("DNAH5", 0.3, 0.4, 1)),
+        ranks_before=ranks_before,
+        negatives_move_ranking=negatives_move_ranking,
     )
 
 
@@ -132,11 +146,44 @@ def test_the_patient_summary_ends_inviting_to_the_consultation(
     )
 
 
-def test_clinician_summary_reports_answers_and_genes_that_rose() -> None:
-    draft = TemplateProvider().generate(summary_request(summary_task(Mode.CLINICIAN)))
+def test_clinician_summary_reports_answers_and_genes_that_rose_since_before_the_questions() -> None:
+    task = summary_task(Mode.CLINICIAN, ranks_before={"CFTR": 2, "DNAH5": 1})
+
+    draft = TemplateProvider().generate(summary_request(task))
 
     assert "sí: Esteatorrea" in draft.summary
     assert "CFTR (#2→#1)" in draft.summary
+
+
+def test_a_gene_that_entered_the_list_is_reported_as_coming_from_outside_the_top_50() -> None:
+    task = summary_task(Mode.CLINICIAN, ranks_before={"DNAH5": 1})
+
+    assert "CFTR (fuera de los 50→#1)" in TemplateProvider().generate(summary_request(task)).summary
+
+
+def test_without_the_ranks_before_the_questions_the_summary_claims_no_movement() -> None:
+    summary = TemplateProvider().generate(summary_request(summary_task(Mode.CLINICIAN))).summary
+
+    assert "Subieron" not in summary and "no cambió" not in summary
+
+
+def test_when_no_answers_are_only_recorded_the_summaries_say_so() -> None:
+    only_no = (ANSWERS[1],)
+    clinician = summary_task(
+        Mode.CLINICIAN, only_no, ranks_before={"CFTR": 1, "DNAH5": 2}, negatives_move_ranking=False
+    )
+    patient = summary_task(Mode.PATIENT, only_no, negatives_move_ranking=False)
+
+    assert "Los «no» quedan registrados y no cambian el orden." in (
+        TemplateProvider().generate(summary_request(clinician)).summary
+    )
+    assert (
+        TemplateProvider()
+        .generate(summary_request(patient))
+        .summary.startswith(
+            "Las respuestas quedaron registradas y la lista siguió en el mismo orden."
+        )
+    )
 
 
 def test_a_request_for_the_wrong_output_is_an_error() -> None:

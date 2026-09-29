@@ -62,7 +62,7 @@ VALID_ROUND = {
             "hpo_id": "HP:0001738",
             "text": "¿Presenta esteatorrea?",
             "help": None,
-            "rationale": "Separa CFTR (sí) de DNAH5 (no).",
+            "rationale": "Típico de CFTR.",
         }
     ]
 }

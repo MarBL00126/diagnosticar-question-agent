@@ -1,5 +1,5 @@
 {
-  "_comment": "Ejemplo del contrato POST /v1/rounds, versión 2. Es la referencia que copia frontend/mocks/fixtures.json (clave 'questions') en diagnostic.ar. Los valores son ilustrativos, no salidas reales del modelo. Cada respuesta puede llevar 'reading': la interpretación que el agente ya devolvió para ella en 'interpreted_answers' de una respuesta anterior (effective_answer y note_summary), copiada tal cual; el agente solo lee las notas que llegan sin 'reading', así cada nota se interpreta una vez y su lectura no cambia entre rondas ni al repetir una ronda en el otro modo. En round2_request, la primera respuesta ya trae su lectura y la segunda todavía no. 'specialties' y 'confidence' son los del modelo de diagnostic.ar para los hallazgos informados antes de las preguntas, por eso no cambian entre rondas. 'genes_if_yes', 'genes_if_no' y 'rationale' solo vienen en modo médico (round1_response_medico).",
+  "_comment": "Ejemplo del contrato POST /v1/rounds, versión 2. Es la referencia que copia frontend/mocks/fixtures.json (clave 'questions') en diagnostic.ar. Los valores son ilustrativos, no salidas reales del modelo. Cada respuesta puede llevar 'reading': la interpretación que el agente ya devolvió para ella en 'interpreted_answers' de una respuesta anterior (effective_answer y note_summary), copiada tal cual; el agente solo lee las notas que llegan sin 'reading', así cada nota se interpreta una vez y su lectura no cambia entre rondas ni al repetir una ronda en el otro modo. En round2_request, la primera respuesta ya trae su lectura y la segunda todavía no. Con la configuración por defecto, cada ronda le manda al modelo de diagnostic.ar los hallazgos informados más cada respuesta «sí» efectiva, y 'ranking' es el orden del propio modelo para esa consulta ('model_rank' es el puesto y 'score' es 'model_score' renormalizado sobre los 50 genes); por eso en round2_response el ranking, 'specialties' y 'confidence' cambian tras el «sí». Las respuestas «no» y 'absent_hpo_ids' se registran ('interpreted_answers') y no mueven el ranking. 'genes_if_yes', 'genes_if_no' y 'rationale' solo vienen en modo médico (round1_response_medico): 'genes_if_yes' son los genes asociados al síntoma (el modelo puede subirlos si la respuesta es «sí») y 'genes_if_no' viene vacío.",
   "round1_request": {
     "mode": "paciente",
     "round": 1,
@@ -80,8 +80,8 @@
         "text": "¿Presenta insuficiencia pancreática exocrina?",
         "help": "Esteatorrea o elastasa fecal baja.",
         "genes_if_yes": ["CFTR", "SCNN1A"],
-        "genes_if_no": ["DNAH5"],
-        "rationale": "Separa CFTR y SCNN1A (sí) de DNAH5 (no)."
+        "genes_if_no": [],
+        "rationale": "Típico de CFTR y SCNN1A."
       }
     ],
     "ranking": [
@@ -130,9 +130,9 @@
     "finish_reason": "user_finished",
     "questions": [],
     "ranking": [
-      { "gene_id": "CFTR", "gene_symbol": "CFTR", "score": 0.81, "model_score": 0.412, "model_rank": 1 },
-      { "gene_id": "SCNN1A", "gene_symbol": "SCNN1A", "score": 0.09, "model_score": 0.087, "model_rank": 3 },
-      { "gene_id": "DNAH5", "gene_symbol": "DNAH5", "score": 0.05, "model_score": 0.201, "model_rank": 2 }
+      { "gene_id": "CFTR", "gene_symbol": "CFTR", "score": 0.81, "model_score": 0.648, "model_rank": 1 },
+      { "gene_id": "SCNN1A", "gene_symbol": "SCNN1A", "score": 0.09, "model_score": 0.072, "model_rank": 2 },
+      { "gene_id": "DNAH5", "gene_symbol": "DNAH5", "score": 0.05, "model_score": 0.04, "model_rank": 3 }
     ],
     "specialties": {
       "top_specialty": "Pulmonology",
@@ -145,13 +145,13 @@
       "unmapped_genes": [],
       "unmapped_gene_count": 0
     },
-    "confidence": 0.78,
+    "confidence": 0.86,
     "interpreted_answers": [
       { "hpo_id": "HP:0001738", "answer": "si", "effective_answer": "si", "note_summary": "Desde bebé." },
       { "hpo_id": "HP:0001696", "answer": "no", "effective_answer": "no", "note_summary": "El hermano sí." },
       { "hpo_id": "HP:0012236", "answer": "no_se", "effective_answer": "no_se", "note_summary": null }
     ],
-    "summary": "Se respondieron tres preguntas: se notó materia fecal abundante y grasosa, los órganos no están del lado contrario al habitual y en la tercera se respondió «No sé». Con esas respuestas, la lista cambió de orden. Llevá esta información a la consulta para conversarla con el médico.",
+    "summary": "Se respondieron tres preguntas: se notó materia fecal abundante y grasosa, los órganos no están del lado contrario al habitual y en la tercera se respondió «No sé». Con la respuesta afirmativa la lista cambió de orden; las otras quedaron registradas. Llevá esta información a la consulta para conversarla con el médico.",
     "warnings": [],
     "versions": { "agent": "2.0.0.dev0", "knowledge_base": "kb1+hpo.2026-02-16", "llm_model": "claude-opus-5" }
   }

@@ -1,13 +1,13 @@
 # Tarea: elegir y redactar las preguntas de la ronda
 
-En `<datos>` tenés los genes mejor ubicados, los síntomas ya conocidos (presentes, ausentes y sin respuesta) y `candidatos`: síntomas que conviene preguntar, con su `hpo_id`, su etiqueta, cuánta información aportan, qué genes suben con un "sí" (`suben_con_si`) y cuáles con un "no" (`suben_con_no`).
+En `<datos>` tenés los genes mejor ubicados, los síntomas ya conocidos (presentes, ausentes y sin respuesta) y `candidatos`: síntomas que conviene preguntar, con su `hpo_id`, su etiqueta, cuánta información aportan y los genes candidatos a los que más se asocian (`genes_asociados`).
 
 Elegí exactamente `cantidad_de_preguntas` candidatos distintos y redactá una pregunta por cada uno:
 
 - `hpo_id`: copialo tal cual de `candidatos`. No inventes otros.
 - `text`: una sola pregunta de sí o no, de hasta 200 caracteres, que empiece con "¿" y termine con "?".
 - `help`: una oración corta que ayude a responder, o `null` si no hace falta.
-- `rationale`: una línea con qué genes separa la pregunta.
+- `rationale`: una línea con de qué genes candidatos es típico el síntoma.
 
 Cada pregunta es sobre un solo síntoma, el de su candidato, y con su mismo alcance:
 

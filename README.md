@@ -84,9 +84,9 @@ trabajo (el entorno gana; un valor vacío cuenta como no definido). Fuente:
 | `PREGUNTAS_MAX_ROUNDS` | `3` | Rondas con preguntas (1 a 3, límite del contrato). |
 | `PREGUNTAS_CONFIDENT_THRESHOLD` | `0.9` | Cierra si el puntaje refinado del primer gen llega a este valor. |
 | `PREGUNTAS_MIN_INFORMATION_GAIN` | `0.05` | Cierra si ninguna pregunta aporta al menos esta ganancia (bits). |
-| `PREGUNTAS_RERANK_STRATEGY` | `fixed_prior` | Qué hallazgos ve el modelo: `fixed_prior` (solo los originales) o `model_sees_present` (también los "sí"). |
-| `PREGUNTAS_ANSWER_WEIGHTING` | `asymmetric` | Cómo reordenan las respuestas los genes: `asymmetric` (solo lo que las anotaciones de una enfermedad dicen del síntoma la mueve; lo no mencionado es neutro) o `calibrated` (la verosimilitud completa, anterior). |
-| `PREGUNTAS_ANSWER_WEIGHT` | `0.3` | $k$ de la ponderación asimétrica, en [0, 1): un «sí» multiplica a las enfermedades que anotan el síntoma por 1 + k·p, un «no» por 1 − k·p. |
+| `PREGUNTAS_RERANK_STRATEGY` | `model_sees_present` | Qué hallazgos ve el modelo: `model_sees_present` (los informados más cada «sí») o `fixed_prior` (solo los informados). |
+| `PREGUNTAS_ANSWER_WEIGHTING` | `none` | Cómo reordena el agente los genes después del modelo: `none` (no reordena: el ranking es el del modelo; los «no» y los negados solo quedan registrados), `asymmetric` (solo lo que las anotaciones de una enfermedad dicen del síntoma la mueve) o `calibrated` (la verosimilitud completa). |
+| `PREGUNTAS_ANSWER_WEIGHT` | `0.3` | $k$ de la ponderación `asymmetric`, en [0, 1): un «sí» multiplica a las enfermedades que anotan el síntoma por 1 + k·p, un «no» por 1 − k·p. |
 | `PREGUNTAS_ROUND_BUDGET_S` | `75` | Segundos que una ronda puede gastar en llamadas al LLM. |
 | `PREGUNTAS_HOST` | `0.0.0.0` | Interfaz del servidor HTTP. |
 | `PREGUNTAS_PORT` | `8010` | Puerto del servidor HTTP. |
@@ -151,17 +151,18 @@ no se construyó. `make test-live` llama de verdad a `claude -p` y gasta cuota.
 501 casos publicados de phenopacket-store (uno por gen, sin el artículo del
 paciente en la base del agente), la ponderación calibrada que el agente usaba
 hasta el 28/09/2026 bajaba el top-1 del gen verdadero de 43,1 % a 37,5 % y el
-MRR de 0,508 a 0,461 (Δ −0,047, IC 95 % [−0,065; −0,029]). La ponderación
-asimétrica, hoy por defecto, deja de dañar: Δ MRR −0,001 [−0,009; +0,007] en
-los 251 pacientes retenidos y −0,001 [−0,006; +0,005] en los 501, con el gen
-correcto más abajo en el 4,0 % de los retenidos (antes, el 18,3 %). Tampoco
-mejora: el ranking refinado casi no se aparta del modelo, así que la vista por
-defecto de la interfaz debería seguir siendo la del modelo.
+MRR de 0,508 a 0,461 (Δ −0,047, IC 95 % [−0,065; −0,029]). Desde entonces el
+agente solo le manda las respuestas al modelo (cada «sí» se suma a su consulta;
+los «no» y los negados quedan registrados sin mover nada;
+[docs/DECISIONES.md](docs/DECISIONES.md) D-18): con los 251 pacientes reales
+retenidos, Δ MRR −0,007 [−0,024; +0,010], y con los 501, −0,000 [−0,012; +0,011].
+Es neutro con pacientes reales, cuyas respuestas no tienen errores; con
+respuestas simuladas con un 10 % de errores empeora al modelo (hasta −0,043).
 
 Sobre 300 pacientes simulados a partir de las mismas anotaciones HPO que usa el
 agente, en cambio, la ponderación calibrada subía el top-1 de 72,0 % a 79,3 % y
-el MRR de 0,787 a 0,842 (Δ +0,054, IC [+0,033; +0,078]); la asimétrica, +0,025
-[+0,012; +0,039]. No es sobreajuste a los casos de prueba, pero es
+el MRR de 0,787 a 0,842 (Δ +0,054, IC [+0,033; +0,078]); la configuración
+actual, −0,015 [−0,041; +0,009]. No es sobreajuste a los casos de prueba, pero es
 una cota superior optimista: la mejora solo aparece cuando paciente y agente
 describen la enfermedad con la misma fuente. Todo el detalle, con la auditoría
 de circularidad, en [docs/EVALUACION.md](docs/EVALUACION.md) (sección 11). Cada mejora cuantificada en términos

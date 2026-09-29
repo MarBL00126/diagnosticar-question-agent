@@ -86,11 +86,12 @@ def phrase_question(candidate: CandidateTerm, mode: Mode) -> QuestionDraft:
 
 def summarize(task: SummaryTask) -> str:
     if task.mode is Mode.PATIENT:
-        opening = (
-            "Con las respuestas se reordenó la lista de posibles causas genéticas."
-            if task.answers
-            else "No se sumaron respuestas, así que la lista quedó como la ordenó el modelo."
-        )
+        if not task.answers:
+            opening = "No se sumaron respuestas, así que la lista quedó como la ordenó el modelo."
+        elif _moved_the_list(task):
+            opening = "Con las respuestas se reordenó la lista de posibles causas genéticas."
+        else:
+            opening = "Las respuestas quedaron registradas y la lista siguió en el mismo orden."
         return f"{opening} Llevá esta información a la consulta para conversarla con el médico."
     parts = []
     for value, name in (
@@ -102,17 +103,28 @@ def summarize(task: SummaryTask) -> str:
         if labels:
             parts.append(f"{name}: {', '.join(labels)}")
     answers = f"Respuestas — {'; '.join(parts)}." if parts else "Sin respuestas nuevas."
-    risers = [
-        f"{g.gene_symbol} (#{g.model_rank}→#{position})"
-        for position, g in enumerate(task.top_genes, start=1)
-        if position < g.model_rank
-    ]
-    moves = (
-        f" Subieron respecto del modelo: {', '.join(risers)}."
-        if risers
-        else " El orden de los primeros genes no cambió respecto del modelo."
-    )
+    moves = ""
+    if task.ranks_before is not None:
+        risers = []
+        for position, g in enumerate(task.top_genes, start=1):
+            before = task.ranks_before.get(g.gene_symbol)
+            if before is None:
+                risers.append(f"{g.gene_symbol} (fuera de los 50→#{position})")
+            elif position < before:
+                risers.append(f"{g.gene_symbol} (#{before}→#{position})")
+        moves = (
+            f" Subieron respecto de la lista inicial: {', '.join(risers)}."
+            if risers
+            else " El orden de los primeros genes no cambió respecto de la lista inicial."
+        )
+    if not task.negatives_move_ranking and any(a.answer is AnswerValue.NO for a in task.answers):
+        moves += " Los «no» quedan registrados y no cambian el orden."
     return f"{answers}{moves} Es una orientación, no un diagnóstico."
+
+
+def _moved_the_list(task: SummaryTask) -> bool:
+    moving = {AnswerValue.YES, AnswerValue.NO} if task.negatives_move_ranking else {AnswerValue.YES}
+    return any(a.answer in moving for a in task.answers)
 
 
 def _as_phrase(label: str) -> str:
@@ -123,10 +135,6 @@ def _as_phrase(label: str) -> str:
 
 
 def _rationale(candidate: CandidateTerm) -> str:
-    yes = ", ".join(candidate.genes_yes[:_MAX_GENES_IN_RATIONALE])
-    no = ", ".join(candidate.genes_no[:_MAX_GENES_IN_RATIONALE])
-    if yes and no:
-        return f"Separa {yes} (sí) de {no} (no)."
-    if yes or no:
-        return f"Favorece a {yes or no} con un {'sí' if yes else 'no'}."
-    return "Síntoma con más información disponible."
+    """Which candidates the symptom is typical of; never what a "no" would do."""
+    genes = ", ".join(candidate.genes_yes[:_MAX_GENES_IN_RATIONALE])
+    return f"Típico de {genes}." if genes else "Síntoma con más información disponible."

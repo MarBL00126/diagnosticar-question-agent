@@ -36,6 +36,9 @@ EQUAL = {GENE_A: 0.25, GENE_B: 0.25, GENE_C: 0.25, GENE_E: 0.25}
 WEIGHTINGS = pytest.mark.parametrize("weighting", list(AnswerWeighting))
 CALIBRATED = AnswerWeighting.CALIBRATED
 ASYMMETRIC = AnswerWeighting.ASYMMETRIC
+NONE = AnswerWeighting.NONE
+# The weightings that let the evidence the model did not see move the ranking.
+APPLYING = pytest.mark.parametrize("weighting", [CALIBRATED, ASYMMETRIC])
 
 
 def _reranker(
@@ -119,7 +122,7 @@ def test_present_terms_the_model_saw_are_not_counted_again(
     assert _scores(posterior) == pytest.approx(EQUAL)
 
 
-@WEIGHTINGS
+@APPLYING
 def test_present_terms_unknown_to_the_model_are_applied(
     tiny_kb: KnowledgeBase, weighting: AnswerWeighting
 ) -> None:
@@ -131,7 +134,7 @@ def test_present_terms_unknown_to_the_model_are_applied(
     assert scores[GENE_A] > scores[GENE_C] > scores[GENE_E] > scores[GENE_B]
 
 
-@WEIGHTINGS
+@APPLYING
 def test_present_terms_not_sent_to_the_model_are_applied(
     tiny_kb: KnowledgeBase, weighting: AnswerWeighting
 ) -> None:
@@ -223,6 +226,35 @@ def test_a_finding_no_disease_annotates_or_excludes_changes_nothing(
     for evidence in (present, absent):
         scores = _scores(reranker.rerank(_ranking(EQUAL, query=()), evidence))
         assert scores == pytest.approx(EQUAL)
+
+
+def test_by_default_no_evidence_moves_the_ranking(tiny_kb: KnowledgeBase) -> None:
+    scores = {GENE_A: 0.4, GENE_B: 0.3, GENE_C: 0.2, GENE_D: 0.05, GENE_E: 0.05}
+    reranker = BayesianReranker(tiny_kb, LikelihoodModel(tiny_kb))
+    assert reranker.config.answer_weighting is NONE
+
+    for term in sorted(tiny_kb.term_ids()):
+        for evidence in (
+            Evidence(present=frozenset({term})),
+            Evidence(present=frozenset(), absent=frozenset({term})),
+            Evidence(present=frozenset({term}), absent=frozenset({SEIZURE})),
+        ):
+            posterior = reranker.rerank(_ranking(scores, query=()), evidence)
+            assert _scores(posterior) == pytest.approx(scores), term
+            assert [g.gene_symbol for g in posterior.genes] == list(scores)
+            assert [g.model_rank for g in posterior.genes] == [1, 2, 3, 4, 5]
+
+
+def test_without_weighting_the_hypotheses_still_split_each_genes_prior(
+    tiny_kb: KnowledgeBase,
+) -> None:
+    evidence = Evidence(present=frozenset({SEIZURE}), absent=frozenset({BLINDNESS}))
+
+    posterior = _reranker(tiny_kb, weighting=NONE).rerank(_ranking({GENE_C: 1.0}), evidence)
+
+    assert {h.disease_id: h.weight for h in posterior.hypotheses} == pytest.approx(
+        {DISEASE_C1: 0.5, DISEASE_C2: 0.5}
+    )
 
 
 def test_with_no_weight_and_no_exclusion_the_ranking_is_the_models(tiny_kb: KnowledgeBase) -> None:

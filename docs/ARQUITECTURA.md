@@ -35,8 +35,8 @@ flowchart TD
     ADM -- rechazo --> ERR["401, 413, 422 o 503"]
     ADM -- ok --> NOTES["Paso 2: leer con Claude las notas nuevas"]
     NOTES --> EVID["Paso 3: evidencia presentes, ausentes y no sé"]
-    EVID --> MODEL["Paso 4: modelo de diagnostic.ar con los hallazgos originales"]
-    MODEL --> RERANK["Paso 5: re-ranking bayesiano"]
+    EVID --> MODEL["Paso 4: modelo de diagnostic.ar con los hallazgos informados y los sí"]
+    MODEL --> RERANK["Paso 5: re-ranking (por defecto, ninguno)"]
     RERANK --> STOP{"Paso 6: ¿cerrar?"}
     STOP -- no --> SHORT["Paso 7: lista corta por ganancia de información"]
     SHORT --> DRAFT["Paso 8: Claude elige y redacta, salvaguardas, plantillas"]
@@ -57,12 +57,16 @@ flowchart TD
    nunca cambia un sí por un no ni al revés (`agent/evidence.py`).
 3. **Evidencia.** Presentes = `present_hpo_ids` ∪ respuestas efectivas "sí";
    ausentes = `absent_hpo_ids` ∪ "no"; desconocidos = "no sé". Los desconocidos
-   no se usan como evidencia y no se vuelven a preguntar.
+   no se usan como evidencia, y ninguno de los tres se vuelve a preguntar. Con
+   la configuración por defecto, los ausentes solo quedan registrados
+   (`interpreted_answers`): no mueven el ranking.
 4. **Modelo.** `POST /rank-genes` con `top_k` 50. Con la estrategia por defecto,
-   `fixed_prior`, se mandan siempre los mismos `present_hpo_ids` (sección 4.4).
-5. **Re-ranking.** El ranking del modelo es el prior; cada respuesta lo
-   reordena solo a través de lo que las anotaciones dicen del síntoma
-   (sección 4).
+   `model_sees_present`, se mandan `present_hpo_ids` más cada "sí" efectivo
+   (sección 4.4).
+5. **Re-ranking.** Por defecto no hay: el ranking es el del modelo para esa
+   consulta, repartido en hipótesis gen–enfermedad solo para poder elegir
+   preguntas. Las ponderaciones `asymmetric` y `calibrated` siguen disponibles
+   y reordenan con lo que las anotaciones dicen de cada respuesta (sección 4).
 6. **Cierre.** En este orden: `finish` pedido → `user_finished`; `round` mayor
    que `PREGUNTAS_MAX_ROUNDS` → `max_rounds`; primer gen con puntaje ≥ 0,9 →
    `confident`; lista corta vacía o ninguna ganancia ≥ 0,05 bits →
@@ -74,8 +78,9 @@ flowchart TD
    escribe el resumen de cierre. Cada borrador pasa las salvaguardas; con
    violaciones se reintenta una vez con ellas como `correcciones`, y lo que falte
    se completa con plantillas (secciones 6 y 7). La respuesta trae el ranking
-   refinado (50 genes), `specialties` y `confidence` del modelo, cómo se usó cada
-   respuesta (`interpreted_answers`), advertencias y versiones.
+   (50 genes; por defecto, el del propio modelo), `specialties` y `confidence`
+   del modelo, cómo se usó cada respuesta (`interpreted_answers`), advertencias y
+   versiones.
 
 ## 3. Base de conocimiento
 
@@ -187,9 +192,20 @@ como desconocidos, `unknown_hpo_ids`) y $A$ todos los ausentes (respondidos «no
 y negados de la extracción; el modelo nunca los recibe). «No sé» no cuenta. El
 puntaje de un gen es la suma de sus hipótesis, y los puntajes suman 1 sobre los
 50 genes; el `model_score` y `model_rank` de cada gen quedan en la respuesta
-para comparar.
+para comparar. `PREGUNTAS_ANSWER_WEIGHTING` elige entre tres ponderaciones.
 
-**Ponderación asimétrica (por defecto, `PREGUNTAS_ANSWER_WEIGHTING=asymmetric`).**
+**Sin ponderación (por defecto, `none`).** $w(g, d) = \pi(g, d)$: ninguna
+respuesta ni hallazgo negado cambia el ranking, que es el del modelo para su
+consulta (con `model_sees_present`, los hallazgos informados más cada «sí»;
+`model_rank` coincide con el puesto y `score` es `model_score` renormalizado).
+Los «no» y los negados quedan registrados para la consulta. Las hipótesis
+existen igual, porque la selección de preguntas (sección 5) las necesita. Es la
+decisión D-18 de [DECISIONES.md](DECISIONES.md): ninguna ponderación mejoró al
+modelo con pacientes reales, y cómo usar los síntomas negados se investiga en
+el propio modelo. Lo verifica
+`tests/agent/test_answers_reach_the_model.py`.
+
+**Ponderación asimétrica (`asymmetric`; por defecto unas horas del 28/09/2026, D-17).**
 Solo lo que las anotaciones de una enfermedad dicen de un hallazgo la mueve:
 
 $$w(g, d) \propto \pi(g, d) \prod_{\substack{t \in P\\ d \text{ excluye } t}} x \prod_{\substack{t \in P'\\ p(t,d) \neq \text{—}}} \bigl(1 + k\,p(t, d)\bigr) \prod_{\substack{t \in A\\ p(t,d) \neq \text{—}}} \bigl(1 - k\,p(t, d)\bigr)$$
@@ -221,11 +237,19 @@ a partir de las anotaciones (+0,054 de MRR), y la que más dañaba con pacientes
 reales publicados (−0,047). La asimétrica deja de dañarlos (−0,001 [−0,009;
 +0,007] en los pacientes retenidos) pero tampoco los mejora
 ([EVALUACION.md](EVALUACION.md), secciones 11.8 y 11.10;
-[DECISIONES.md](DECISIONES.md), D-17).
+[DECISIONES.md](DECISIONES.md), D-17). Sin ponderación, con los «sí» en la
+consulta del modelo, el resultado es parecido con pacientes reales y peor en
+dos escenarios simulados (sección 11.11 de EVALUACION.md).
 
-### 4.4 `FIXED_PRIOR`: el modelo solo ve los hallazgos originales
+### 4.4 Qué ve el modelo: `model_sees_present` (por defecto) o `fixed_prior`
 
-Con `PREGUNTAS_RERANK_STRATEGY=fixed_prior` (por defecto), cada ronda consulta al
+Con `PREGUNTAS_RERANK_STRATEGY=model_sees_present` (por defecto), cada ronda
+consulta al modelo con `present_hpo_ids` más cada "sí" efectivo (un "sí" que la
+nota bajó a "no sé" no va). Con la ponderación por defecto, el modelo decide
+solo; con las otras, el re-ranking aplica además los "no", los negados, los
+términos que el modelo no conoce y las exclusiones.
+
+Con `PREGUNTAS_RERANK_STRATEGY=fixed_prior`, cada ronda consulta al
 modelo con `present_hpo_ids` y nada más. Entonces el prior es siempre el primer
 ranking y **todas** las respuestas, "sí" y "no", entran por el re-ranking: un
 "sí" equivocado pesa como un factor acotado (a lo sumo 1,3 con la ponderación
@@ -240,27 +264,36 @@ además premiarlos los cuenta dos veces y daña en todos los escenarios (secció
 11.8).
 
 Consecuencia para el contrato: `specialties` y `confidence` vienen sin cambios
-del modelo para los hallazgos originales y son iguales en todas las rondas. Lo
-que refinan las respuestas es `ranking[].score`.
+de la llamada al modelo de cada ronda. Con `model_sees_present` cambian a medida
+que llegan "sí"; con `fixed_prior` son las de los hallazgos originales y no
+cambian. Para que el resumen de cierre pueda decir cómo cambió la lista, el
+agente le pide al modelo, en la ronda de cierre y solo si la consulta llevó
+respuestas, el ranking de los hallazgos informados; lo hace solo si al
+presupuesto de la ronda le queda al menos el tope de una llamada al modelo, así
+que el invariante de tiempos de la sección 8 se mantiene. Si no puede, el
+resumen no describe cambios de orden.
 
 ### 4.5 Garantía: un hallazgo negado nunca favorece a un gen que lo tiene
 
+Sin ponderación, un "no" multiplica cada hipótesis por 1: no favorece a nadie.
 Con la ponderación asimétrica, un "no" sobre $t$ multiplica cada hipótesis que
 anota $t$ (o un descendiente) por $1 - k\,p \le 1$ y todas las demás, incluidas
 las que lo excluyen, por 1. Con la calibrada, lo multiplica por
 $1 - P(t \mid d)$: si $d$ tiene $t$ anotado, $P(t \mid d) \ge b$ y el factor es
 a lo sumo $1 - b$; si no lo tiene, $1 - b$; si lo excluye, $1 - \varepsilon$. En
-las dos, negar un hallazgo nunca sube una hipótesis que lo presenta por encima
+las tres, negar un hallazgo nunca sube una hipótesis que lo presenta por encima
 de una que no. Lo verifica, para cada término de la base de prueba y cada par de
-hipótesis y con las dos ponderaciones,
+hipótesis y con las tres ponderaciones,
 `tests/ranking/test_reranker.py::test_absent_term_never_favours_hypotheses_annotated_with_it`,
 y es la versión cuantitativa de la regla "un hallazgo negado nunca apoya a un
 gen" del prototipo ([CREDITOS.md](CREDITOS.md)).
 
 ### 4.6 Qué supone este cálculo
 
-Las respuestas mueven el ranking solo a través de las anotaciones de
-`phenotype.hpoa`. Con la ponderación calibrada, si las anotaciones de la
+Por defecto, las respuestas mueven el ranking solo a través del modelo: cada
+"sí" se suma a su consulta, y lo que el modelo aprendió decide. Con las otras
+dos ponderaciones, además, a través de las anotaciones de `phenotype.hpoa`. Con
+la ponderación calibrada, si las anotaciones de la
 enfermedad verdadera no mencionan un síntoma que el paciente tiene, su «sí» la
 castiga por un factor 10 frente a las que lo mencionan; esa es la razón de que
 dañara a los pacientes reales. La asimétrica deja ese caso neutro, pero sigue
@@ -301,7 +334,11 @@ $$p_{\text{sí}}(t) = \sum_h w_h \, P(t \mid d_h), \qquad \mathrm{IG}(t) = (1 - 
 $H(G)$ es la entropía de la distribución de genes y $p_? = 0{,}2$ la
 probabilidad de que la respuesta sea "No sé", que deja la posterior igual.
 Para cada candidato se guardan además los genes que más suben con un "sí" y con
-un "no" (hasta 5): son `genes_if_yes` y `genes_if_no` de la vista médica.
+un "no" (hasta 5), según esa misma verosimilitud. Los primeros son
+`genes_if_yes` de la vista médica: los genes asociados al síntoma, que el modelo
+puede subir si la respuesta es "sí". Los segundos solo se muestran en
+`genes_if_no` cuando un "no" mueve el ranking; con la ponderación por defecto
+esa lista va vacía.
 
 **Diversificación** (`selection/diversity.py`): relevancia marginal máxima
 (Carbonell y Goldstein, SIGIR 1998) sobre los 50 mejores. Cada elección maximiza
@@ -347,7 +384,8 @@ prototipo (mapeadas en `RULES_FROM_PROTOTYPE`, ver [CREDITOS.md](CREDITOS.md)).
 `paciente.md` pide forma impersonal (quien lee puede ser la persona o un
 familiar), lenguaje simple, nada de genes, enfermedades, porcentajes ni
 frecuencias; `medico.md` pide redacción clínica fiel al término y un
-fundamento de una línea con los genes que separa.
+fundamento de una línea que diga de qué genes candidatos es típico el síntoma
+(`genes_asociados` en los datos), nunca qué haría un "no".
 
 **Qué va en `<datos>`.** Todos los datos del caso van en el mensaje de usuario,
 como JSON dentro de un bloque `<datos>`, y las reglas dicen que es solo
@@ -376,7 +414,9 @@ el reintento.
   misma ronda; la cantidad tiene que ser la pedida.
 - `text` no vacío, hasta 200 caracteres, una sola pregunta entre `¿` y `?`.
 - `help` de hasta 200 caracteres.
-- Modo médico: `rationale` obligatorio, hasta 300 caracteres.
+- Modo médico: `rationale` obligatorio, hasta 300 caracteres, y sin decir qué
+  haría un "no" ("(no)" después de genes, "con un no", "si la respuesta es no",
+  "un «no»").
 - Modo paciente, en `text` y `help`: ningún símbolo de gen de la base (de 3 o
   más caracteres, en cualquier combinación de mayúsculas; los que también son
   palabras comunes, como "POR" o "SON", solo en mayúsculas); ningún nombre de las
@@ -401,7 +441,8 @@ exceptuadas.
 diga otra cosa.
 
 **Campos de médico**: `genes_if_yes`, `genes_if_no` y `rationale` solo se
-completan en modo médico; en modo paciente van `null`.
+completan en modo médico; en modo paciente van `null`. Con la ponderación por
+defecto, `genes_if_no` va siempre vacío, porque un "no" no mueve nada.
 
 **Reintento y caída.** Hasta 2 intentos por tarea. Las preguntas aceptadas del
 primer intento se conservan; lo que falte se completa con plantillas. Si el LLM
@@ -425,6 +466,7 @@ LLM. Con `PREGUNTAS_LLM_PROVIDER=template` no hay advertencias: no es una caída
 | Llamadas al LLM de la ronda | `PREGUNTAS_ROUND_BUDGET_S` = 75 s desde que empieza la ronda | `agent/round.py` |
 | Cada llamada al LLM | `min(PREGUNTAS_LLM_TIMEOUT_S = 60 s, lo que le queda a la ronda)`; no se empieza una con menos de 10 s, y la lectura de notas reserva 10 s para la llamada siguiente | `agent/round.py` |
 | Llamada al modelo | `PREGUNTAS_MODEL_SERVICE_TIMEOUT_S` = 10 s | `ranking/model_client.py` |
+| Segunda llamada al modelo (solo al cerrar, si la consulta llevó respuestas, para el resumen) | la misma, y solo si al presupuesto de la ronda le quedan al menos esos 10 s | `agent/round.py` |
 
 Quien llama tiene que esperar más que 10 + 75 + 10 = 95 s; la plataforma espera
 100 s. El cálculo propio (re-ranking y selección) tarda decenas de milisegundos

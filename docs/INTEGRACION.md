@@ -39,7 +39,7 @@ esquemas.
 | `mode` | `"paciente"` \| `"medico"` | Para quién se escriben los textos de esta respuesta. |
 | `round` | entero 1–4 | Ronda que se pide. La 1 no lleva respuestas; con `round` > 3 se cierra sin preguntas. |
 | `present_hpo_ids` | 1–100 ids `HP:0000000` | Hallazgos presentes informados antes de preguntar. |
-| `absent_hpo_ids` | 0–100 ids | Hallazgos negados informados antes de preguntar; disjuntos con los presentes. |
+| `absent_hpo_ids` | 0–100 ids | Hallazgos negados informados antes de preguntar; disjuntos con los presentes. Se aceptan, no se vuelven a preguntar y quedan registrados; con la configuración por defecto no mueven el ranking. |
 | `answers[]` | hasta 9 | Todas las respuestas de la sesión, cada término una sola vez y nunca sobre un hallazgo informado. |
 | `answers[].hpo_id`, `.answer` | id, `"si"` \| `"no"` \| `"no_se"` | El botón que se tocó. |
 | `answers[].note` | texto ≤ 280, opcional | Nota libre. |
@@ -53,9 +53,9 @@ esquemas.
 | `round`, `mode` | La ronda respondida y el modo en que se escribieron sus textos (igual al pedido). |
 | `status` | `"questions"` o `"finished"`. |
 | `finish_reason` | `null` o `"user_finished"`, `"max_rounds"`, `"confident"`, `"no_useful_questions"`. |
-| `questions[]` | `id` (`r<ronda>-<hpo_id>`), `hpo_id`, `label` (etiqueta oficial en español, para chips como "No presenta: …"), `text`, `help`, y solo en modo médico `genes_if_yes` / `genes_if_no` (hasta 5 genes que suben con cada respuesta) y `rationale`; en modo paciente esos tres son `null`. |
-| `ranking[]` | Hasta 50 genes: `gene_id`, `gene_symbol`, `score` (refinado, suma 1), `model_score`, `model_rank`. Mismos campos iniciales que un resultado de `/rank-genes`. Con pacientes reales publicados, el orden refinado no mejoró al del modelo ([EVALUACION.md](EVALUACION.md), sección 11): la vista por defecto debería ser la del modelo (`model_rank`), con el refinado como opción. |
-| `specialties`, `confidence` | Tal cual del modelo, para los hallazgos originales: no cambian entre rondas. |
+| `questions[]` | `id` (`r<ronda>-<hpo_id>`), `hpo_id`, `label` (etiqueta oficial en español, para chips como "No presenta: …"), `text`, `help`, y solo en modo médico `genes_if_yes` (hasta 5 genes asociados al síntoma; el modelo puede subirlos si la respuesta es «sí»), `genes_if_no` (con la configuración por defecto, siempre `[]`: un «no» no mueve nada) y `rationale` (de qué genes es típico el síntoma); en modo paciente esos tres son `null`. |
+| `ranking[]` | Hasta 50 genes: `gene_id`, `gene_symbol`, `score` (suma 1), `model_score`, `model_rank`. Mismos campos iniciales que un resultado de `/rank-genes`. Por defecto es el ranking del propio modelo para los hallazgos informados más cada «sí» efectivo: `model_rank` coincide con el puesto y `score` es `model_score` renormalizado ([DECISIONES.md](DECISIONES.md), D-18). Por eso no sirve para mostrar cómo cambió la lista: para eso hay que compararlo con el ranking anterior a las preguntas (el del diagnóstico). |
+| `specialties`, `confidence` | Tal cual de la llamada al modelo de la ronda. Con la configuración por defecto esa llamada lleva los hallazgos informados más cada «sí», así que cambian a medida que llegan «sí». |
 | `interpreted_answers[]` | Por respuesta: `answer`, `effective_answer` y `note_summary`. Es lo que se reenvía como `reading`. |
 | `summary` | Resumen de cierre para conversar con el médico (solo al terminar). |
 | `warnings[]` | Avisos para mostrar, por ejemplo "Algunas preguntas se generaron sin IA." |
@@ -90,6 +90,13 @@ Qué hace Express en cada `POST` (`backend/src/services/questionSession.ts`):
 - **Modo**: el de cada pedido, que la interfaz toma de "Ver detalle médico"; cada
   ronda guardada recuerda el suyo. En modo paciente Express vuelve a quitar
   `genesIfYes` y `genesIfNo`.
+- **Qué puede decir la interfaz**: con la configuración por defecto solo un «sí»
+  cambia la lista (a través del modelo); un «no» y los negados quedan
+  registrados para la consulta y no reordenan nada, así que la interfaz no debe
+  decir ni sugerir lo contrario (por ejemplo, genes que «suben con un no»:
+  `genesIfNo` llega vacío). Para mostrar cuánto se movió un gen, la referencia
+  es el ranking anterior a las preguntas, no `modelRank`, que con la
+  configuración por defecto coincide con el puesto.
 - **Guardado**: `diagnoses.preguntas_respuestas` (JSONB), con compare-and-set
   contra el valor leído; la respuesta del agente se guarda completa.
 - **Límites por cuenta**: 60 `POST` y 120 `GET` por minuto; 20 rondas por hora
@@ -134,12 +141,12 @@ Agente (servicio `question-agent` de `docker-compose.yml`): compose fija
 `PREGUNTAS_MODEL_SERVICE_TIMEOUT_S`, `PREGUNTAS_LLM_TIMEOUT_S`,
 `PREGUNTAS_LLM_EFFORT`, `PREGUNTAS_LLM_QUESTION_EFFORT`, `PREGUNTAS_MAX_CONCURRENT_ROUNDS`, `PREGUNTAS_LOG_LEVEL`,
 `CLAUDE_CODE_OAUTH_TOKEN` y `ANTHROPIC_API_KEY`. El resto usa los valores por
-defecto del agente ([README](../README.md#configuración)). Entre ellos, cómo
-reordenan las respuestas los genes: `PREGUNTAS_ANSWER_WEIGHTING` (`asymmetric`,
-o `calibrated`, la anterior) y `PREGUNTAS_ANSWER_WEIGHT` (`0.3`), junto con
-`PREGUNTAS_RERANK_STRATEGY` (`fixed_prior`); para cambiarlos en la plataforma
-hay que agregarlos a la lista de variables que compose deja pasar
-([DECISIONES.md](DECISIONES.md), D-17).
+defecto del agente ([README](../README.md#configuración)). Entre ellos, qué hacen
+las respuestas: `PREGUNTAS_RERANK_STRATEGY` (`model_sees_present`) y
+`PREGUNTAS_ANSWER_WEIGHTING` (`none`; o `asymmetric` / `calibrated`, con
+`PREGUNTAS_ANSWER_WEIGHT`); para cambiarlos en la plataforma hay que agregarlos
+a la lista de variables que compose deja pasar ([DECISIONES.md](DECISIONES.md),
+D-18).
 
 **Invariante de tiempos.** El backend tiene que esperar más que el peor caso
 del agente: cola (`PREGUNTAS_QUEUE_TIMEOUT_S`, 10 s) + presupuesto de la ronda

@@ -4,18 +4,18 @@ Este documento describe cómo se evaluó el agente de preguntas de seguimiento d
 diagnostic.ar, qué resultados dio y qué valores por defecto se adoptaron a
 partir de ellos. Todas las cifras salen de corridas reales del código en `eval/`
 (26/09/2026; la sección 11, del 28/09/2026) y se pueden reproducir con los
-comandos de las secciones 10 y 11.11. El modelo
+comandos de las secciones 10 y 11.12. El modelo
 evaluado se describe en [ARQUITECTURA.md](ARQUITECTURA.md) y las decisiones que
 salieron de acá, en [DECISIONES.md](DECISIONES.md) (D-11). Las mismas corridas,
 expresadas como mejoras absolutas y relativas con intervalos de confianza (por
 subgrupo, por ronda y por pregunta), están en [IMPACTO.md](IMPACTO.md).
 
 **Los valores por defecto del código son la configuración elegida acá**
-(sección 8): estrategia `fixed_prior`, temperatura 1, fondo 0,1, frecuencia
-faltante 0,3, umbral de confianza 0,9 y ganancia mínima 0,05, **con un cambio
-del 28/09/2026: las respuestas se ponderan de forma asimétrica** (sección 11.10,
-[DECISIONES.md](DECISIONES.md) D-17). Las secciones 2 a 8 usan la ponderación
-calibrada, la anterior. «Configuración
+(sección 8): temperatura 1, fondo 0,1, frecuencia faltante 0,3, umbral de
+confianza 0,9 y ganancia mínima 0,05, **con un cambio del 28/09/2026: las
+respuestas solo llegan al modelo** (estrategia `model_sees_present`, sin
+re-ranking; sección 11.11, [DECISIONES.md](DECISIONES.md) D-18). Las secciones
+2 a 8 usan `fixed_prior` y la ponderación calibrada, la configuración anterior. «Configuración
 anterior» se refiere a los valores por defecto que tenía el código hasta el commit
 46e7daa, guardados en `eval/configs/defaults_before_tuning.json`.
 
@@ -31,11 +31,13 @@ cuando el paciente viene de otra fuente de curación (−0,055 y −0,095). El 0
 de abajo no es sobreajuste a los casos de prueba, pero es una cota superior que
 los pacientes reales no alcanzan (sección 11.7). Cambiar la forma en que las
 respuestas reordenan los genes (sección 11.8) puede dejar de dañar, pero ninguna
-variante probada mejora a los pacientes reales. **Desde el 28/09/2026 el código
-usa por defecto la ponderación asimétrica** (D-17): con pacientes reales queda
-neutra (Δ MRR −0,001 [−0,009; +0,007] en los retenidos), verificado con el
-código nuevo en la sección 11.10. Las secciones 2 a 8 describen la ponderación
-calibrada, la anterior.
+variante probada mejora a los pacientes reales. **Desde el 28/09/2026 el
+agente solo le manda las respuestas al modelo** (D-18): cada «sí» se suma a su
+consulta, el ranking es el del modelo y los «no» quedan registrados. Con
+pacientes reales queda neutro (Δ MRR −0,007 [−0,024; +0,010] en los retenidos);
+empeora al modelo con anotaciones retenidas (−0,043) y con pacientes de OMIM y
+un agente que solo conoce Orphanet (−0,025), verificado con el código nuevo en
+la sección 11.11. Las secciones 2 a 8 describen la configuración anterior.
 
 **Resumen de la simulación.** Con la configuración anterior del código, las preguntas no
 mejoraban el ranking del modelo de diagnostic.ar: tras tres rondas, el MRR del gen
@@ -515,11 +517,12 @@ Los cambios 1 y 2 son los que pasan de «no mejora y a veces daña» a una
 mejora significativa **en la simulación**. Con pacientes reales (sección 11.6)
 el cambio 1 se invierte: `model_sees_present` supera a `fixed_prior` por +0,046
 de MRR, y la configuración anterior completa supera a la elegida por +0,034,
-aunque ninguna mejora al modelo. Tras la auditoría, la estrategia y T = 1 se
-mantuvieron y cambió cómo pesan las respuestas: desde el 28/09/2026 el valor por
-defecto es la ponderación asimétrica (`PREGUNTAS_ANSWER_WEIGHTING=asymmetric`,
-k = 0,3; secciones 11.8 a 11.10 y [DECISIONES.md](DECISIONES.md), D-17), y la
-calibrada de esta sección sigue disponible con `calibrated`. **Advertencia sobre T = 1**: en estos casos el modelo está
+aunque ninguna mejora al modelo. Tras la auditoría, el 28/09/2026 el valor por
+defecto pasó primero a la ponderación asimétrica (D-17) y después a mandarle
+las respuestas solo al modelo (`model_sees_present` sin re-ranking; secciones
+11.8 a 11.11 y [DECISIONES.md](DECISIONES.md), D-18). Lo de esta sección sigue
+disponible con `PREGUNTAS_RERANK_STRATEGY=fixed_prior` y
+`PREGUNTAS_ANSWER_WEIGHTING=calibrated`. **Advertencia sobre T = 1**: en estos casos el modelo está
 en su terreno (72 % de top-1) y conviene confiar en él. Con pacientes reales es
 probable que esté más sobreconfiado, y ahí una temperatura mayor podría volver
 a convenir. Antes de fijarla definitivamente hay que medirla con casos reales.
@@ -557,10 +560,11 @@ a convenir. Antes de fijarla definitivamente hay que medirla con casos reales.
 
 ## 10. Cómo reproducir
 
-Para las evaluaciones sin circularidad, ver la sección 11.11. Las cifras de las
-secciones 5 a 8 son de la ponderación calibrada: `eval/results/chosen_config.json`
-(que `eval.tune` escribe) y `eval/configs/*.json` la fijan; sin `--config`,
-`eval.run_simulation` usa hoy la asimétrica.
+Para las evaluaciones sin circularidad, ver la sección 11.12. Las cifras de las
+secciones 5 a 8 son de la ponderación calibrada con `fixed_prior`:
+`eval/results/chosen_config.json` (que `eval.tune` escribe) y
+`eval/configs/*.json` la fijan; sin `--config`, `eval.run_simulation` usa hoy
+los valores por defecto nuevos (los «sí» al modelo, sin re-ranking).
 
 Requisitos: `data/kb.sqlite` construida (`make kb`), el servicio del modelo de
 diagnostic.ar escuchando (por defecto `http://127.0.0.1:18021`, o
@@ -609,10 +613,10 @@ intervalos (bootstrap pareado, 2000 remuestreos) que el resto del documento.
 Código: `eval/audit.py`, `eval/phenopackets.py`, `eval/kb_views.py`,
 `eval/explore.py` y `eval/variants.py` (28/09/2026).
 
-En 11.1 a 11.9, «actual» y «por defecto» se refieren a esos valores, con la
-ponderación calibrada de las respuestas. La ponderación asimétrica que los
-reemplazó el 28/09/2026 y su confirmación con el código nuevo están en 11.8 a
-11.10.
+En 11.1 a 11.9, «actual» y «por defecto» se refieren a esos valores
+(`fixed_prior`, ponderación calibrada). Lo que los reemplazó el 28/09/2026 está
+en 11.10 (la ponderación asimétrica, por unas horas) y 11.11 (las respuestas
+solo llegan al modelo, el valor por defecto actual).
 
 **Resumen.** El 0,842 no es sobreajuste a los casos de prueba, pero sí una cota
 optimista por construcción: el simulador comparte los supuestos del agente. La
@@ -671,7 +675,10 @@ el paciente tiene un síntoma que las anotaciones de su enfermedad no mencionan,
 su «sí» lo castiga igual que un «no» a un síntoma anotado que no tiene. Esa es
 la fragilidad que mide esta sección.
 
-**Desde el 28/09/2026 (ponderación asimétrica, D-17)** el paso 3 es: un «sí» que
+**Desde el 28/09/2026 (D-18)** no hay paso 3: cada «sí» efectivo se suma a la
+consulta del modelo en el paso 1, el ranking que se muestra es el del modelo
+para esa consulta y los «no» y negados quedan registrados sin tocarlo. **Por
+unas horas del mismo día (ponderación asimétrica, D-17)** el paso 3 fue: un «sí» que
 el modelo no vio multiplica a las enfermedades que anotan el término por
 $1 + k\,p$ ($k$ = 0,3, $p$ la frecuencia anotada sin piso ni recorte); un «no» o
 un negado, por $1 - k\,p$; un hallazgo presente que la enfermedad excluye, por
@@ -886,7 +893,7 @@ se cambia **la forma** en que las respuestas reordenan los genes; la selección
 de preguntas es la misma en todas (ganancia de información con la verosimilitud
 del código). Código: `eval/variants.py`. Cuando se corrió, reemplazaba el
 re-ranker por caso con una subclase de `BayesianReranker`; hoy V1, V2, V3fp, V4
-y V5 corren con el re-ranker del código (sección 11.10) y solo V2 literal y V3,
+y V5 corren con el re-ranker del código (secciones 11.10 y 11.11) y solo V2 literal y V3,
 que el código no expresa, con la subclase. $p$ es el noisy-OR de
 las frecuencias anotadas del término o sus descendientes para la enfermedad
 (0,3 si no está indicada), sin piso de fondo ni recorte.
@@ -911,12 +918,12 @@ en el ranking del modelo; «con respuestas» restringe a los casos con al menos 
 
 | variante | A retenidos: Δ MRR | Δ top-1 (pp) | Δ top-5 (pp) | empeora | A retenidos con respuestas: Δ MRR (n) | B | C_orpha | C_omim | simulación |
 |---|---|---|---|---|---|---|---|---|---|
-| V1 | −0,007 [−0,024; +0,010] | −1,6 [−4,8; +1,2] | +1,2 [−0,4; +3,2] | 9,6 % | −0,013 [−0,047; +0,019] (122) | −0,043 [−0,067; −0,021] | −0,016 [−0,040; +0,006] | −0,025 [−0,044; −0,007] | −0,015 [−0,041; +0,009] |
+| **V1** (por defecto desde el 28/09, D-18) | −0,007 [−0,024; +0,010] | −1,6 [−4,8; +1,2] | +1,2 [−0,4; +3,2] | 9,6 % | −0,013 [−0,047; +0,019] (122) | −0,043 [−0,067; −0,021] | −0,016 [−0,040; +0,006] | −0,025 [−0,044; −0,007] | −0,015 [−0,041; +0,009] |
 | V2 | −0,006 [−0,024; +0,010] | −1,6 [−4,8; +1,2] | +1,2 [−0,4; +3,2] | 9,2 % | −0,013 [−0,046; +0,018] (123) | −0,044 [−0,068; −0,021] | −0,015 [−0,039; +0,008] | −0,026 [−0,047; −0,007] | −0,015 [−0,041; +0,009] |
 | V2 literal | −0,007 [−0,024; +0,010] | −1,6 [−4,8; +1,2] | +1,2 [−0,4; +3,2] | 9,6 % | −0,013 [−0,047; +0,019] (122) | −0,044 [−0,068; −0,021] | −0,016 [−0,039; +0,008] | −0,025 [−0,044; −0,007] | −0,018 [−0,043; +0,006] |
 | V3, k = 0,3 | −0,013 [−0,032; +0,004] | −2,4 [−5,6; +0,8] | −0,4 [−2,4; +1,2] | 10,8 % | −0,028 [−0,065; +0,008] (122) | −0,033 [−0,059; −0,008] | −0,024 [−0,050; +0,001] | −0,040 [−0,064; −0,018] | +0,004 [−0,022; +0,029] |
 | V3, k = 0,5 | −0,018 [−0,037; +0,000] | −3,6 [−6,8; −0,4] | −0,4 [−2,4; +1,2] | 12,4 % | −0,038 [−0,074; −0,003] (123) | −0,040 [−0,066; −0,015] | −0,020 [−0,047; +0,007] | −0,047 [−0,072; −0,024] | +0,022 [−0,004; +0,047] |
-| **V3fp, k = 0,3** (por defecto desde el 28/09) | **−0,001 [−0,009; +0,007]** | +0,0 [−1,6; +1,6] | −0,4 [−1,2; +0,0] | **4,0 %** | −0,002 [−0,019; +0,014] (122) | **+0,004 [−0,008; +0,016]** | **+0,001 [−0,014; +0,017]** | −0,022 [−0,039; −0,006] | +0,025 [+0,012; +0,039] |
+| **V3fp, k = 0,3** (por defecto unas horas del 28/09) | **−0,001 [−0,009; +0,007]** | +0,0 [−1,6; +1,6] | −0,4 [−1,2; +0,0] | **4,0 %** | −0,002 [−0,019; +0,014] (122) | **+0,004 [−0,008; +0,016]** | **+0,001 [−0,014; +0,017]** | −0,022 [−0,039; −0,006] | +0,025 [+0,012; +0,039] |
 | V3fp, k = 0,5 | −0,005 [−0,015; +0,005] | −0,8 [−2,8; +1,2] | −0,4 [−1,2; +0,0] | 5,6 % | −0,010 [−0,031; +0,009] (123) | +0,000 [−0,015; +0,016] | −0,007 [−0,028; +0,013] | −0,044 [−0,065; −0,022] | +0,036 [+0,020; +0,054] |
 | V4 | −0,002 [−0,020; +0,014] | −1,2 [−4,4; +2,0] | +0,8 [−1,2; +2,8] | 9,6 % | −0,005 [−0,043; +0,030] (118) | −0,066 [−0,098; −0,036] | −0,046 [−0,076; −0,019] | −0,093 [−0,126; −0,060] | +0,018 [−0,006; +0,043] |
 | V5 (calibrada, por defecto hasta el 28/09) | −0,044 [−0,068; −0,020] | −6,0 [−9,6; −2,4] | −4,0 [−6,8; −1,6] | 18,3 % | −0,087 [−0,136; −0,043] (126) | −0,041 [−0,072; −0,011] | −0,055 [−0,087; −0,025] | −0,095 [−0,127; −0,062] | +0,054 [+0,033; +0,078] |
@@ -957,7 +964,9 @@ Qué dice la tabla:
    modelo («Original»), con el refinado como opción secundaria, si se mantiene.
 2. **Si se mantiene el re-ranking, cambiarlo por V3fp con k = 0,3.** Es el
    único cambio que deja de dañar a los pacientes reales y a B y C_orpha.
-   **Hecho el 28/09/2026** ([DECISIONES.md](DECISIONES.md), D-17), así:
+   **Hecho el 28/09/2026** ([DECISIONES.md](DECISIONES.md), D-17) y reemplazado
+   el mismo día por mandarle las respuestas solo al modelo (D-18, sección
+   11.11); sigue disponible. Así se implementó:
    - Estrategia: sin cambios, `RerankStrategy.FIXED_PRIOR`
      (`PREGUNTAS_RERANK_STRATEGY=fixed_prior`), temperatura 1.
    - `ranking/likelihood.py`: que `DiseaseProfile` exponga, además de lo que
@@ -977,15 +986,16 @@ Qué dice la tabla:
      frecuencia faltante 0,3, ε 0,02), las reglas de cierre y la garantía de la
      sección 4.5 de ARQUITECTURA.md (un «no» nunca favorece a una enfermedad que
      anota el término: su factor es ≤ 1 y el de las demás, 1).
-   - Variables de entorno: `PREGUNTAS_ANSWER_WEIGHTING` (`asymmetric` por
-     defecto, o `calibrated`) y `PREGUNTAS_ANSWER_WEIGHT` (0,3).
+   - Variables de entorno: `PREGUNTAS_ANSWER_WEIGHTING=asymmetric` (hoy el
+     valor por defecto es `none`), `PREGUNTAS_ANSWER_WEIGHT` (0,3) y
+     `PREGUNTAS_RERANK_STRATEGY=fixed_prior`.
 3. **Las preguntas pueden seguir siendo útiles como guía para la consulta**
    (qué conviene averiguar), algo que esta evaluación no mide. Lo que no está
    demostrado es que reordenar los genes con las respuestas ayude.
 
-### 11.10 Confirmación con el código nuevo
+### 11.10 Confirmación de la ponderación asimétrica en el código
 
-Con la ponderación asimétrica ya en `src/` y por defecto, se volvieron a correr
+Con la ponderación asimétrica ya en `src/` y por defecto (D-17, antes de D-18), se volvieron a correr
 los escenarios por el camino normal del código (`build_pipeline` con
 `AgentConfig()`, el `BayesianReranker` de `src/`, sin subclase) y se
 compararon con las corridas de la sección 11.8, hechas con la subclase de
@@ -997,9 +1007,10 @@ compararon con las corridas de la sección 11.8, hechas con la subclase de
   (una por $k$, en la simulación), la variante que todavía usa la subclase y que
   ahora toma la frecuencia de `src/` sin el recorte a $1 - 10^{-9}$ que tenía; no
   afecta a ninguna cifra publicada.
-- **`python -m eval.run_simulation --split test`** sin `--config`, que ahora
-  toma la ponderación asimétrica, da las mismas 300 trazas que V3fp en la
-  simulación.
+- **`python -m eval.run_simulation --split test`** sin `--config`, que entonces
+  tomaba la ponderación asimétrica (hoy, `--config
+  eval/configs/asymmetric_fixed_prior.json`), da las mismas 300 trazas que V3fp
+  en la simulación.
 
 Cifras de la configuración por defecto (Δ contra el modelo solo, IC 95 %
 pareado):
@@ -1019,14 +1030,60 @@ daño chico en C_omim y la mitad de la mejora simulada. El re-ranking casi no
 mueve la lista con pacientes reales. Falta un conjunto nuevo para confirmarla
 (sección 11.8).
 
-### 11.11 Cómo reproducir
+### 11.11 Confirmación: las respuestas solo llegan al modelo (valor por defecto)
+
+Por decisión de Mate ([DECISIONES.md](DECISIONES.md), D-18), desde el 28/09/2026
+el agente no reordena nada: con `PREGUNTAS_RERANK_STRATEGY=model_sees_present` y
+`PREGUNTAS_ANSWER_WEIGHTING=none`, cada «sí» efectivo se suma a la consulta del
+modelo, el ranking es el del modelo para esa consulta, y los «no» y los
+hallazgos negados quedan registrados sin tocarlo. Es la variante V1 de 11.8.
+Cómo hacer que el propio modelo use los síntomas negados se investiga aparte.
+
+Se volvieron a correr las 50 corridas de `eval.variants` con V1 por el camino
+normal del código (`AgentConfig()`, `AnswerWeighting.NONE` en el
+`BayesianReranker` de `src/`): las 17 010 trazas son idénticas, caso por caso
+(puesto del gen correcto en cada ronda y preguntas), a las de la corrida
+anterior. `python -m eval.run_simulation --split test` sin `--config` da las
+mismas 300 trazas que V1 en la simulación.
+
+| escenario | casos | MRR modelo → agente | Δ MRR | Δ top-1 (pp) | Δ top-5 (pp) | empeora / mejora |
+|---|---|---|---|---|---|---|
+| **A, pacientes reales retenidos** | 251 | 0,500 → 0,493 | **−0,007 [−0,024; +0,010]** | −1,6 [−4,8; +1,2] | +1,2 [−0,4; +3,2] | 9,6 % / 10,8 % |
+| A, los 501 | 501 | 0,508 → 0,507 | −0,000 [−0,012; +0,011] | −0,4 [−2,4; +1,4] | +0,4 [−0,8; +1,6] | 8,0 % / 11,4 % |
+| A retenidos con al menos un «sí» o «no» | 122 | 0,358 → 0,345 | −0,013 [−0,047; +0,019] | −3,3 [−9,0; +2,5] | +2,5 [−0,8; +6,6] | 18,9 % / 22,1 % |
+| B, anotaciones retenidas | 300 | 0,755 → 0,712 | −0,043 [−0,067; −0,021] | −4,0 [−7,3; −1,0] | −6,7 [−10,0; −3,7] | 17,3 % / 6,3 % |
+| C_orpha | 300 | 0,811 → 0,795 | −0,016 [−0,040; +0,006] | +0,0 [−3,3; +3,7] | −4,3 [−7,0; −2,0] | 12,7 % / 8,3 % |
+| C_omim | 300 | 0,774 → 0,749 | −0,025 [−0,044; −0,007] | −4,3 [−7,3; −1,3] | +0,0 [−2,3; +2,3] | 14,3 % / 9,7 % |
+| simulación (PRUEBA) | 300 | 0,787 → 0,773 | −0,015 [−0,041; +0,009] | +0,3 [−3,3; +3,7] | −5,3 [−8,7; −2,3] | 14,3 % / 10,3 % |
+
+- **Con pacientes reales, neutro**, igual que la ponderación asimétrica: ni el
+  MRR ni el top-1 cambian de forma significativa. Mueve más la lista (el gen
+  correcto cambia de puesto en el 20 % de los retenidos, contra el 7 % de la
+  asimétrica), en las dos direcciones. En los pacientes reales, las respuestas
+  son del registro publicado y nunca se equivocan.
+- **Empeora al modelo cuando las respuestas tienen errores.** En B y C_omim el
+  respondedor simulado invierte el 10 % de las respuestas, y un «sí» falso entra
+  en la consulta y reordena toda la lista del modelo; en B, el top-5 cae 6,7 pp.
+  Con pacientes o familias que se equivocan, esto es lo que hay que vigilar.
+- **Frente a la asimétrica** (11.10): igual con pacientes reales (−0,007 contra
+  −0,001, intervalos que se superponen), peor en B (−0,043 contra +0,004), en
+  C_orpha (−0,016 contra +0,001) y en la simulación (−0,015 contra +0,025),
+  parecida en C_omim (−0,025 contra −0,022).
+- En modo médico, `genes_if_no` va vacío y el fundamento dice de qué genes es
+  típico el síntoma; el resumen de cierre compara con el ranking de los
+  hallazgos informados (una segunda llamada al modelo, solo si el presupuesto
+  de la ronda la cubre).
+
+### 11.12 Cómo reproducir
 
 ```sh
 .venv/bin/python -m eval.audit             # A, B, C y sensibilidad: 20 corridas en ~10 min con 4 procesos
                                            # (baja phenopacket-store 0.1.27 la primera vez y verifica el sha256)
 .venv/bin/python -m eval.explore           # exploración de 44 configuraciones: ~14 min
-.venv/bin/python -m eval.variants          # variantes estructurales (11.8 y 11.10): 50 corridas, ~12 min
-.venv/bin/python -m eval.run_simulation --split test --policies none,agent --out eval/results/test_defaults_asymmetric.json
+.venv/bin/python -m eval.variants          # variantes estructurales (11.8, 11.10 y 11.11): 50 corridas, ~12 min
+.venv/bin/python -m eval.run_simulation --split test --policies none,agent --out eval/results/test_defaults_none.json
+.venv/bin/python -m eval.run_simulation --split test --policies none,agent \
+    --config eval/configs/asymmetric_fixed_prior.json --out eval/results/test_defaults_asymmetric.json
 .venv/bin/python -m eval.audit --summary-only   # rehace eval/results/audit/summary.json sin simular
 ```
 

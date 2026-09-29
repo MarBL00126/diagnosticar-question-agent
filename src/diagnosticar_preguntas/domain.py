@@ -117,8 +117,10 @@ class CandidateTerm:
     """A symptom worth asking about, as scored by the question selector.
 
     ``genes_yes`` are the genes whose probability rises on a "sí";
-    ``genes_no`` those that rise on a "no", strongest first. Both feed the
-    clinician view (``genes_if_yes`` / ``genes_if_no`` of the API).
+    ``genes_no`` those that rise on a "no", strongest first, both under the
+    selector's likelihood. They feed the clinician view (``genes_if_yes`` /
+    ``genes_if_no`` of the API), which drops ``genes_no`` when "no" answers do
+    not reach the ranking.
     ``requires_testing`` marks findings only a lab or imaging study reveals;
     patient mode avoids them unless nothing else is left to ask.
     """

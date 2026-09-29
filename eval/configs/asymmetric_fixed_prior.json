@@ -1,0 +1,16 @@
+{
+ "_comment": "The asymmetric answer weighting (docs/DECISIONES.md D-17), the code default for a few hours on 2026-09-28, for reproducing section 11.10 of docs/EVALUACION.md. The current defaults send every 's\u00ed' to the model and reweight nothing (D-18).",
+ "config": {
+  "strategy": "fixed_prior",
+  "temperature": 1.0,
+  "background": 0.1,
+  "missing_frequency": 0.3,
+  "epsilon": 0.02,
+  "p_unknown": 0.2,
+  "confident_threshold": 0.9,
+  "min_information_gain": 0.05,
+  "answer_weighting": "asymmetric",
+  "answer_weight": 0.3,
+  "exclusion_factor": 0.02
+ }
+}

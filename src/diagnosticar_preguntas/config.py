@@ -29,11 +29,13 @@ class Settings(BaseSettings):
     ``confident_threshold`` is compared with the top gene's posterior score,
     which sums to 1 over the ranked genes. ``min_information_gain`` is in bits:
     when even the best candidate symptom would move the posterior less than
-    that, asking more questions only costs the family time. Both defaults, and
-    ``rerank_strategy``, come from the evaluation in ``docs/EVALUACION.md``.
-    ``answer_weighting`` and ``answer_weight`` choose how the answers reweight
-    the genes (``ranking.reranker.AnswerWeighting``); their defaults come from
-    the evaluation on published case reports (section 11 of that document).
+    that, asking more questions only costs the family time. Both defaults come
+    from the evaluation in ``docs/EVALUACION.md``. ``rerank_strategy`` and
+    ``answer_weighting`` decide what the answers do: by default every "sí" is
+    sent to the model and nothing else moves the ranking, which is the model's
+    own; "no" answers and negated findings are only recorded
+    (``docs/DECISIONES.md``, D-18). ``answer_weight`` only applies to the
+    asymmetric weighting.
 
     A round's LLM calls must end within ``round_budget_s`` of its start: each
     call gets at most ``llm_timeout_s`` and never more than what is left, and
@@ -79,7 +81,7 @@ class Settings(BaseSettings):
     max_rounds: int = Field(default=MAX_ROUNDS, ge=1, le=MAX_ROUNDS)
     confident_threshold: float = Field(default=0.9, gt=0, le=1)
     min_information_gain: float = Field(default=0.05, ge=0)
-    rerank_strategy: RerankStrategy = RerankStrategy.FIXED_PRIOR
+    rerank_strategy: RerankStrategy = RerankStrategy.MODEL_SEES_PRESENT
     answer_weighting: AnswerWeighting = RerankConfig().answer_weighting
     answer_weight: float = Field(default=RerankConfig().answer_weight, ge=0, lt=1)
     round_budget_s: float = Field(default=75.0, gt=0)

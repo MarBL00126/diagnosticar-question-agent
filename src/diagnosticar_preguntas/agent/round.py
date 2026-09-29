@@ -43,6 +43,9 @@ from diagnosticar_preguntas.domain import (
     Evidence,
     Mode,
     ModelClient,
+    ModelRanking,
+    ModelRequestError,
+    ModelUnavailableError,
     Posterior,
     QuestionSelector,
     Reranker,
@@ -60,6 +63,8 @@ from diagnosticar_preguntas.llm.tasks import (
     SummaryTask,
 )
 from diagnosticar_preguntas.llm.template import TemplateProvider
+from diagnosticar_preguntas.ranking.model_client import NoKnownHpoIdsError
+from diagnosticar_preguntas.ranking.reranker import AnswerWeighting
 from diagnosticar_preguntas.ranking.strategy import model_query
 
 logger = logging.getLogger(__name__)
@@ -161,7 +166,13 @@ class RoundService:
             )
         else:
             summary = self._summary(
-                request.mode, finish_reason, interpreted, posterior, patient_text, state
+                request.mode,
+                finish_reason,
+                interpreted,
+                posterior,
+                patient_text,
+                state,
+                self._ranks_before_questions(request, query, ranking, state),
             )
 
         return RoundResponse(
@@ -180,8 +191,7 @@ class RoundService:
                 )
                 for g in posterior.top(RANKING_TOP_K)
             ],
-            # Straight from the model call, which (with the default strategy) only saw the
-            # findings reported before any question: see RoundResponse.
+            # Straight from this round's model call: see RoundResponse.
             specialties=dict(ranking.specialties) if ranking.specialties is not None else None,
             confidence=ranking.confidence,
             interpreted_answers=interpreted,
@@ -342,9 +352,40 @@ class RoundService:
             text=draft.text.strip(),
             help=(draft.help or "").strip() or None,
             genes_if_yes=list(candidate.genes_yes[:MAX_GENES_PER_SIDE]) if clinician else None,
-            genes_if_no=list(candidate.genes_no[:MAX_GENES_PER_SIDE]) if clinician else None,
+            genes_if_no=(
+                list(candidate.genes_no[:MAX_GENES_PER_SIDE]) if self._negatives_move else []
+            )
+            if clinician
+            else None,
             rationale=draft.rationale.strip() if clinician else None,
         )
+
+    @property
+    def _negatives_move(self) -> bool:
+        """Whether "no" answers and negated findings reach the ranking at all."""
+        return self._settings.answer_weighting is not AnswerWeighting.NONE
+
+    def _ranks_before_questions(
+        self, request: RoundRequest, query: Sequence[str], ranking: ModelRanking, state: _Round
+    ) -> dict[str, int] | None:
+        """Each gene's rank for the findings reported before any question.
+
+        That is this round's ranking unless the model was also sent answers;
+        then it takes one more call, made only while the round's budget can
+        still absorb the model service's timeout, so the caller's timeout
+        keeps holding. ``None`` when that is not possible.
+        """
+        reported = tuple(sorted(set(request.present_hpo_ids)))
+        if tuple(query) == reported:
+            return _ranks(ranking)
+        if state.deadline.remaining() < self._settings.model_service_timeout_s:
+            logger.warning("round budget too short to rank the reported findings again")
+            return None
+        try:
+            return _ranks(self._model.rank(reported, top_k=RANKING_TOP_K))
+        except (ModelUnavailableError, ModelRequestError, NoKnownHpoIdsError) as exc:
+            logger.warning("could not rank the reported findings again (%s)", type(exc).__name__)
+            return None
 
     def _summary(
         self,
@@ -354,6 +395,7 @@ class RoundService:
         posterior: Posterior,
         patient_text: PatientText,
         state: _Round,
+        ranks_before: dict[str, int] | None,
     ) -> str:
         task = SummaryTask(
             mode=mode,
@@ -363,6 +405,8 @@ class RoundService:
                 for a in interpreted
             ),
             top_genes=posterior.top(SUMMARY_TOP_GENES),
+            ranks_before=ranks_before,
+            negatives_move_ranking=self._negatives_move,
         )
         answered_labels = [a.label for a in task.answers]
         for _ in range(LLM_ATTEMPTS):
@@ -393,6 +437,12 @@ class RoundService:
 
     def _labeled(self, hpo_ids: Iterable[str]) -> tuple[LabeledTerm, ...]:
         return tuple(LabeledTerm(h, self._label(h)) for h in sorted(hpo_ids))
+
+
+def _ranks(ranking: ModelRanking) -> dict[str, int]:
+    """The model's order, as ``BayesianReranker`` numbers it (``model_rank``)."""
+    order = sorted(ranking.scores, key=lambda gene: -ranking.scores[gene])
+    return {gene: rank for rank, gene in enumerate(order, start=1)}
 
 
 def _top_diseases(posterior: Posterior) -> list[str]:

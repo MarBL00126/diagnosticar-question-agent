@@ -145,7 +145,9 @@ class AgentConfig:
         )
 
 
-CALIBRATED_DEFAULTS = AgentConfig(answer_weighting=AnswerWeighting.CALIBRATED)
+CALIBRATED_DEFAULTS = AgentConfig(
+    strategy=RerankStrategy.FIXED_PRIOR, answer_weighting=AnswerWeighting.CALIBRATED
+)
 """The code defaults until 2026-09-28, measured in docs/EVALUACION.md sections 5 to 11.7."""
 
 

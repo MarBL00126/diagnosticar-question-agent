@@ -291,10 +291,11 @@ TUNED = {
 }
 
 
-def test_the_code_defaults_are_the_tuned_configuration_with_the_asymmetric_weighting() -> None:
+def test_the_code_defaults_send_the_answers_to_the_model_and_keep_the_tuned_rest() -> None:
     assert AgentConfig().to_dict() == {
         **TUNED,
-        "answer_weighting": "asymmetric",
+        "strategy": "model_sees_present",
+        "answer_weighting": "none",
         "answer_weight": 0.3,
         "exclusion_factor": 0.02,
     }
@@ -309,8 +310,12 @@ def test_a_config_saved_before_the_weighting_existed_reads_as_calibrated() -> No
 
 
 def test_the_pipeline_reranks_with_the_configured_weighting(tiny_kb: KnowledgeBase) -> None:
-    pipeline = build_pipeline(tiny_kb, replace(AgentConfig(), answer_weight=0.5))
+    asymmetric = replace(AgentConfig(), answer_weighting=AnswerWeighting.ASYMMETRIC)
+    pipeline = build_pipeline(tiny_kb, replace(asymmetric, answer_weight=0.5))
 
+    assert build_pipeline(tiny_kb, AgentConfig()).reranker.config.answer_weighting is (
+        AnswerWeighting.NONE
+    )
     assert pipeline.reranker.config.answer_weighting is AnswerWeighting.ASYMMETRIC
     assert pipeline.reranker.config.answer_weight == 0.5
     calibrated = build_pipeline(tiny_kb, CALIBRATED_DEFAULTS).reranker.config
