@@ -17,7 +17,7 @@ respuestas solo llegan al modelo** (estrategia `model_sees_present`, sin
 re-ranking; sección 11.11, [DECISIONES.md](DECISIONES.md) D-18). Las secciones
 2 a 8 usan `fixed_prior` y la ponderación calibrada, la configuración anterior. «Configuración
 anterior» se refiere a los valores por defecto que tenía el código hasta el commit
-46e7daa, guardados en `eval/configs/defaults_before_tuning.json`.
+ea4b766, guardados en `eval/configs/defaults_before_tuning.json`.
 
 **Lo primero que hay que leer: la sección 11.** Las secciones 2 a 8 miden el
 agente con pacientes simulados a partir de las mismas anotaciones HPO que usa el

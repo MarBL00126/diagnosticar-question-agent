@@ -184,14 +184,16 @@ leer el pin -> checkout con QUESTION_AGENT_DEPLOY_KEY -> build :candidate
 
 El pin está en `.github/question-agent.env`:
 `QUESTION_AGENT_REPO=MarBL00126/diagnosticar-question-agent` y
-`QUESTION_AGENT_COMMIT=` (hoy vacío). Vacío, el job se saltea sin fallar; un
+`QUESTION_AGENT_COMMIT`. En la rama `feat/question-agent-backend` está vacío y el
+job se saltea sin fallar; la rama `integration/question-agent` lo fija al commit
+de este repositorio que se despliega. Un
 valor que no sea un SHA completo de 40 caracteres hace fallar el release. El
 comando de tests dentro de la imagen es el que documenta el `Dockerfile` de este
 repositorio.
 
 ## 5. Qué falta para ponerlo en marcha
 
-1. Publicar la rama `feat/agente-claude` de este repositorio.
+1. Publicar la rama `feat/agente-v2` de este repositorio (hecho el 2026-09-28).
 2. Crear una clave de despliegue de solo lectura en este repositorio y cargar su
    parte privada como secreto `QUESTION_AGENT_DEPLOY_KEY` en el de la plataforma.
 3. Fijar el SHA completo del commit a desplegar en `QUESTION_AGENT_COMMIT`

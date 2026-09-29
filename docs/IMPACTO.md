@@ -79,7 +79,7 @@ primer prototipo está en [ANTES_Y_DESPUES.md](ANTES_Y_DESPUES.md).
 
 Las cifras de la simulación (secciones 1 a 10) salen de corridas reales del
 código del 26/09/2026 (la principal se repitió el 28/09/2026 en el commit
-325ce70, con resultados idénticos caso por caso) y las calcula
+02f7b14, con resultados idénticos caso por caso) y las calcula
 `python -m eval.impact` a partir de los resultados guardados. Las de la sección
 0 y del resumen, de `python -m eval.audit`, `python -m eval.explore` y
 `python -m eval.variants` (28/09/2026). Las pocas cuentas hechas a mano son
@@ -653,7 +653,7 @@ regeneran con los comandos del apéndice B).
 | cobertura de genes | 5096 / 5229; 19,9 de 20 | `data/kb.sqlite` y la caché del modelo | `9_coverage` |
 | cobertura en la revisión del prototipo | 61,2 % → 97,8 % | revisión del 24/09/2026 | [DECISIONES.md](DECISIONES.md), D-01 |
 | tests del prototipo | 27 | commit c2e3548 | `git grep -c "def test_" c2e3548 -- '*.py'` |
-| tests de la versión 2 | 502 | commit c3d7033 | `make ci` |
+| tests de la versión 2 | 502 | commit 4b93a36 | `make ci` |
 | casos necesarios para validar | 103 / 1214 | `test_chosen.json`, `test_chosen_dropout.json` | `10_validation` |
 
 ## Apéndice B: cómo reproducir

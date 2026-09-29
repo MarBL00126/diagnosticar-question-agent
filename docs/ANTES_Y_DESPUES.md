@@ -3,7 +3,7 @@
 Este documento cuenta qué era el primer agente de repreguntas, el que Mariano
 Brizuela escribió en este repositorio (commit c2e3548, 18/09/2026, sobre el
 commit inicial 0a39103), qué encontramos al integrarlo con diagnostic.ar y cómo
-se reestructuró en la versión 2 (rama `feat/agente-claude`). Está escrito para
+se reestructuró en la versión 2 (rama `feat/agente-v2`). Está escrito para
 Mariano, para Mate y para quienes evalúan el Trabajo Profesional (FIUBA).
 
 Las cifras sobre el prototipo salen de `eval/prototipo/`, que ejecuta su
@@ -303,7 +303,7 @@ diagnostic.ar.
 
 ## 4. La reestructuración (v2)
 
-La versión 2 empezó sobre un esqueleto limpio (commit b7cc6c6, D-01 en
+La versión 2 empezó sobre un esqueleto limpio (commit 188b83c, D-01 en
 [DECISIONES.md](DECISIONES.md)), en otro paquete (`diagnosticar_preguntas`), y
 conserva del prototipo lo que seguía siendo correcto (sección 5). Siguen siendo
 iguales el lenguaje (Python y FastAPI), el puerto (8010), las preguntas sobre
@@ -494,7 +494,7 @@ re-ranking (nota 5 de la sección 9 de [IMPACTO.md](IMPACTO.md)).
 
 Líneas de los archivos Python (incluidas las vacías), contadas desde git.
 
-| | Prototipo (c2e3548) | Versión 2 (325ce70) |
+| | Prototipo (c2e3548) | Versión 2 (02f7b14) |
 |---|---|---|
 | Código de la aplicación | 1.347 líneas en 11 archivos (prompts incluidos) | 4.647 líneas en 45 archivos, más 75 líneas de prompts en 6 archivos `.md` |
 | Scripts en la raíz | 242 líneas en 3 archivos | — |
@@ -562,16 +562,16 @@ segundo). Los tres comandos tardan unos segundos, más la instalación.
 |---|---|---|---|
 | 0a39103 | 18/09/2026 | Mariano Brizuela | Crea el repositorio. |
 | c2e3548 | 18/09/2026 | Mariano Brizuela | El prototipo completo: parser de Orphadata, índice en Chroma, motor RAG con OpenAI, API, CLI, scripts de PowerShell, documentación y 27 tests (37 archivos, 2.742 líneas). |
-| b7cc6c6 | 26/09/2026 | Mate | Esqueleto de la versión 2: paquete nuevo, tipos de dominio y contrato de `POST /v1/rounds`. El código del prototipo sale del árbol y queda en la historia. |
-| 8857afd | 26/09/2026 | Mate | Marca los síntomas que solo revela un estudio. |
-| 09c1af7 | 26/09/2026 | Mate | Base de conocimiento HPO fijada, re-ranking bayesiano sobre pares gen–enfermedad y selector por ganancia de información. |
-| 045daae | 26/09/2026 | Mate | Claude redacta dentro de salvaguardas, con reintento y plantillas; las notas solo bajan a "no sé"; se incorporan las reglas clínicas del prototipo. |
-| 831f216 | 26/09/2026 | Mate | API HTTP con token y cola, `/healthz`, imagen Docker sin privilegios; el prompt va por stdin. |
-| 46e7daa | 26/09/2026 | Mate | Evaluación con 500 pacientes simulados contra el modelo real y prueba en vivo con Claude. |
-| c3d7033 | 26/09/2026 | Mate | Valores por defecto elegidos por la evaluación, contrato v2 y presupuesto de tiempo por ronda. |
-| 325ce70 | 26/09/2026 | Mate | Documentación en español y créditos del prototipo. |
+| 188b83c | 26/09/2026 | Mate | Esqueleto de la versión 2: paquete nuevo, tipos de dominio y contrato de `POST /v1/rounds`. El código del prototipo sale del árbol y queda en la historia. |
+| 3ecd86f | 26/09/2026 | Mate | Marca los síntomas que solo revela un estudio. |
+| c662a10 | 26/09/2026 | Mate | Base de conocimiento HPO fijada, re-ranking bayesiano sobre pares gen–enfermedad y selector por ganancia de información. |
+| b8e50db | 26/09/2026 | Mate | Claude redacta dentro de salvaguardas, con reintento y plantillas; las notas solo bajan a "no sé"; se incorporan las reglas clínicas del prototipo. |
+| 2a9c2e5 | 26/09/2026 | Mate | API HTTP con token y cola, `/healthz`, imagen Docker sin privilegios; el prompt va por stdin. |
+| ea4b766 | 26/09/2026 | Mate | Evaluación con 500 pacientes simulados contra el modelo real y prueba en vivo con Claude. |
+| 4b93a36 | 26/09/2026 | Mate | Valores por defecto elegidos por la evaluación, contrato v2 y presupuesto de tiempo por ronda. |
+| 02f7b14 | 26/09/2026 | Mate | Documentación en español y créditos del prototipo. |
 
-`git diff --stat c2e3548 325ce70` resume el cambio: 161 archivos, 22.647 líneas
+`git diff --stat c2e3548 02f7b14` resume el cambio: 161 archivos, 22.647 líneas
 agregadas y 2.698 quitadas (incluye los casos de evaluación y la documentación).
 
 ## 8. Lecciones

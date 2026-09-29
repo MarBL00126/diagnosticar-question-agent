@@ -5,7 +5,7 @@
 - **Mariano Brizuela** creó este repositorio (`MarBL00126/diagnosticar-question-agent`,
   commit 0a39103) y el primer prototipo del agente de repreguntas (commit c2e3548,
   2026-09-18). Figura como autor en `pyproject.toml`.
-- **Mate** es autor de la versión 2 (commits b7cc6c6 a c3d7033, 2026-09-26) y de
+- **Mate** es autor de la versión 2 (commits 188b83c a 4b93a36, 2026-09-26) y de
   su integración en la plataforma diagnostic.ar.
 
 El prototipo sigue completo en la historia de git: `git show c2e3548 --stat`

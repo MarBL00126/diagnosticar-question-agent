@@ -53,7 +53,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
     guardada.
   - Los tests no cubrían recuperación ni LLM (su README lo aclara: "No llaman a
     OpenAI").
-- **Decisión.** Empezar la versión 2 sobre un esqueleto limpio (commit b7cc6c6),
+- **Decisión.** Empezar la versión 2 sobre un esqueleto limpio (commit 188b83c),
   con otro paquete (`diagnosticar_preguntas`), y conservar del prototipo lo que
   seguía siendo válido: sus reglas clínicas, su esquema de pregunta trazable y
   sus condiciones de corte ([CREDITOS.md](CREDITOS.md)).
@@ -76,7 +76,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
 - **Consecuencias.** 5128 de los 5229 genes del vocabulario del modelo están en
   la base ([EVALUACION.md](EVALUACION.md), sección 2). Los XML de Orphanet no se
   leen; las anotaciones de enfermedades ORPHA llegan a través de `phenotype.hpoa`.
-- **Fecha.** 2026-09-26 (commit 09c1af7).
+- **Fecha.** 2026-09-26 (commit c662a10).
 
 ## D-03. Hipótesis gen–enfermedad, no perfiles de gen fusionados
 
@@ -106,7 +106,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   intento; 28 de las 36 elecciones de Claude estuvieron entre las 3 de mayor
   ganancia, y la ganancia sumada de lo que eligió fue en promedio el 100,3 % de
   la de la plantilla (mínimo 87,7 %) ([EVALUACION.md](EVALUACION.md), sección 7.1).
-- **Fecha.** 2026-09-26 (commit 045daae).
+- **Fecha.** 2026-09-26 (commit b8e50db).
 
 ## D-05. Rondas de 3 preguntas, como mucho 3 rondas
 
@@ -167,7 +167,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   fuentes que no coinciden falla. El archivo es idéntico byte a byte con la
   misma versión de SQLite; con otra, el sha256 puede cambiar
   ([ARQUITECTURA.md](ARQUITECTURA.md), sección 3).
-- **Fecha.** 2026-09-26 (commit 09c1af7).
+- **Fecha.** 2026-09-26 (commit c662a10).
 
 ## D-09. Sesión guardada en `diagnoses.preguntas_respuestas`
 
@@ -198,7 +198,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
 - **Consecuencias.** Las lecturas de notas se reenvían, así que la respuesta
   efectiva no cambia al cambiar de modo. La evaluación da resultados similares
   en ambos modos ([EVALUACION.md](EVALUACION.md), sección 6.4).
-- **Fecha.** 2026-09-26 (contrato v2, commit c3d7033).
+- **Fecha.** 2026-09-26 (contrato v2, commit 4b93a36).
 
 ## D-11. `fixed_prior` y temperatura 1, elegidos por la evaluación
 
@@ -224,7 +224,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   Con pacientes reales el modelo puede estar más sobreconfiado y T > 1 volver a
   convenir: hay que medirlo antes de fijarla ([EVALUACION.md](EVALUACION.md),
   secciones 5, 6 y 8).
-- **Fecha.** 2026-09-26 (evaluación en 46e7daa, valores adoptados en c3d7033).
+- **Fecha.** 2026-09-26 (evaluación en ea4b766, valores adoptados en 4b93a36).
 - **Nota (2026-09-28): la evaluación con pacientes reales la revirtió.** Todo lo
   anterior se midió con pacientes simulados a partir de las mismas anotaciones
   HPO que usa el agente. Con 501 pacientes reales de phenopacket-store (sin el
@@ -249,7 +249,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   proveedores usan salida estructurada con el mismo esquema y los mismos
   errores tipados; `/healthz` informa si hay credenciales (sin validarlas, para
   no gastar cuota).
-- **Fecha.** 2026-09-26 (commit 045daae).
+- **Fecha.** 2026-09-26 (commit b8e50db).
 
 ## D-13. El prompt va por stdin
 
@@ -259,10 +259,10 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
 - **Decisión.** Con `claude-cli`, el mensaje con los datos del caso va por
   stdin; por argumentos solo van las reglas fijas y el esquema de salida.
 - **Alternativas.** Pasar el prompt como argumento de `claude -p`, que es como
-  lo hacía la primera versión del proveedor (commit 045daae).
+  lo hacía la primera versión del proveedor (commit b8e50db).
 - **Consecuencias.** Lo fija un test
   (`test_the_case_data_goes_on_stdin_never_in_the_arguments`).
-- **Fecha.** 2026-09-26 (commit 831f216).
+- **Fecha.** 2026-09-26 (commit 2a9c2e5).
 
 ## D-14. Presupuesto de tiempo por ronda
 
@@ -277,14 +277,14 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   el esfuerzo del LLM, a costa de calidad.
 - **Consecuencias.** Invariante: el que llama espera más que 10 + 75 + 10 = 95 s.
   Con un LLM lento la persona recibe preguntas de plantilla en vez de un error.
-- **Fecha.** 2026-09-26 (commit c3d7033).
+- **Fecha.** 2026-09-26 (commit 4b93a36).
 
 ## D-15. El trabajo vive en el repositorio de Mariano, en ramas propias
 
 - **Contexto.** diagnostic.ar es un Trabajo Profesional de Ingeniería en
   Informática (FIUBA), y el trabajo de cada integrante se acredita en los
   repositorios de los módulos que creó. Mariano Brizuela creó este repositorio.
-- **Decisión.** La versión 2 se hace en la rama `feat/agente-claude` de este
+- **Decisión.** La versión 2 se hace en la rama `feat/agente-v2` de este
   repositorio, sobre su historia. Los cambios de la plataforma van en ramas
   separadas del repositorio de diagnostic.ar: `feat/question-agent-backend`
   (backend e infraestructura) y `feat/question-agent-ui` (interfaz).

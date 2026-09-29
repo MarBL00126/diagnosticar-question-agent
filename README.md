@@ -9,7 +9,7 @@ de 3 preguntas y cierra con un resumen para llevar a la consulta.
 
 > Sugiere preguntas para conversar con un médico. No diagnostica.
 
-Versión 2 (`2.0.0.dev0`), en la rama `feat/agente-claude`. Todavía no está
+Versión 2 (`2.0.0.dev0`), en la rama `feat/agente-v2`. Todavía no está
 desplegada en ningún entorno.
 
 ## Cómo encaja en diagnostic.ar
@@ -141,7 +141,7 @@ base de la imagen); correlo al cambiar o actualizar dependencias.
 
 ## Tests
 
-`make ci` corre ruff, mypy estricto y pytest excluyendo `live`. En c3d7033 pasan
+`make ci` corre ruff, mypy estricto y pytest excluyendo `live`. En 4b93a36 pasan
 502 tests (1 `live` excluido). Los que necesitan `data/kb.sqlite` se saltean si
 no se construyó. `make test-live` llama de verdad a `claude -p` y gasta cuota.
 
