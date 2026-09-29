@@ -4,13 +4,18 @@ Agente de preguntas de seguimiento (repreguntas) de diagnostic.ar. Recibe los
 síntomas (términos HPO) que ya se cargaron, pide al modelo de diagnostic.ar el
 ranking de genes, elige unas pocas preguntas de sí/no sobre síntomas que mejor
 separan a los genes candidatos, las redacta con Claude para una familia o para
-un médico y, con las respuestas, reordena el ranking. Hace como mucho 3 rondas
-de 3 preguntas y cierra con un resumen para llevar a la consulta.
+un médico y le suma al modelo los síntomas que se confirman con un «sí»: el
+ranking que devuelve es el del modelo. Las respuestas «no» y los síntomas negados
+quedan registrados para la consulta, sin cambiar el orden. Hace como mucho 3
+rondas de 3 preguntas y cierra con un resumen para llevar a la consulta.
 
 > Sugiere preguntas para conversar con un médico. No diagnostica.
 
 Versión 2 (`2.0.0.dev0`), en la rama `feat/agente-v2`. Todavía no está
 desplegada en ningún entorno.
+
+Para conectarlo a diagnostic.ar o a otro sistema, empezá por la
+[guía de integración](docs/GUIA_DE_INTEGRACION.md).
 
 ## Cómo encaja en diagnostic.ar
 
@@ -35,7 +40,7 @@ sequenceDiagram
         A->>C: interpretar notas (solo pueden volver dudosa una respuesta)
     end
     A->>M: POST /rank-genes con los hallazgos originales
-    A->>A: re-ranking bayesiano y selección por ganancia de información
+    A->>A: selección por ganancia de información (el re-ranking de respuestas está desactivado por defecto, D-18)
     A->>C: redactar preguntas o resumen
     A->>A: salvaguardas, un reintento, plantillas si falla
     A-->>E: ronda (preguntas o cierre, ranking, lecturas de notas)
@@ -131,7 +136,10 @@ La imagen reconstruye la base de conocimiento desde las fuentes fijadas
 (verificadas por sha256), trae el CLI de Claude fijado (`@anthropic-ai/claude-code`
 2.1.270, sin Node ni npm), deja la base como archivo de solo lectura y corre como
 el usuario `app` (uid 10001). El `Dockerfile` documenta cómo correr los tests
-dentro de la imagen, que es lo que hace el job de release de la plataforma.
+dentro de la imagen. La imagen que publica la plataforma no sale de este
+`Dockerfile` sino de `services/question-agent/Dockerfile` de diagnostic.ar-api,
+que toma este repositorio como contexto de build en un commit fijado (ver
+[docs/GUIA_DE_INTEGRACION.md](docs/GUIA_DE_INTEGRACION.md)).
 
 `pyproject.toml` solo fija mínimos; la imagen y `make install` instalan las
 dependencias de ejecución, transitivas incluidas, con las versiones exactas de
@@ -182,7 +190,7 @@ alternativas), con sus advertencias, en [docs/IMPACTO.md](docs/IMPACTO.md).
 | `src/diagnosticar_preguntas/config.py`, `domain.py`, `wiring.py` | Configuración, tipos compartidos, armado de componentes. |
 | `tests/` | Tests por paquete, con una base de conocimiento chica sintética (`tests/fixtures/tiny_kb.py`). |
 | `eval/` | Arnés de evaluación (casos simulados, respondedor, políticas, ajuste, prueba en vivo). |
-| `docs/` | [Arquitectura](docs/ARQUITECTURA.md), [decisiones](docs/DECISIONES.md), [integración](docs/INTEGRACION.md), [evaluación](docs/EVALUACION.md), [impacto](docs/IMPACTO.md), [contrato](docs/contrato/rondas-ejemplo.json), [créditos](docs/CREDITOS.md), [antes y después](docs/ANTES_Y_DESPUES.md). |
+| `docs/` | [Guía de integración](docs/GUIA_DE_INTEGRACION.md), [arquitectura](docs/ARQUITECTURA.md), [decisiones](docs/DECISIONES.md), [integración](docs/INTEGRACION.md), [evaluación](docs/EVALUACION.md), [impacto](docs/IMPACTO.md), [contrato](docs/contrato/rondas-ejemplo.json), [créditos](docs/CREDITOS.md), [antes y después](docs/ANTES_Y_DESPUES.md). |
 
 ## Créditos
 
