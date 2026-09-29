@@ -101,8 +101,10 @@ Qué hace Express en cada `POST` (`backend/src/services/questionSession.ts`):
   contra el valor leído; la respuesta del agente se guarda completa.
 - **Límites por cuenta**: 60 `POST` y 120 `GET` por minuto; 20 rondas por hora
   (`QUESTION_AGENT_ROUNDS_PER_HOUR`) que solo cuentan si llegan al agente y se
-  devuelven si el agente contestó `busy` o `no-known-hpo-ids`; una ronda en curso
-  por cuenta y proceso. La respuesta del agente se valida con zod.
+  devuelven si el agente contestó `busy` o `no-known-hpo-ids`; además un tope
+  global de 50 rondas cada 5 horas para toda la instalación
+  (`QUESTION_AGENT_GLOBAL_ROUNDS_PER_5H`, error `global_limit`), contado en
+  Postgres bajo un lock; una ronda en curso por cuenta y proceso. La respuesta del agente se valida con zod.
 - **Errores hacia el navegador**: siempre `{error, code}`, con `error` en
   castellano para mostrar y `code` para que la interfaz decida. Los del agente
   se traducen así: `no-known-hpo-ids` → 400 `no_usable_symptoms`; `busy` y
@@ -127,8 +129,9 @@ Backend (`.env` de la plataforma, `backend/src/config.ts`):
 | `QUESTION_AGENT_URL` | (vacía) | URL del agente. Vacía apaga la función. Con compose: `http://question-agent:8010`. |
 | `QUESTION_AGENT_TOKEN` | (vacío) | Va como `X-Internal-Token`. En producción, con la URL puesta, es obligatorio y de 32 caracteres o más. |
 | `QUESTION_AGENT_TIMEOUT_MS` | `100000` | Cuánto espera Express una ronda. |
-| `QUESTION_AGENT_ROUND_BUDGET_S` | `75` | Se pasa al agente como `PREGUNTAS_ROUND_BUDGET_S`. |
+| `QUESTION_AGENT_ROUND_BUDGET_S` | `75` | Solo en compose: se pasa al agente como `PREGUNTAS_ROUND_BUDGET_S`. |
 | `QUESTION_AGENT_ROUNDS_PER_HOUR` | `20` | Rondas por cuenta y por hora. |
+| `QUESTION_AGENT_GLOBAL_ROUNDS_PER_5H` | `50` | Rondas para toda la instalación cada 5 horas. |
 | `QUESTION_AGENT_TAG` | `latest` | Etiqueta de la imagen `diagnosticar-question-agent`. |
 
 Agente (servicio `question-agent` de `docker-compose.yml`): compose fija
@@ -139,7 +142,7 @@ Agente (servicio `question-agent` de `docker-compose.yml`): compose fija
 `PREGUNTAS_LLM_PROVIDER` (`claude-cli`) y `PREGUNTAS_LLM_MODEL`
 (`claude-opus-5`), y deja pasar, solo si están definidas,
 `PREGUNTAS_MODEL_SERVICE_TIMEOUT_S`, `PREGUNTAS_LLM_TIMEOUT_S`,
-`PREGUNTAS_LLM_EFFORT`, `PREGUNTAS_LLM_QUESTION_EFFORT`, `PREGUNTAS_MAX_CONCURRENT_ROUNDS`, `PREGUNTAS_LOG_LEVEL`,
+`PREGUNTAS_LLM_EFFORT`, `PREGUNTAS_MAX_CONCURRENT_ROUNDS`, `PREGUNTAS_LOG_LEVEL`,
 `CLAUDE_CODE_OAUTH_TOKEN` y `ANTHROPIC_API_KEY`. El resto usa los valores por
 defecto del agente ([README](../README.md#configuración)). Entre ellos, qué hacen
 las respuestas: `PREGUNTAS_RERANK_STRATEGY` (`model_sees_present`) y
@@ -172,12 +175,15 @@ con `QUESTION_AGENT_TOKEN`, `QUESTION_AGENT_TAG` y `QUESTION_AGENT_URL` en
 Se apaga dejando `QUESTION_AGENT_URL` vacía. **Nada de esto se ejecutó**: requiere
 el visto bueno de Mate.
 
-**Release.** `.github/workflows/release.yml` de la plataforma tiene dos jobs,
-`question-agent-pin` y `publish-question-agent`
-(detalle en `CI_CD.md`, "The question agent image"):
+**Release.** `.github/workflows/release.yml` de la plataforma tiene el job
+`publish-question-agent` (detalle en `CI_CD.md`, "The question agent image"). La
+imagen se construye con `services/question-agent/Dockerfile` de diagnostic.ar-api
+(fijado por `GATEWAY_COMMIT` en `.github/recognizer.env`), con este repositorio
+como contexto de build `agent`:
 
 ```text
-leer el pin -> checkout con QUESTION_AGENT_DEPLOY_KEY -> build :candidate
+leer los pins -> checkout de diagnostic.ar-api (API_DEPLOY_KEY) y de este
+  repositorio (QUESTION_AGENT_DEPLOY_KEY) -> build :candidate
   -> pytest dentro de la imagen (-m 'not live') -> Trivy HIGH,CRITICAL
   -> verificar que no corre como root -> push
 ```
@@ -188,8 +194,8 @@ El pin está en `.github/question-agent.env`:
 job se saltea sin fallar; la rama `integration/question-agent` lo fija al commit
 de este repositorio que se despliega. Un
 valor que no sea un SHA completo de 40 caracteres hace fallar el release. El
-comando de tests dentro de la imagen es el que documenta el `Dockerfile` de este
-repositorio.
+comando de tests dentro de la imagen es el que documenta
+`services/question-agent/Dockerfile` de diagnostic.ar-api.
 
 ## 5. Qué falta para ponerlo en marcha
 
