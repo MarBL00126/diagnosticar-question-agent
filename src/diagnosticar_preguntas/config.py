@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     upgraded. It only applies with ``MODEL_SEES_PRESENT`` and
     ``AnswerWeighting.NONE``: with any other combination the answers already
     go through this agent's own re-ranker, and sending them as well would
-    count them twice (``docs/NEGACIONES.md``, section 9).
+    count them twice (``docs/NEGACIONES.md``, section 6).
 
     A round's LLM calls must end within ``round_budget_s`` of its start: each
     call gets at most ``llm_timeout_s`` and never more than what is left, and
