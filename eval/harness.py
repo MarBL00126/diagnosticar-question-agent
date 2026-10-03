@@ -215,6 +215,8 @@ def settings_for(
         rerank_strategy=config.strategy,
         answer_weighting=config.answer_weighting,
         answer_weight=config.answer_weight,
+        # The model measured here has no re-ranker, and docs/EVALUACION.md predates it.
+        rerank_negations=False,
     )
 
 

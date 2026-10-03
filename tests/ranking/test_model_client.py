@@ -47,6 +47,51 @@ def test_rank_posts_the_terms_and_parses_the_ranking() -> None:
     assert ranking.query_hpo_ids == ("HP:0002205", "HP:0000002")
 
 
+def test_rank_sends_the_excluded_terms_when_there_are_any() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=RESPONSE)
+
+    with _client(handler) as client:
+        client.rank(["HP:0002205"], 50, excluded_hpo_ids=["HP:0001250"])
+
+    assert json.loads(seen[0].content) == {
+        "hpo_ids": ["HP:0002205"],
+        "top_k": 50,
+        "excluded_hpo_ids": ["HP:0001250"],
+    }
+
+
+def test_rank_omits_the_field_without_excluded_terms() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=RESPONSE)
+
+    with _client(handler) as client:
+        client.rank(["HP:0002205"], 50)
+        client.rank(["HP:0002205"], 50, excluded_hpo_ids=[])
+
+    assert [json.loads(r.content) for r in seen] == [{"hpo_ids": ["HP:0002205"], "top_k": 50}] * 2
+
+
+def test_the_rerank_tag_of_the_response_is_kept_and_defaults_to_none() -> None:
+    with_tag = {**RESPONSE, "rerank": "rr-v1[neg=0.5]", "excluded_hpo_count": 1}
+
+    tagged = _client(lambda _: httpx.Response(200, json=with_tag)).rank(["HP:0002205"], 5)
+    plain = _client(lambda _: httpx.Response(200, json=RESPONSE)).rank(["HP:0002205"], 5)
+    null = _client(lambda _: httpx.Response(200, json={**RESPONSE, "rerank": None})).rank(
+        ["HP:0002205"], 5
+    )
+
+    assert tagged.rerank == "rr-v1[neg=0.5]"
+    assert plain.rerank is None
+    assert null.rerank is None
+
+
 def test_optional_fields_may_be_null() -> None:
     body = {"results": [], "specialties": None, "confidence": None, "unknown_hpo_ids": []}
 
