@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import json
 import subprocess
+from dataclasses import replace
 from typing import Any
 
 import pytest
 from round_fakes import (
+    ABSENT,
     GENES,
     KB_VERSION,
     LABELS,
@@ -51,11 +53,11 @@ NOTE = "creo que no, no estoy segura"
 
 
 class FailsAfterFirstCall(FakeModel):
-    def rank(self, hpo_ids: Any, top_k: int) -> Any:
+    def rank(self, hpo_ids: Any, top_k: int, excluded_hpo_ids: Any = ()) -> Any:
         if self.calls:
             self.calls.append((list(hpo_ids), top_k))
             raise ModelUnavailableError("model service down")
-        return super().rank(hpo_ids, top_k)
+        return super().rank(hpo_ids, top_k, excluded_hpo_ids)
 
 
 class RoundTwoSelector(FakeSelector):
@@ -203,6 +205,103 @@ class TestStrategy:
 
         assert response.specialties == {"top_specialties": ["Pulmonology", "Gastroenterology"]}
         assert response.confidence == 0.41
+
+
+class TestNegations:
+    def test_the_effective_no_answers_go_to_the_model_as_excluded_terms(self) -> None:
+        model = FakeModel()
+
+        round_two(model=model).run(request(round=2, answers=yes_no_answers()))
+
+        assert model.excluded == [["HP:0001696"]]
+
+    def test_no_se_and_the_negated_findings_of_the_text_are_never_sent(self) -> None:
+        model = FakeModel()
+
+        round_two(model=model).run(request(round=2, answers=yes_no_answers()))
+
+        sent = set(model.excluded[0])
+        assert "HP:0012236" not in sent
+        assert not sent & set(ABSENT)
+
+    def test_a_no_downgraded_by_its_note_is_not_sent(self) -> None:
+        model = FakeModel()
+        llm = ScriptedLLM(
+            notes=[notes(("HP:0001696", False, "no está segura"))],
+            questions=[round_draft(*ROUND_TWO)],
+        )
+        answers = yes_no_answers()
+        answers[1]["note"] = NOTE
+
+        round_two(llm, model=model).run(request(round=2, answers=answers))
+
+        assert model.excluded == [[]]
+
+    def test_the_flag_off_sends_no_exclusions(self) -> None:
+        model = FakeModel()
+
+        round_two(model=model, rerank_negations=False).run(
+            request(round=2, answers=yes_no_answers())
+        )
+
+        assert model.excluded == [[]]
+
+    @pytest.mark.parametrize(
+        "overrides",
+        [
+            {"rerank_strategy": RerankStrategy.FIXED_PRIOR},
+            {"answer_weighting": AnswerWeighting.ASYMMETRIC},
+        ],
+    )
+    def test_answers_the_agent_reranks_itself_are_not_sent_as_well(
+        self, overrides: dict[str, Any]
+    ) -> None:
+        model = FakeModel()
+
+        round_two(model=model, **overrides).run(request(round=2, answers=yes_no_answers()))
+
+        assert model.excluded == [[]]
+
+    def test_the_first_round_has_no_answers_to_send(self) -> None:
+        model = FakeModel()
+
+        service(model=model).run(request())
+
+        assert model.excluded == [[]]
+
+    def test_the_summary_call_stays_the_reported_findings_without_exclusions(self) -> None:
+        model = FakeModel()
+        llm = ScriptedLLM(summaries=[summary()])
+
+        service(llm, model=model).run(request(round=2, finish=True, answers=yes_no_answers()))
+
+        assert model.calls == [(sorted([*PRESENT, "HP:0001738"]), 50), (sorted(PRESENT), 50)]
+        assert model.excluded == [["HP:0001696"], []]
+
+    def test_the_baseline_is_asked_again_when_only_no_answers_were_sent(self) -> None:
+        model = FakeModel()
+        answers = [{"hpo_id": "HP:0001696", "answer": "no"}]
+
+        service(ScriptedLLM(summaries=[summary()]), model=model).run(
+            request(round=2, finish=True, answers=answers)
+        )
+
+        assert model.calls == [(sorted(PRESENT), 50), (sorted(PRESENT), 50)]
+        assert model.excluded == [["HP:0001696"], []]
+
+    def test_the_lists_move_with_the_no_answers_only_if_the_model_says_it_applied_them(
+        self,
+    ) -> None:
+        ignoring = FakeModel()
+        applying = FakeModel(ranking=replace(ignoring.ranking, rerank="rr-v1[neg=0.5]"))
+
+        for model, moves in ((ignoring, False), (applying, True)):
+            llm = ScriptedLLM(summaries=[summary()])
+            service(llm, model=model).run(request(round=2, finish=True, answers=yes_no_answers()))
+            assert llm.tasks(SummaryTask)[0].negatives_move_ranking is moves
+
+            response = round_two(model=model).run(request(round=2, answers=yes_no_answers()))
+            assert all(bool(q.genes_if_no) is moves for q in response.questions)
 
 
 class TestAnswers:

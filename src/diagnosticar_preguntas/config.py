@@ -37,6 +37,16 @@ class Settings(BaseSettings):
     (``docs/DECISIONES.md``, D-18). ``answer_weight`` only applies to the
     asymmetric weighting.
 
+    With ``rerank_negations`` every round also sends the effective "no"
+    answers to the model as ``excluded_hpo_ids``, so that a model service with
+    the re-ranker lowers the genes that annotate them. The current service
+    ignores the field (its request schema is a pydantic model with the default
+    ``extra="ignore"``), so leaving it on changes nothing until the service is
+    upgraded. It only applies with ``MODEL_SEES_PRESENT`` and
+    ``AnswerWeighting.NONE``: with any other combination the answers already
+    go through this agent's own re-ranker, and sending them as well would
+    count them twice (``docs/NEGACIONES.md``, section 9).
+
     A round's LLM calls must end within ``round_budget_s`` of its start: each
     call gets at most ``llm_timeout_s`` and never more than what is left, and
     the round falls back to templates when too little is left for a call. The
@@ -84,6 +94,7 @@ class Settings(BaseSettings):
     rerank_strategy: RerankStrategy = RerankStrategy.MODEL_SEES_PRESENT
     answer_weighting: AnswerWeighting = RerankConfig().answer_weighting
     answer_weight: float = Field(default=RerankConfig().answer_weight, ge=0, lt=1)
+    rerank_negations: bool = True
     round_budget_s: float = Field(default=75.0, gt=0)
 
     host: str = "0.0.0.0"
