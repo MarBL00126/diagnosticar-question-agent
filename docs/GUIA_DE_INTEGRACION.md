@@ -79,6 +79,21 @@ El agente no le manda credenciales al modelo. Le pide
 {"hpo_ids": ["HP:0002205", "HP:0004322"], "top_k": 50}
 ```
 
+Desde la ronda 2, si hay «no» efectivos y `PREGUNTAS_RERANK_NEGATIONS` está
+activo, agrega esos ids ordenados; sin «no» el campo no viaja:
+
+```json
+{"hpo_ids": ["HP:0002205", "HP:0004322"], "top_k": 50, "excluded_hpo_ids": ["HP:0001696"]}
+```
+
+Solo van las respuestas «no» de los botones que una nota no bajó a «no sé».
+Nunca «no sé», nunca `absent_hpo_ids` (los negados del texto no están
+validados) y nunca un término que también esté presente. El servicio de hoy
+(`services/genphenai/app/main.py`, `RankRequest`) no declara el campo y
+pydantic ignora los campos desconocidos, así que no cambia nada hasta que se
+actualice ([NEGACIONES.md](NEGACIONES.md), sección 6). La llamada que arma el
+resumen de cierre con los hallazgos informados nunca lleva exclusiones.
+
 De la respuesta solo lee estos campos; el resto se ignora
 (`ranking/model_client.py`):
 
@@ -89,6 +104,7 @@ De la respuesta solo lee estos campos; el resto se ignora
 | `specialties` | objeto, opcional | Se devuelve tal cual. |
 | `confidence` | número, opcional | Se devuelve tal cual. |
 | `unknown_hpo_ids` | lista, opcional | Términos que el modelo no conoce. |
+| `rerank` | string, opcional | Etiqueta del re-ranker aplicado a las exclusiones (por ejemplo `rr-v1[neg=0.5]`). Solo si viene, el agente da por hecho que los «no» movieron la lista (`genes_if_no`, resumen). |
 
 | El modelo responde | El agente responde |
 |---|---|
@@ -200,7 +216,7 @@ sequenceDiagram
         opt hay notas sin reading
             A->>C: leer las notas nuevas
         end
-        A->>M: POST /rank-genes (informados + cada «sí»)
+        A->>M: POST /rank-genes (informados + cada «sí», más los «no» como excluded_hpo_ids)
         A->>C: redactar preguntas o resumen de cierre
         A-->>S: preguntas o cierre (summary), ranking, interpreted_answers
         S->>DB: guardar la ronda (compare-and-set)
@@ -462,6 +478,7 @@ trabajo (el entorno gana; un valor vacío cuenta como no definido). Fuente:
 | `PREGUNTAS_MIN_INFORMATION_GAIN` | `0.05` | Cierra si ninguna pregunta aporta al menos estos bits. |
 | `PREGUNTAS_RERANK_STRATEGY` | `model_sees_present` | Qué ve el modelo: los informados más cada «sí» (`model_sees_present`) o solo los informados (`fixed_prior`). |
 | `PREGUNTAS_ANSWER_WEIGHTING` | `none` | Cómo reordena el agente después del modelo: `none` (no reordena), `asymmetric` o `calibrated` ([ARQUITECTURA.md](ARQUITECTURA.md), 4.3). |
+| `PREGUNTAS_RERANK_NEGATIONS` | `true` | Manda al modelo los «no» efectivos como `excluded_hpo_ids` (2.1). Hoy el servicio lo ignora. |
 | `PREGUNTAS_ANSWER_WEIGHT` | `0.3` | $k$ de `asymmetric`, en [0, 1). |
 | `PREGUNTAS_ROUND_BUDGET_S` | `75` | Segundos que una ronda puede gastar en llamadas al LLM. |
 | `PREGUNTAS_HOST` | `0.0.0.0` | Interfaz del servidor HTTP. |
