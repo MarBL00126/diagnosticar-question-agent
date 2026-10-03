@@ -127,6 +127,15 @@ def test_ancestors_of_a_present_finding_are_implied_yes(tiny_kb: KnowledgeBase) 
     assert SEIZURE not in shortlist
 
 
+def test_descendants_of_a_present_finding_are_not_asked(tiny_kb: KnowledgeBase) -> None:
+    evidence = Evidence(present=frozenset({SEIZURE}))
+
+    shortlist = _by_id(_selector(tiny_kb).shortlist(_posterior(tiny_kb, EQUAL), evidence, k=10))
+
+    assert shortlist
+    assert FOCAL_SEIZURE not in shortlist
+
+
 @pytest.mark.parametrize("field", ["absent", "unknown"])
 def test_descendants_of_an_absent_or_unknown_finding_are_not_asked(
     tiny_kb: KnowledgeBase, field: str
