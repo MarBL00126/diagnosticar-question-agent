@@ -122,9 +122,13 @@ class FakeModel:
     )
     fail: bool = False
     calls: list[tuple[list[str], int]] = field(default_factory=list)
+    excluded: list[list[str]] = field(default_factory=list)
 
-    def rank(self, hpo_ids: Sequence[str], top_k: int) -> ModelRanking:
+    def rank(
+        self, hpo_ids: Sequence[str], top_k: int, excluded_hpo_ids: Sequence[str] = ()
+    ) -> ModelRanking:
         self.calls.append((list(hpo_ids), top_k))
+        self.excluded.append(list(excluded_hpo_ids))
         if self.fail:
             raise ModelUnavailableError("model service down")
         return replace(self.ranking, query_hpo_ids=tuple(hpo_ids))

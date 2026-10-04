@@ -40,7 +40,7 @@ sequenceDiagram
         A->>C: interpretar notas (solo pueden volver dudosa una respuesta)
     end
     A->>M: POST /rank-genes con los hallazgos originales
-    A->>A: selección por ganancia de información (el re-ranking de respuestas está desactivado por defecto, D-18)
+    A->>A: selección por ganancia de información (el re-ranking propio de respuestas está desactivado por defecto, D-18; los «no» viajan al modelo como excluded_hpo_ids)
     A->>C: redactar preguntas o resumen
     A->>A: salvaguardas, un reintento, plantillas si falla
     A-->>E: ronda (preguntas o cierre, ranking, lecturas de notas)
@@ -91,6 +91,7 @@ trabajo (el entorno gana; un valor vacío cuenta como no definido). Fuente:
 | `PREGUNTAS_MIN_INFORMATION_GAIN` | `0.05` | Cierra si ninguna pregunta aporta al menos esta ganancia (bits). |
 | `PREGUNTAS_RERANK_STRATEGY` | `model_sees_present` | Qué hallazgos ve el modelo: `model_sees_present` (los informados más cada «sí») o `fixed_prior` (solo los informados). |
 | `PREGUNTAS_ANSWER_WEIGHTING` | `none` | Cómo reordena el agente los genes después del modelo: `none` (no reordena: el ranking es el del modelo; los «no» y los negados solo quedan registrados), `asymmetric` (solo lo que las anotaciones de una enfermedad dicen del síntoma la mueve) o `calibrated` (la verosimilitud completa). |
+| `PREGUNTAS_RERANK_NEGATIONS` | `true` | Manda al modelo, como `excluded_hpo_ids`, los «no» efectivos de los botones (nunca «no sé» ni `absent_hpo_ids`). El servicio actual ignora el campo; con el re-ranker rr-v1 los «no» bajan a los genes que anotan ese síntoma ([docs/NEGACIONES.md](docs/NEGACIONES.md), sección 6). Solo rige con `model_sees_present` y `none`. |
 | `PREGUNTAS_ANSWER_WEIGHT` | `0.3` | $k$ de la ponderación `asymmetric`, en [0, 1): un «sí» multiplica a las enfermedades que anotan el síntoma por 1 + k·p, un «no» por 1 − k·p. |
 | `PREGUNTAS_ROUND_BUDGET_S` | `75` | Segundos que una ronda puede gastar en llamadas al LLM. |
 | `PREGUNTAS_HOST` | `0.0.0.0` | Interfaz del servidor HTTP. |

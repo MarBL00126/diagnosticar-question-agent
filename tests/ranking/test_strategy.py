@@ -19,7 +19,7 @@ def test_model_sees_present_strategy_sends_every_present_term() -> None:
         RerankStrategy.MODEL_SEES_PRESENT, reported_present=REPORTED, evidence=AFTER_ANSWERS
     )
 
-    assert query == (MICROCEPHALY, SEIZURE)
+    assert query.hpo_ids == (MICROCEPHALY, SEIZURE)
 
 
 def test_fixed_prior_strategy_sends_only_the_reported_terms() -> None:
@@ -27,7 +27,48 @@ def test_fixed_prior_strategy_sends_only_the_reported_terms() -> None:
         RerankStrategy.FIXED_PRIOR, reported_present=REPORTED, evidence=AFTER_ANSWERS
     )
 
-    assert query == (MICROCEPHALY,)
+    assert query.hpo_ids == (MICROCEPHALY,)
+
+
+def test_model_sees_present_returns_the_effective_no_answers_as_excluded_terms() -> None:
+    query = model_query(
+        RerankStrategy.MODEL_SEES_PRESENT,
+        reported_present=REPORTED,
+        evidence=AFTER_ANSWERS,
+        answered_no=[HYPOTONIA],
+    )
+
+    assert query.excluded_hpo_ids == (HYPOTONIA,)
+
+
+def test_excluded_terms_default_to_none() -> None:
+    query = model_query(
+        RerankStrategy.MODEL_SEES_PRESENT, reported_present=REPORTED, evidence=AFTER_ANSWERS
+    )
+
+    assert query.excluded_hpo_ids == ()
+
+
+def test_a_term_that_is_also_present_is_not_excluded() -> None:
+    query = model_query(
+        RerankStrategy.MODEL_SEES_PRESENT,
+        reported_present=REPORTED,
+        evidence=AFTER_ANSWERS,
+        answered_no=[SEIZURE, HYPOTONIA],
+    )
+
+    assert query.excluded_hpo_ids == (HYPOTONIA,)
+
+
+def test_fixed_prior_never_excludes_anything() -> None:
+    query = model_query(
+        RerankStrategy.FIXED_PRIOR,
+        reported_present=REPORTED,
+        evidence=AFTER_ANSWERS,
+        answered_no=[HYPOTONIA],
+    )
+
+    assert query.excluded_hpo_ids == ()
 
 
 def _scores(query: tuple[str, ...]) -> dict[str, float]:
@@ -48,7 +89,7 @@ def _score_of_gene_a(
     evidence = Evidence(present=frozenset({MICROCEPHALY, SEIZURE}))
     query = model_query(strategy, reported_present=REPORTED, evidence=evidence)
 
-    posterior = reranker.rerank(client.rank(query, 50), evidence)
+    posterior = reranker.rerank(client.rank(query.hpo_ids, 50), evidence)
 
     return next(g.score for g in posterior.genes if g.gene_symbol == GENE_A), client
 

@@ -27,7 +27,9 @@ class HttpModelClient:
     Connection errors, timeouts, 5xx and unusable responses raise
     ``ModelUnavailableError``; a 422 ``no-known-hpo-ids`` raises
     ``NoKnownHpoIdsError`` and any other 4xx ``ModelRequestError``, because
-    retrying the same request cannot help. Error messages carry status codes
+    retrying the same request cannot help. ``excluded_hpo_ids`` is sent only
+    when it is not empty, so a call without exclusions is the one the service
+    has always accepted. Error messages carry status codes
     and exception types only: the service's bodies may echo the terms sent.
     """
 
@@ -43,12 +45,15 @@ class HttpModelClient:
             base_url=base_url, timeout=timeout, transport=transport, headers=headers
         )
 
-    def rank(self, hpo_ids: Sequence[str], top_k: int) -> ModelRanking:
+    def rank(
+        self, hpo_ids: Sequence[str], top_k: int, excluded_hpo_ids: Sequence[str] = ()
+    ) -> ModelRanking:
         query = tuple(hpo_ids)
+        body: dict[str, Any] = {"hpo_ids": list(query), "top_k": top_k}
+        if excluded_hpo_ids:
+            body["excluded_hpo_ids"] = list(excluded_hpo_ids)
         try:
-            response = self._client.post(
-                "/rank-genes", json={"hpo_ids": list(query), "top_k": top_k}
-            )
+            response = self._client.post("/rank-genes", json=body)
         except httpx.TimeoutException as error:
             raise ModelUnavailableError(f"model timed out ({type(error).__name__})") from None
         except httpx.HTTPError as error:
@@ -110,10 +115,12 @@ def _parse_ranking(body: Any, query: tuple[str, ...]) -> ModelRanking:
         scores.setdefault(symbol, float(result["score"]))
     specialties = body.get("specialties")
     confidence = body.get("confidence")
+    rerank = body.get("rerank")
     return ModelRanking(
         scores=scores,
         specialties=dict(specialties) if isinstance(specialties, dict) else None,
         confidence=float(confidence) if confidence is not None else None,
         unknown_hpo_ids=tuple(str(i) for i in body.get("unknown_hpo_ids") or ()),
         query_hpo_ids=query,
+        rerank=rerank if isinstance(rerank, str) else None,
     )

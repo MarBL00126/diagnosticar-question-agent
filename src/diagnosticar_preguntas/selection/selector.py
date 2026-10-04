@@ -6,7 +6,10 @@ question like "Seizure" often splits the genes better than any specific
 seizure type). Terms whose answer is already implied are dropped: ancestors
 of a present finding are implied "sí", descendants of an absent finding are
 implied "no", and descendants of a "No sé" would most likely get the same
-answer.
+answer. Descendants of a present finding are dropped too, although their
+answer is not implied: the model is validated with "no" answers to terms
+unrelated to what was reported (``docs/NEGACIONES.md``, section 6), and a "no"
+to a subtype of a finding the patient has is not that.
 
 The shortlist is then diversified (see ``diversity``): questions that would
 move the same genes are penalised, and terms in an ancestor/descendant
@@ -104,7 +107,7 @@ class InformationGainSelector:
         unknown = kb.resolve_all(evidence.unknown)
         blocked: set[str] = set(evidence.asked_or_known | present | absent | unknown)
         for hpo_id in present:
-            blocked |= kb.ancestors(hpo_id)
+            blocked |= kb.ancestors(hpo_id) | kb.descendants(hpo_id)
         for hpo_id in absent | unknown:
             blocked |= kb.descendants(hpo_id)
         nearby: set[str] = set()

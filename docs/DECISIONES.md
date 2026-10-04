@@ -25,7 +25,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
 | D-15 | El trabajo vive en el repositorio de Mariano, en ramas propias | 2026-09-26 |
 | D-16 | El resumen no recomienda estudios | 2026-09-28 |
 | D-17 | Ponderación asimétrica de respuestas (reemplazada por D-18) | 2026-09-28 |
-| D-18 | Las respuestas solo llegan al modelo | 2026-09-28 |
+| D-18 | Las respuestas solo llegan al modelo (los «no» van al re-ranker del modelo desde el 2026-10-03, nota al final) | 2026-09-28 |
 
 ---
 
@@ -414,3 +414,23 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   mostrar cómo cambió la lista tiene que compararla con el ranking anterior a
   las preguntas, no con `model_rank`.
 - **Fecha.** 2026-09-28.
+
+- **Nota (2026-10-03): los «no» de los botones llegan al re-ranker del modelo.**
+  La decisión cambia en un punto y por una razón nueva; el contexto de arriba
+  sigue siendo el que motivó D-18. En `diagnostic.ar-training`, EXP-B-003
+  pasó la puerta sellada de `rr-v1[neg=0.5]`, un re-ranker del lado del modelo
+  que baja a los genes que anotan un síntoma al que el paciente respondió «no»:
+  en pacientes simulados entrevistados como la app (S3-test), Δ MRR +0,0044
+  [+0,0032; +0,0057], ayuda al 17,6 % y perjudica al 3,9 %; en pacientes
+  reales (R1-test), sin regresión (−0,0025 [−0,0070; +0,0013]). **Qué cambia:**
+  el agente manda los «no» efectivos de los botones como `excluded_hpo_ids`
+  (`PREGUNTAS_RERANK_NEGATIONS`, por defecto activo: la API actual ignora el
+  campo, así que no pasa nada hasta que se actualice). **Qué no cambia:** el
+  agente sigue sin reordenar nada (`none`); «no sé» y los negados del texto
+  (`absent_hpo_ids`) no se mandan, porque no están validados y la única
+  evidencia de estos últimos (R1) muestra que no ayudan; sexo y edad no se
+  mandan (peso 0). **Qué no se probó:** ninguna medición con usuarios reales,
+  y la ganancia es chica. Además, el selector deja de preguntar por
+  descendientes de un hallazgo presente, que el cuestionador validado nunca
+  pregunta. Detalle, evidencia y límites en
+  [NEGACIONES.md](NEGACIONES.md), sección 6.
