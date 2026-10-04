@@ -65,4 +65,5 @@ def build_evidence(request: RoundRequest, interpreted: Sequence[InterpretedAnswe
         present=frozenset(request.present_hpo_ids) | answered(AnswerValue.YES),
         absent=frozenset(request.absent_hpo_ids) | answered(AnswerValue.NO),
         unknown=answered(AnswerValue.UNKNOWN),
+        asked=frozenset(a.hpo_id for a in interpreted),
     )
