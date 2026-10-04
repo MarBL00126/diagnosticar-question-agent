@@ -66,6 +66,10 @@ class ModelRanking:
     applies as likelihoods exactly the present terms the model did not see
     (not sent, or reported unknown), so no finding is counted twice. ``None``
     means "not recorded" and is read as "the model saw every present term".
+
+    ``rerank`` is the tag of the re-ranker the service applied to the excluded
+    terms of this call (for example ``rr-v1[neg=0.5]``), and ``None`` when it
+    applied none, including every service that does not know the field.
     """
 
     scores: Mapping[str, float]
@@ -73,6 +77,7 @@ class ModelRanking:
     confidence: float | None = None
     unknown_hpo_ids: tuple[str, ...] = ()
     query_hpo_ids: tuple[str, ...] | None = None
+    rerank: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,8 +158,10 @@ class ModelRequestError(RuntimeError):
 
 
 class ModelClient(Protocol):
-    def rank(self, hpo_ids: Sequence[str], top_k: int) -> ModelRanking:
-        """Rank genes for ``hpo_ids``.
+    def rank(
+        self, hpo_ids: Sequence[str], top_k: int, excluded_hpo_ids: Sequence[str] = ()
+    ) -> ModelRanking:
+        """Rank genes for ``hpo_ids``, penalising those that annotate ``excluded_hpo_ids``.
 
         Raises ``ModelUnavailableError`` or ``ModelRequestError``. Messages
         never carry the terms sent or the service's response body.

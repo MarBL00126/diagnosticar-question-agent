@@ -147,7 +147,8 @@ Agente (servicio `question-agent` de `docker-compose.yml`): compose fija
 defecto del agente ([README](../README.md#configuración)). Entre ellos, qué hacen
 las respuestas: `PREGUNTAS_RERANK_STRATEGY` (`model_sees_present`) y
 `PREGUNTAS_ANSWER_WEIGHTING` (`none`; o `asymmetric` / `calibrated`, con
-`PREGUNTAS_ANSWER_WEIGHT`); para cambiarlos en la plataforma hay que agregarlos
+`PREGUNTAS_ANSWER_WEIGHT`) y `PREGUNTAS_RERANK_NEGATIONS` (`true`: los «no» van
+al modelo como `excluded_hpo_ids`); para cambiarlos en la plataforma hay que agregarlos
 a la lista de variables que compose deja pasar ([DECISIONES.md](DECISIONES.md),
 D-18).
 

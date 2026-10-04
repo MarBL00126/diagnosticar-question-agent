@@ -34,7 +34,9 @@ class FakeModelClient:
         self._unavailable = unavailable
         self.calls: list[tuple[tuple[str, ...], int]] = []
 
-    def rank(self, hpo_ids: Sequence[str], top_k: int) -> ModelRanking:
+    def rank(
+        self, hpo_ids: Sequence[str], top_k: int, excluded_hpo_ids: Sequence[str] = ()
+    ) -> ModelRanking:
         query = tuple(hpo_ids)
         self.calls.append((query, top_k))
         if self._unavailable:

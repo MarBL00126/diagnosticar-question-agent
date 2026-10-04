@@ -14,7 +14,13 @@ sección 5) o un conteo sobre `data/` con el comando que lo reproduce. «Δ MRR�
 es siempre agente menos modelo solo, con intervalo de confianza del 95 %
 bootstrap pareado (2000 remuestreos, [EVALUACION.md](EVALUACION.md) §1).
 
-> **Estado actual (decisión de Mate del 28/09/2026, [DECISIONES.md](DECISIONES.md) D-18)**
+> **Actualización del 03/10/2026: los «no» de los botones ahora viajan al modelo
+> como `excluded_hpo_ids`** (`PREGUNTAS_RERANK_NEGATIONS`), por la puerta
+> sellada de rr-v1 (EXP-B-003). Lo que dice cada punto de abajo sobre los «no»
+> es el estado del 28/09; el estado vigente, con la evidencia y sus límites, está
+> en la [sección 6](#6-desde-el-03102026-los-no-de-las-preguntas-llegan-al-re-ranker-del-modelo).
+>
+> **Estado del 28/09/2026 ([DECISIONES.md](DECISIONES.md) D-18)**
 >
 > - **Qué ve el modelo.** Cada ronda consulta `POST /rank-genes` con los
 >   hallazgos informados más las respuestas efectivas «sí»
@@ -449,7 +455,7 @@ que un modelo que acepte ausentes entra sin rediseñar nada:
    información se calcula con la verosimilitud calibrada y supone que un «no»
    mueve la lista ([ARQUITECTURA.md](ARQUITECTURA.md) §5,
    [`selection/information_gain.py`](../src/diagnosticar_preguntas/selection/information_gain.py));
-   con D-18 un «no» no mueve nada.
+   con D-18 un «no» no mueve nada (desde el 03/10, ver la sección 6.5).
 4. **Por qué los «sí» verdaderos no ayudan al modelo.** Con V1, mandarle al
    modelo los «sí» del registro deja el MRR igual en A (sección 2.6). Puede ser
    el modelo o la elección de preguntas; no está medido por separado.
@@ -495,3 +501,113 @@ EOF
 Salidas esperadas: (1) `OMIM 149008 0`, `ORPHA 115663 720`, `DECIPHER 294 0`
 (en cualquier orden); (2) `(264370, 720, 350, 12974)`; (3)
 `10377 9030 92068 132795 7 7`.
+
+## 6. Desde el 03/10/2026: los «no» de las preguntas llegan al re-ranker del modelo
+
+Este apartado no corrige lo anterior: las secciones 1 a 5 describen lo que se
+midió y decidió hasta el 28/09/2026 y siguen valiendo para los intentos del
+agente. Lo que cambia es la decisión sobre los «no» de los botones, por
+evidencia nueva del lado del modelo
+([DECISIONES.md](DECISIONES.md), nota del 03/10/2026 en D-18).
+
+### 6.1 Qué cambió y por qué
+
+| | Hasta el 28/09 (D-18) | Desde el 03/10 |
+|---|---|---|
+| «Sí» efectivos | Van al modelo | Igual |
+| «No» efectivos de los botones | Solo se registran | Van al modelo como `excluded_hpo_ids` (`PREGUNTAS_RERANK_NEGATIONS`) |
+| Negados del texto (`absent_hpo_ids`) | Solo se registran | Igual: nunca se mandan |
+| «No sé» | No se usa | Igual: nunca se manda |
+| Re-ranking propio del agente | `none` | Igual |
+
+La razón es el experimento EXP-B-003 de `diagnostic.ar-training`
+(`docs/experiments/`), con la puerta sellada de `rr-v1[neg=0.5]`, el re-ranker
+que baja a los genes que anotan un síntoma negado. Es otro mecanismo que el que
+D-18 descartó: no usa la verosimilitud calibrada del agente sino una única
+señal de negación con peso 0,5, elegida en S3-dev (EXP-S3-001).
+
+### 6.2 Lo que la evidencia muestra
+
+- **Pacientes simulados entrevistados como lo hace la app (S3-test, 9990 casos,
+  6,89 preguntas por caso, 0,76 «sí» y 6,13 «no»; EXP-B-003).** Δ MRR
+  +0,0044 [+0,0032; +0,0057] frente al modelo con los «sí», con IC pareado por
+  gen. Ayuda al 17,6 % de los casos y perjudica al 3,9 % (tope fijado de
+  antemano: 5 %).
+- **Pacientes reales (R1-test, 2548; EXP-B-003).** Sin regresión: Δ MRR −0,0025
+  [−0,0070; +0,0013], y exactamente 0 sin términos excluidos. R1 es un control
+  de daño, no una prueba de eficacia: sus negados son ausencias que los autores
+  eligieron informar (EXP-B-001, adenda 1).
+- **Las respuestas del S3 son «no» a preguntas sobre las características de los
+  candidatos.** Eso es lo que hace el agente, y por eso se manda solo eso.
+
+### 6.3 Lo que la evidencia no muestra
+
+- **No hay medición con usuarios reales.** S3 es simulado y sus respuestas
+  salen de la verdad del simulador. La ganancia (+0,004) es chica.
+- **Los negados del texto libre no ayudan.** La única evidencia es la de R1,
+  donde un re-ranker aprendido ahí explota cómo se informan los negados y
+  empeora con negados de entrevista (EXP-B-002; en S3, rr-v2 baja −0,030 y
+  perjudica al 28 %, EXP-S3-001). Por eso `absent_hpo_ids` no se manda.
+- **Nada sobre sexo, edad o inicio.** rr-v1 los usa con peso 0
+  (EXP-S3-001, adenda 1), así que el agente no los manda.
+- **Un «no» a preguntas que no son del tipo S3** (por ejemplo, un síntoma que
+  no anota ningún candidato) no está validado.
+
+### 6.4 Qué hace el interruptor y qué evidencia hay de la API
+
+`PREGUNTAS_RERANK_NEGATIONS` (por defecto `true`) agrega `excluded_hpo_ids` a
+cada llamada a `/rank-genes` de una ronda. Se envía solo si hay «no» efectivos
+que no sean también presentes; sin ellos la llamada es la de siempre. No rige
+con `fixed_prior` ni con una ponderación distinta de `none`, donde el agente ya
+usa los «no» y mandarlos también los contaría dos veces. La llamada del resumen
+con los hallazgos informados no lleva exclusiones.
+
+La API actual **ignora** el campo. `services/genphenai/app/main.py` de
+`MateAlv/diagnostic.ar-api` (último commit que toca el archivo: `2bcd14c`), `RankRequest(BaseModel)` solo
+declara `hpo_ids` y `top_k`, sin `model_config` ni `extra`. El comportamiento
+por defecto de pydantic es `extra="ignore"` (comprobado: instanciar el modelo
+con un campo de más devuelve el objeto sin él), así que el pedido no se
+rechaza. Por eso el valor por defecto es encendido: no cambia nada hasta que la
+API acepte el campo y cargue el bundle `rerank-v1.0.0`
+(`diagnostic.ar-model`, `docs/integracion-app-rerank-v1.md`, sección 1). Para
+volver atrás sin redesplegar la API basta `PREGUNTAS_RERANK_NEGATIONS=false`.
+
+Cuando la API aplica el re-ranker, su respuesta trae `rerank`
+(por ejemplo `rr-v1[neg=0.5]`). Solo entonces el agente informa en el resumen
+y en `genes_if_no` (modo médico) que un «no» mueve la lista; con una API que lo
+ignora sigue diciendo que los «no» solo se registran, que es lo cierto. La web
+tiene que seguir mostrando las listas con esa salvedad hasta que el despliegue
+sea real (decisión de producto, fuera de este repositorio).
+
+### 6.5 La selección de preguntas frente a la del S3
+
+El cuestionador validado (EXP-S3-001) y el selector del agente, por separado:
+
+| | S3 (validado) | Agente |
+|---|---|---|
+| Qué maximiza | Ganancia de información sobre los 10 mejores genes del modelo, con P(t \| gen) de la KB | Ganancia de información sobre el posterior de los 50 mejores genes, con P(t \| enfermedad) ponderada por frecuencia, con diversificación MMR |
+| Candidatos | Términos anotados a esos genes | Términos anotados a sus enfermedades y ancestros hasta 2 pasos, preguntables (profundidad, ≤ 400 descendientes, no agrupadores) |
+| Nunca pregunta | Un término informado ni sus ancestros ni descendientes | Informados y respondidos; ancestros de un presente; descendientes de un ausente o «no sé». Los descendientes de un presente sí se preguntaban, hasta este cambio |
+| Cuántas | Q = 7, no adaptativo (un lote) | 3 por ronda, hasta 3 rondas (≤ 9), adaptativo |
+| «No sé» | No existe | Se descuenta de la ganancia (`p_unknown` = 0,2) |
+
+Las diferencias que se dejan como están, porque un «no» sigue pareciéndose al
+validado: el agente mira más genes (50 en vez de 10) pero todo candidato nace
+anotado a una enfermedad de las hipótesis y se descartan los de ganancia
+despreciable, así que un «no» siempre baja a algún gen del ranking; las rondas
+adaptativas y el límite de 9 no cambian qué es un «no»; el MMR y los términos
+no agrupadores solo filtran preguntas.
+
+**Lo que se cambió.** El agente podía preguntar por un descendiente de un
+hallazgo presente (informado o respondido «sí»): por ejemplo, tras «Convulsiones»,
+un «no» a «Crisis focales». El S3 nunca lo hace, y un «no» ahí es otro tipo de
+señal (un subtipo descartado de algo que el paciente tiene, no un rasgo del
+candidato que falta). Ahora esos descendientes se bloquean, como ya se
+bloqueaban los ancestros (`selection/selector.py`, `_candidates`). Es el único
+cambio de selección; pregunta por menos términos, nunca por otros.
+
+**Lo que queda abierto.** El agente puede preguntar por un ancestro de un «no»
+de una ronda anterior; el S3 no lo ve porque es de un solo lote y sin
+términos emparentados. No se tocó: preguntar por la categoría después de
+descartar un subtipo es legítimo, y no hay evidencia de que dañe. Tampoco se
+agregó sexo ni edad a las llamadas al modelo.

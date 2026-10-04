@@ -39,6 +39,7 @@ from diagnosticar_preguntas.api.schemas import (
 )
 from diagnosticar_preguntas.config import Settings
 from diagnosticar_preguntas.domain import (
+    AnswerValue,
     CandidateTerm,
     Evidence,
     Mode,
@@ -65,7 +66,7 @@ from diagnosticar_preguntas.llm.tasks import (
 from diagnosticar_preguntas.llm.template import TemplateProvider
 from diagnosticar_preguntas.ranking.model_client import NoKnownHpoIdsError
 from diagnosticar_preguntas.ranking.reranker import AnswerWeighting
-from diagnosticar_preguntas.ranking.strategy import model_query
+from diagnosticar_preguntas.ranking.strategy import ModelQuery, model_query
 
 logger = logging.getLogger(__name__)
 
@@ -152,8 +153,9 @@ class RoundService:
             self._settings.rerank_strategy,
             reported_present=request.present_hpo_ids,
             evidence=evidence,
+            answered_no=self._answered_no(interpreted),
         )
-        ranking = self._model.rank(query, top_k=RANKING_TOP_K)
+        ranking = self._rank(query)
         posterior = self._reranker.rerank(ranking, evidence)
         patient_text = self._vocabulary.for_diseases(_top_diseases(posterior))
 
@@ -162,7 +164,7 @@ class RoundService:
         summary = None
         if finish_reason is None:
             questions = self._questions(
-                request, posterior, evidence, candidates, patient_text, state
+                request, posterior, evidence, candidates, patient_text, state, ranking
             )
         else:
             summary = self._summary(
@@ -173,6 +175,7 @@ class RoundService:
                 patient_text,
                 state,
                 self._ranks_before_questions(request, query, ranking, state),
+                self._negatives_move(ranking),
             )
 
         return RoundResponse(
@@ -203,6 +206,20 @@ class RoundService:
                 llm_model=self._llm.model_name if state.used_llm else None,
             ),
         )
+
+    def _answered_no(self, interpreted: Sequence[InterpretedAnswer]) -> list[str]:
+        """The effective "no" answers the model is sent, if this agent is set to send them."""
+        settings = self._settings
+        if not settings.rerank_negations or settings.answer_weighting is not AnswerWeighting.NONE:
+            return []
+        return [a.hpo_id for a in interpreted if a.effective_answer is AnswerValue.NO]
+
+    def _rank(self, query: ModelQuery) -> ModelRanking:
+        if query.excluded_hpo_ids:
+            return self._model.rank(
+                query.hpo_ids, top_k=RANKING_TOP_K, excluded_hpo_ids=query.excluded_hpo_ids
+            )
+        return self._model.rank(query.hpo_ids, top_k=RANKING_TOP_K)
 
     def _call_timeout(self, state: _Round, reserve: float = 0.0) -> float | None:
         """Timeout for the next LLM call, keeping ``reserve`` seconds for later calls.
@@ -277,6 +294,7 @@ class RoundService:
         candidates: list[CandidateTerm],
         patient_text: PatientText,
         state: _Round,
+        ranking: ModelRanking,
     ) -> list[QuestionOut]:
         n = min(self._settings.questions_per_round, len(candidates))
         task = QuestionTask(
@@ -313,7 +331,8 @@ class RoundService:
             accepted.extend(template.questions)
             state.fell_back(WARNING_QUESTIONS)
         by_id = {c.hpo_id: c for c in candidates}
-        return [self._question_out(q, by_id[q.hpo_id], request) for q in accepted]
+        negatives_move = self._negatives_move(ranking)
+        return [self._question_out(q, by_id[q.hpo_id], request, negatives_move) for q in accepted]
 
     def _draft_questions(
         self, task: QuestionTask, rules: QuestionRules, state: _Round
@@ -342,7 +361,11 @@ class RoundService:
         return check.accepted
 
     def _question_out(
-        self, draft: QuestionDraft, candidate: CandidateTerm, request: RoundRequest
+        self,
+        draft: QuestionDraft,
+        candidate: CandidateTerm,
+        request: RoundRequest,
+        negatives_move: bool,
     ) -> QuestionOut:
         clinician = request.mode is Mode.CLINICIAN
         return QuestionOut(
@@ -352,31 +375,35 @@ class RoundService:
             text=draft.text.strip(),
             help=(draft.help or "").strip() or None,
             genes_if_yes=list(candidate.genes_yes[:MAX_GENES_PER_SIDE]) if clinician else None,
-            genes_if_no=(
-                list(candidate.genes_no[:MAX_GENES_PER_SIDE]) if self._negatives_move else []
-            )
+            genes_if_no=(list(candidate.genes_no[:MAX_GENES_PER_SIDE]) if negatives_move else [])
             if clinician
             else None,
             rationale=draft.rationale.strip() if clinician else None,
         )
 
-    @property
-    def _negatives_move(self) -> bool:
-        """Whether "no" answers and negated findings reach the ranking at all."""
-        return self._settings.answer_weighting is not AnswerWeighting.NONE
+    def _negatives_move(self, ranking: ModelRanking) -> bool:
+        """Whether "no" answers reach the ranking: through this agent's weighting or the model's.
+
+        The model counts only when its response says it applied the re-ranker,
+        so a service that ignores ``excluded_hpo_ids`` is never credited.
+        """
+        return (
+            self._settings.answer_weighting is not AnswerWeighting.NONE
+            or ranking.rerank is not None
+        )
 
     def _ranks_before_questions(
-        self, request: RoundRequest, query: Sequence[str], ranking: ModelRanking, state: _Round
+        self, request: RoundRequest, query: ModelQuery, ranking: ModelRanking, state: _Round
     ) -> dict[str, int] | None:
         """Each gene's rank for the findings reported before any question.
 
-        That is this round's ranking unless the model was also sent answers;
-        then it takes one more call, made only while the round's budget can
+        That is this round's ranking unless the model was also sent answers,
+        "sí" or "no"; then it takes one more call, made only while the round's budget can
         still absorb the model service's timeout, so the caller's timeout
         keeps holding. ``None`` when that is not possible.
         """
         reported = tuple(sorted(set(request.present_hpo_ids)))
-        if tuple(query) == reported:
+        if query.hpo_ids == reported and not query.excluded_hpo_ids:
             return _ranks(ranking)
         if state.deadline.remaining() < self._settings.model_service_timeout_s:
             logger.warning("round budget too short to rank the reported findings again")
@@ -396,6 +423,7 @@ class RoundService:
         patient_text: PatientText,
         state: _Round,
         ranks_before: dict[str, int] | None,
+        negatives_move: bool,
     ) -> str:
         task = SummaryTask(
             mode=mode,
@@ -406,7 +434,7 @@ class RoundService:
             ),
             top_genes=posterior.top(SUMMARY_TOP_GENES),
             ranks_before=ranks_before,
-            negatives_move_ranking=self._negatives_move,
+            negatives_move_ranking=negatives_move,
         )
         answered_labels = [a.label for a in task.answers]
         for _ in range(LLM_ATTEMPTS):
