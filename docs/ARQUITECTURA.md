@@ -76,11 +76,12 @@ flowchart TD
 7. **Selección.** Con Q2b (por defecto), las 3 preguntas de la ronda por ganancia
    de información esperada sobre los 10 primeros genes, diversificadas; con
    `PREGUNTAS_SELECTOR=legacy`, una lista corta de 8 términos por ganancia de
-   información esperada, diversificada; en modo paciente se sacan los hallazgos que solo revela un
-   estudio salvo que falten para completar la ronda (sección 5).
-8. **Redacción y respuesta.** Claude redacta las 3 preguntas de Q2b (con `legacy`, elige 3 de la lista corta y las
-   redacta), o
-   escribe el resumen de cierre. Cada borrador pasa las salvaguardas; con
+   información esperada, diversificada; en modo paciente se sacan los
+   hallazgos que solo revela un estudio salvo que falten para completar la
+   ronda (sección 5).
+8. **Redacción y respuesta.** Claude redacta las 3 preguntas de Q2b (con
+   `legacy`, elige 3 de la lista corta y las redacta), o escribe el resumen de
+   cierre. Cada borrador pasa las salvaguardas; con
    violaciones se reintenta una vez con ellas como `correcciones`, y lo que falte
    se completa con plantillas (secciones 6 y 7). La respuesta trae el ranking
    (50 genes; por defecto, el del propio modelo), `specialties` y `confidence`
