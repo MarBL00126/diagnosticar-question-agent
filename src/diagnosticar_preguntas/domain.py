@@ -43,12 +43,16 @@ class Evidence:
     ``present`` and ``absent`` merge the extraction step (non-negated and
     negated findings) with the effective answers of earlier rounds. ``unknown``
     holds terms answered "No sé": they are never asked again and never used as
-    evidence.
+    evidence. ``asked`` holds every term the patient answered in earlier rounds,
+    whatever the effective answer: a subset of the three sets above, kept apart
+    because ``present`` and ``absent`` also hold what was reported before any
+    question.
     """
 
     present: frozenset[str]
     absent: frozenset[str] = frozenset()
     unknown: frozenset[str] = frozenset()
+    asked: frozenset[str] = frozenset()
 
     @property
     def asked_or_known(self) -> frozenset[str]:

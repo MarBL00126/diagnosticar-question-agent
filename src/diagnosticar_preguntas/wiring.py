@@ -13,12 +13,14 @@ from typing import Protocol
 from diagnosticar_preguntas.agent.guardrails import PatientVocabulary
 from diagnosticar_preguntas.agent.round import RoundService
 from diagnosticar_preguntas.api.schemas import RoundRequest, RoundResponse
-from diagnosticar_preguntas.config import Settings
+from diagnosticar_preguntas.config import SelectorName, Settings
+from diagnosticar_preguntas.domain import QuestionSelector
 from diagnosticar_preguntas.kb.store import KnowledgeBase
 from diagnosticar_preguntas.llm.factory import build_provider
 from diagnosticar_preguntas.ranking.likelihood import LikelihoodModel
 from diagnosticar_preguntas.ranking.model_client import HttpModelClient
 from diagnosticar_preguntas.ranking.reranker import BayesianReranker, RerankConfig
+from diagnosticar_preguntas.selection.q2b import Q2bConfig, Q2bSelector
 from diagnosticar_preguntas.selection.selector import InformationGainSelector
 
 
@@ -49,6 +51,14 @@ def rerank_config(settings: Settings) -> RerankConfig:
     )
 
 
+def build_selector(
+    settings: Settings, kb: KnowledgeBase, likelihood: LikelihoodModel
+) -> QuestionSelector:
+    if settings.selector is SelectorName.LEGACY:
+        return InformationGainSelector(kb, likelihood)
+    return Q2bSelector(kb, likelihood, Q2bConfig(n_questions=settings.questions_per_round))
+
+
 def build_service(settings: Settings) -> Service:
     """Wire the real components. Raises ``KnowledgeBaseError`` if the KB is missing or stale."""
     kb = KnowledgeBase.open(settings.kb_path)
@@ -57,7 +67,7 @@ def build_service(settings: Settings) -> Service:
     rounds = RoundService(
         model=model,
         reranker=BayesianReranker(kb, likelihood, rerank_config(settings)),
-        selector=InformationGainSelector(kb, likelihood),
+        selector=build_selector(settings, kb, likelihood),
         labels=kb,
         llm=build_provider(settings),
         settings=settings,

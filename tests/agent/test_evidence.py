@@ -133,3 +133,17 @@ def test_an_echoed_downgrade_is_unknown_evidence() -> None:
 
     assert "HP:0001738" in evidence.unknown
     assert "HP:0001738" not in evidence.present
+
+
+def test_every_answered_term_is_asked_whatever_its_effective_answer() -> None:
+    answers = [
+        AnswerIn(hpo_id="HP:0000001", answer=YES),
+        AnswerIn(hpo_id="HP:0000002", answer=NO),
+        AnswerIn(hpo_id="HP:0000003", answer=UNKNOWN),
+    ]
+    interpreted = interpret_answers(answers, {})
+
+    evidence = build_evidence(request(present_hpo_ids=["HP:0000009"], answers=answers), interpreted)
+
+    assert evidence.asked == {"HP:0000001", "HP:0000002", "HP:0000003"}
+    assert "HP:0000009" not in evidence.asked
