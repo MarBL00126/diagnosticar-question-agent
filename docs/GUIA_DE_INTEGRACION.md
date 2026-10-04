@@ -21,8 +21,9 @@ para los síntomas de un caso, expresados como términos HPO. En cada ronda:
 1. Le pide al modelo de diagnostic.ar el ranking para los hallazgos informados
    más cada respuesta «sí» confirmada.
 2. Elige, por ganancia de información esperada sobre las anotaciones HPO, los
-   síntomas que mejor separan a los genes candidatos (una lista corta de 8).
-3. Claude elige 3 de esa lista y los redacta como preguntas de sí/no para una
+   3 síntomas que mejor separan a los 10 primeros genes (selector Q2b, por
+   defecto; con `PREGUNTAS_SELECTOR=legacy`, una lista corta de 8).
+3. Claude redacta esos 3 (con `legacy`, elige 3 de la lista) como preguntas de sí/no para una
    familia (`paciente`) o para un médico (`medico`). Cada texto pasa por
    salvaguardas; si no las pasa después de un reintento, o si el LLM falla, se
    usa una plantilla y la respuesta lo avisa.
@@ -479,6 +480,7 @@ trabajo (el entorno gana; un valor vacío cuenta como no definido). Fuente:
 | `PREGUNTAS_RERANK_STRATEGY` | `model_sees_present` | Qué ve el modelo: los informados más cada «sí» (`model_sees_present`) o solo los informados (`fixed_prior`). |
 | `PREGUNTAS_ANSWER_WEIGHTING` | `none` | Cómo reordena el agente después del modelo: `none` (no reordena), `asymmetric` o `calibrated` ([ARQUITECTURA.md](ARQUITECTURA.md), 4.3). |
 | `PREGUNTAS_RERANK_NEGATIONS` | `true` | Manda al modelo los «no» efectivos como `excluded_hpo_ids` (2.1). Hoy el servicio lo ignora. |
+| `PREGUNTAS_SELECTOR` | `q2b` | `q2b` o `legacy` (selector anterior, para volver atrás). Ver [DECISIONES.md](DECISIONES.md), D-19. |
 | `PREGUNTAS_ANSWER_WEIGHT` | `0.3` | $k$ de `asymmetric`, en [0, 1). |
 | `PREGUNTAS_ROUND_BUDGET_S` | `75` | Segundos que una ronda puede gastar en llamadas al LLM. |
 | `PREGUNTAS_HOST` | `0.0.0.0` | Interfaz del servidor HTTP. |

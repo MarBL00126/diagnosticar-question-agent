@@ -23,6 +23,11 @@ class LLMProviderName(StrEnum):
     TEMPLATE = "template"
 
 
+class SelectorName(StrEnum):
+    Q2B = "q2b"
+    LEGACY = "legacy"
+
+
 class Settings(BaseSettings):
     """Every tunable of the service.
 
@@ -46,6 +51,12 @@ class Settings(BaseSettings):
     ``AnswerWeighting.NONE``: with any other combination the answers already
     go through this agent's own re-ranker, and sending them as well would
     count them twice (``docs/NEGACIONES.md``, section 6).
+
+    ``selector`` picks how the questions are chosen: ``q2b`` (default) asks
+    ``questions_per_round`` terms by expected information gain over the top 10
+    genes of the ranking with a diversity penalty, as validated in EXP-Q-001
+    (``docs/DECISIONES.md``, D-19); ``legacy`` is the previous selector, kept
+    for rollback.
 
     A round's LLM calls must end within ``round_budget_s`` of its start: each
     call gets at most ``llm_timeout_s`` and never more than what is left, and
@@ -95,6 +106,7 @@ class Settings(BaseSettings):
     answer_weighting: AnswerWeighting = RerankConfig().answer_weighting
     answer_weight: float = Field(default=RerankConfig().answer_weight, ge=0, lt=1)
     rerank_negations: bool = True
+    selector: SelectorName = SelectorName.Q2B
     round_budget_s: float = Field(default=75.0, gt=0)
 
     host: str = "0.0.0.0"

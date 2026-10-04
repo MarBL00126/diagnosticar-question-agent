@@ -26,6 +26,7 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
 | D-16 | El resumen no recomienda estudios | 2026-09-28 |
 | D-17 | Ponderación asimétrica de respuestas (reemplazada por D-18) | 2026-09-28 |
 | D-18 | Las respuestas solo llegan al modelo (los «no» van al re-ranker del modelo desde el 2026-10-03, nota al final) | 2026-09-28 |
+| D-19 | Selector de preguntas Q2b por defecto; el anterior queda como `legacy` | 2026-10-03 |
 
 ---
 
@@ -434,3 +435,46 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   descendientes de un hallazgo presente, que el cuestionador validado nunca
   pregunta. Detalle, evidencia y límites en
   [NEGACIONES.md](NEGACIONES.md), sección 6.
+
+## D-19. Selector de preguntas Q2b por defecto
+
+- **Contexto.** EXP-Q-001 (`diagnostic.ar-training`, `docs/experiments/EXP-Q-001.md`)
+  comparó estrategias de preguntas en entrevistas simuladas selladas (S3-v2-test,
+  presupuesto de 9 preguntas, mismo re-ranker del modelo para todas). El
+  selector que tenía el agente hasta D-18 (Q1) y el cuestionador de base (Q0)
+  eran dos de ellas; Q2b es una tercera: ganancia de información sobre los 10
+  primeros genes del ranking que ya incluye los «no», con una penalidad a los
+  términos de un mismo linaje.
+- **Decisión.** Q2b es el selector por defecto (`PREGUNTAS_SELECTOR=q2b`), con
+  Mate aprobándolo el 2026-10-03. `PREGUNTAS_SELECTOR=legacy` vuelve al
+  `InformationGainSelector` anterior, sin ningún cambio de comportamiento.
+  Q2b es una estrategia **validada como mejor que el cuestionador de base en
+  entrevistas simuladas selladas; indistinguible del selector anterior en el
+  ranking (+0,0017 [−0,0006; +0,0043]) pero dentro del tope de daño del 5 %
+  donde el anterior no lo estaba (4,77 % frente a 5,58 %); todavía no medida
+  con usuarios reales.** Contra Q0, Δ MRR +0,0049 [+0,0027; +0,0069]. Cómo
+  funciona: [ARQUITECTURA.md](ARQUITECTURA.md), sección 5.
+- **Alternativas.** Seguir con el selector anterior (Q1): no se distingue en
+  ranking y pasa el tope de daño. Q2b con λ = 0,3: se probó en el mismo
+  experimento; λ = 0,6 es el que se validó en el conjunto sellado.
+- **Consecuencias.**
+  - **Qué recibe Claude.** El selector devuelve exactamente las 3 preguntas de
+    la ronda (no una lista de 8): Claude las redacta, no las elige. Con el
+    selector anterior la lista corta sigue siendo de `PREGUNTAS_SHORTLIST_SIZE`.
+  - **Antes de actualizar la API del modelo** (sin la etiqueta `rerank` en la
+    respuesta) el ranking ignora los «no». Q2b anda igual: la ganancia se calcula
+    sobre los 10 primeros genes del modelo sin re-ranker, que es el ranking que
+    el agente ve. La validación midió el caso con re-ranker: sin él, Q2b no
+    está medido.
+  - **Parada anticipada.** El agente conserva el cierre por `confident` (≥ 0,9)
+    y por `no_useful_questions` (ninguna pregunta aporta 0,05 bits). La
+    evaluación corrió sin parada anticipada, con las 9 preguntas siempre. La
+    ganancia que se compara con el umbral es la de Q2b en bits, sin el factor
+    de «no sé» del selector anterior.
+  - **Preguntables.** Q2b usa las mismas reglas de `selection/askability.py`
+    (profundidad, categorías, etiqueta en español, nodos de agrupación). El
+    cuestionador evaluado no las aplicaba, así que puede preguntar por menos
+    términos que él.
+  - **Qué no cambia.** Contrato, salvaguardas, modos, cierre y cómo llegan las
+    respuestas al modelo (D-18).
+- **Fecha.** 2026-10-03.
