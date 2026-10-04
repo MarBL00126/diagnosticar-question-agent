@@ -148,9 +148,12 @@ defecto del agente ([README](../README.md#configuración)). Entre ellos, qué ha
 las respuestas: `PREGUNTAS_RERANK_STRATEGY` (`model_sees_present`) y
 `PREGUNTAS_ANSWER_WEIGHTING` (`none`; o `asymmetric` / `calibrated`, con
 `PREGUNTAS_ANSWER_WEIGHT`) y `PREGUNTAS_RERANK_NEGATIONS` (`true`: los «no» van
-al modelo como `excluded_hpo_ids`); para cambiarlos en la plataforma hay que agregarlos
+al modelo como `excluded_hpo_ids`) y `PREGUNTAS_SELECTOR` (`q2b`; `legacy` vuelve
+al selector anterior); para cambiarlos en la plataforma hay que agregarlos
 a la lista de variables que compose deja pasar ([DECISIONES.md](DECISIONES.md),
-D-18).
+D-18, D-19). Con la API del modelo sin actualizar, Q2b elige sobre el ranking
+sin re-ranker (los «no» no lo mueven); al actualizarla, sin cambiar nada del
+agente, ya los usa.
 
 **Invariante de tiempos.** El backend tiene que esperar más que el peor caso
 del agente: cola (`PREGUNTAS_QUEUE_TIMEOUT_S`, 10 s) + presupuesto de la ronda

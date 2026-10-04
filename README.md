@@ -40,7 +40,7 @@ sequenceDiagram
         A->>C: interpretar notas (solo pueden volver dudosa una respuesta)
     end
     A->>M: POST /rank-genes con los hallazgos originales
-    A->>A: selección por ganancia de información (el re-ranking propio de respuestas está desactivado por defecto, D-18; los «no» viajan al modelo como excluded_hpo_ids)
+    A->>A: selección de las 3 preguntas por ganancia de información, Q2b (el re-ranking propio de respuestas está desactivado por defecto, D-18; los «no» viajan al modelo como excluded_hpo_ids)
     A->>C: redactar preguntas o resumen
     A->>A: salvaguardas, un reintento, plantillas si falla
     A-->>E: ronda (preguntas o cierre, ranking, lecturas de notas)
@@ -84,7 +84,8 @@ trabajo (el entorno gana; un valor vacío cuenta como no definido). Fuente:
 | `PREGUNTAS_LLM_TIMEOUT_S` | `60` | Tope de una llamada al LLM; nunca recibe más de lo que le queda a la ronda. |
 | `PREGUNTAS_LLM_EFFORT` | `high` | Esfuerzo para leer notas y escribir el resumen: `low`, `medium`, `high`, `xhigh` o `max`. |
 | `PREGUNTAS_LLM_QUESTION_EFFORT` | `medium` | Esfuerzo para redactar las preguntas de cada ronda (medido en [docs/EVALUACION_ESFUERZO.md](docs/EVALUACION_ESFUERZO.md)). |
-| `PREGUNTAS_SHORTLIST_SIZE` | `8` | Síntomas candidatos que el selector le pasa a Claude por ronda. |
+| `PREGUNTAS_SELECTOR` | `q2b` | Cómo se eligen las preguntas: `q2b` (ganancia de información sobre los 10 primeros genes, con penalidad de linaje; validado en EXP-Q-001, [D-19](docs/DECISIONES.md)) o `legacy` (el selector anterior, para volver atrás). Con `q2b`, Claude redacta exactamente las preguntas de la ronda. |
+| `PREGUNTAS_SHORTLIST_SIZE` | `8` | Síntomas candidatos que el selector `legacy` le pasa a Claude por ronda (Q2b devuelve solo las preguntas de la ronda). |
 | `PREGUNTAS_QUESTIONS_PER_ROUND` | `3` | Preguntas por ronda (1 a 3, límite del contrato). |
 | `PREGUNTAS_MAX_ROUNDS` | `3` | Rondas con preguntas (1 a 3, límite del contrato). |
 | `PREGUNTAS_CONFIDENT_THRESHOLD` | `0.9` | Cierra si el puntaje refinado del primer gen llega a este valor. |
@@ -185,7 +186,7 @@ alternativas), con sus advertencias, en [docs/IMPACTO.md](docs/IMPACTO.md).
 | `src/diagnosticar_preguntas/api/` | HTTP: app y tabla de errores, contrato v2 (`schemas.py`), token, límite de cuerpo, cola de rondas, `/healthz`. |
 | `src/diagnosticar_preguntas/agent/` | La ronda (`round.py`), respuestas y evidencia (`evidence.py`), salvaguardas (`guardrails.py`). |
 | `src/diagnosticar_preguntas/ranking/` | Cliente del modelo, verosimilitud `P(síntoma \| enfermedad)`, re-ranking bayesiano, estrategia. |
-| `src/diagnosticar_preguntas/selection/` | Términos preguntables, ganancia de información, diversificación, selector. |
+| `src/diagnosticar_preguntas/selection/` | Términos preguntables, ganancia de información, diversificación, selectores (`q2b.py` por defecto, `selector.py` el anterior). |
 | `src/diagnosticar_preguntas/kb/` | Fuentes fijadas, construcción y lectura de la base SQLite. |
 | `src/diagnosticar_preguntas/llm/` | Proveedores (`claude_cli.py`, `anthropic_api.py`, `template.py`), prompts (`prompts/*.md`), esquemas de salida. |
 | `src/diagnosticar_preguntas/config.py`, `domain.py`, `wiring.py` | Configuración, tipos compartidos, armado de componentes. |

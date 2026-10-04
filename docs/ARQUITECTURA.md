@@ -23,7 +23,7 @@ respuestas hasta el momento. Los componentes se conectan por los protocolos de
 | Estrategia | `ranking/strategy.py` | Qué hallazgos se le mandan al modelo (`fixed_prior` o `model_sees_present`). |
 | Verosimilitud | `ranking/likelihood.py` | `P(síntoma \| enfermedad)` con la semántica de la ontología, y sus ingredientes: la frecuencia anotada y las exclusiones. |
 | Re-ranker | `ranking/reranker.py` | Posterior bayesiana sobre pares gen–enfermedad. |
-| Selector | `selection/` | Términos preguntables, ganancia de información, diversificación. |
+| Selector | `selection/` | Términos preguntables, ganancia de información y diversificación: Q2b por defecto (`q2b.py`), el selector anterior con `PREGUNTAS_SELECTOR=legacy` (`selector.py`). |
 | Capa LLM | `llm/` | Proveedores de Claude y de plantillas detrás de una misma interfaz, prompts y esquemas de salida. |
 | Base de conocimiento | `kb/` | Construcción reproducible y lectura en memoria de la base HPO. |
 
@@ -73,10 +73,13 @@ flowchart TD
    que `PREGUNTAS_MAX_ROUNDS` → `max_rounds`; primer gen con puntaje ≥ 0,9 →
    `confident`; lista corta vacía o ninguna ganancia ≥ 0,05 bits →
    `no_useful_questions`. Ningún cierre es un diagnóstico.
-7. **Selección.** Lista corta de 8 términos por ganancia de información esperada,
-   diversificada; en modo paciente se sacan los hallazgos que solo revela un
+7. **Selección.** Con Q2b (por defecto), las 3 preguntas de la ronda por ganancia
+   de información esperada sobre los 10 primeros genes, diversificadas; con
+   `PREGUNTAS_SELECTOR=legacy`, una lista corta de 8 términos por ganancia de
+   información esperada, diversificada; en modo paciente se sacan los hallazgos que solo revela un
    estudio salvo que falten para completar la ronda (sección 5).
-8. **Redacción y respuesta.** Claude elige 3 de la lista corta y los redacta, o
+8. **Redacción y respuesta.** Claude redacta las 3 preguntas de Q2b (con `legacy`, elige 3 de la lista corta y las
+   redacta), o
    escribe el resumen de cierre. Cada borrador pasa las salvaguardas; con
    violaciones se reintenta una vez con ellas como `correcciones`, y lo que falte
    se completa con plantillas (secciones 6 y 7). La respuesta trae el ranking
@@ -312,6 +315,42 @@ que sale el paciente, y con fuentes de curación distintas para el paciente y
 para el agente.
 
 ## 5. Selección de preguntas
+
+El selector se elige con `PREGUNTAS_SELECTOR`: `q2b` (por defecto, D-19) o
+`legacy`. Primero se describe Q2b; las subsecciones desde **Candidatos** hasta
+**Diversificación** describen el selector anterior, que `legacy` conserva sin
+cambios. Las reglas de preguntables y el marcado de «requiere estudio» valen
+para los dos.
+
+**Q2b** (`selection/q2b.py`), tal como se evaluó en EXP-Q-001
+(`diagnostic.ar-training`, `eval/questioning.py`, `Q2b` con λ = 0,6):
+
+1. **Posterior de candidatos.** Los 10 primeros genes del ranking con alguna
+   enfermedad anotada, con sus puntajes renormalizados. El ranking es el de
+   `/rank-genes` para los hallazgos informados más cada «sí», con los «no»
+   mandados como `excluded_hpo_ids`: con la API actualizada, el re-ranker del
+   modelo ya los aplicó; antes (la respuesta no trae la etiqueta `rerank`), los
+   «no» no mueven el ranking y Q2b calcula la ganancia sobre los 10 primeros genes
+   del modelo.
+2. **Ganancia.** Para cada término preguntable anotado a las enfermedades de
+   esos genes, la ganancia de información esperada de su sí/no sobre esos 10
+   genes, con $P(t \mid g)$ el promedio de $P(t \mid d)$ sobre las enfermedades
+   anotadas del gen (el mismo reparto que usa el re-ranker), acotada a
+   [0,02; 0,98]. Se informa en bits, sin el factor de «no sé».
+3. **Bloqueados.** Informados y «sí», con ancestros y descendientes; «no» y «no
+   sé», con descendientes; y todo lo ya informado o preguntado.
+4. **Diversidad.** Greedy: la ganancia de un término se multiplica por
+   $1 - \lambda$ con $\lambda = 0{,}6$ si comparte algún ancestro por debajo del
+   nivel de sistema de órganos (hijos de `HP:0000118`) con una pregunta ya
+   elegida en la ronda o hecha en rondas anteriores. Empata el número HPO menor.
+5. **Ronda.** Devuelve las `PREGUNTAS_QUESTIONS_PER_ROUND` (3) mejores; Claude las
+   redacta. El cierre por poca ganancia (`PREGUNTAS_MIN_INFORMATION_GAIN`) y por
+   confianza sigue como antes; la evaluación corrió sin parada anticipada.
+
+Para que el selector distinga lo que se preguntó de lo que se informó, `Evidence`
+trae `asked`, los términos respondidos en rondas anteriores.
+
+Lo que sigue describe el selector anterior (`legacy`).
 
 **Candidatos** (`selection/selector.py`): los términos anotados en las
 enfermedades de las hipótesis actuales, más sus ancestros hasta 2 pasos (una
