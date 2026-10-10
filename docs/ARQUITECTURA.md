@@ -63,8 +63,10 @@ flowchart TD
 4. **Modelo.** `POST /rank-genes` con `top_k` 50. Con la estrategia por defecto,
    `model_sees_present`, se mandan `present_hpo_ids` más cada "sí" efectivo
    (sección 4.4) y, con `PREGUNTAS_RERANK_NEGATIONS` (por defecto), cada "no"
-   efectivo como `excluded_hpo_ids`: los ve un modelo con el re-ranker rr-v1,
-   no el agente ([NEGACIONES.md](NEGACIONES.md), sección 6).
+   efectivo como `excluded_hpo_ids`: los ve un modelo con el re-ranker rr-v1
+   o con ft-v1.1, no el agente ([NEGACIONES.md](NEGACIONES.md), sección 6).
+   Si el pedido trajo `sex`, `age_years` u `onset_years`, van en cada llamada
+   (D-20).
 5. **Re-ranking.** Por defecto no hay: el ranking es el del modelo para esa
    consulta, repartido en hipótesis gen–enfermedad solo para poder elegir
    preguntas. Las ponderaciones `asymmetric` y `calibrated` siguen disponibles

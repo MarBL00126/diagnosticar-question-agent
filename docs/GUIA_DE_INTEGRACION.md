@@ -95,6 +95,18 @@ pydantic ignora los campos desconocidos, así que no cambia nada hasta que se
 actualice ([NEGACIONES.md](NEGACIONES.md), sección 6). La llamada que arma el
 resumen de cierre con los hallazgos informados nunca lleva exclusiones.
 
+Si el pedido trajo `sex`, `age_years` u `onset_years`, cada llamada de la
+ronda, también la del resumen de cierre, los lleva tal cual; los que faltan
+no viajan:
+
+```json
+{"hpo_ids": ["HP:0002205", "HP:0004322"], "top_k": 50, "sex": "female", "age_years": 7.5, "onset_years": 2.0}
+```
+
+Solo los lee el ajuste ft-v1.1 del modelo, cuando `FT_V11_ENABLED` está
+prendido; un servicio anterior los ignora igual que a cualquier campo que no
+declara (D-20).
+
 De la respuesta solo lee estos campos; el resto se ignora
 (`ranking/model_client.py`):
 
@@ -157,6 +169,9 @@ hasta 64 KiB. El contrato es estricto: un campo desconocido es un 422.
 | `round` | entero 1–4 | Ronda que se pide. La 1 va sin respuestas. Con `round` mayor que `PREGUNTAS_MAX_ROUNDS` (3) se cierra sin preguntas. El agente no lo cruza con las respuestas: numerar es tarea de quien llama. |
 | `present_hpo_ids` | 1–100 ids `HP:0000000` | Hallazgos presentes informados antes de preguntar: los que recibió el modelo para el ranking original. Iguales en toda la sesión. |
 | `absent_hpo_ids` | 0–100 ids, opcional | Hallazgos negados informados antes de preguntar, disjuntos con los presentes. Se registran y no se preguntan; con la configuración por defecto no mueven el ranking. |
+| `sex` | `"male"` \| `"female"`, opcional | Sexo informado del paciente. Va al modelo en cada llamada de la ronda (D-20). |
+| `age_years` | número 0–130, opcional | Edad actual en años. |
+| `onset_years` | número 0–130, opcional | Edad exacta del inicio más temprano informado; nunca un rango. Sin ella, el modelo usa `age_years`. |
 | `answers[]` | 0–9, opcional | **Todas** las respuestas de la sesión, no solo las nuevas. Cada término una sola vez, y ninguno de `present_hpo_ids` ni `absent_hpo_ids`. |
 | `answers[].hpo_id` | id | El `hpo_id` de la pregunta respondida. |
 | `answers[].answer` | `"si"` \| `"no"` \| `"no_se"` | El botón. |
@@ -217,7 +232,7 @@ sequenceDiagram
         opt hay notas sin reading
             A->>C: leer las notas nuevas
         end
-        A->>M: POST /rank-genes (informados + cada «sí», más los «no» como excluded_hpo_ids)
+        A->>M: POST /rank-genes (informados + cada «sí», los «no» como excluded_hpo_ids, sexo y edades)
         A->>C: redactar preguntas o resumen de cierre
         A-->>S: preguntas o cierre (summary), ranking, interpreted_answers
         S->>DB: guardar la ronda (compare-and-set)
@@ -231,8 +246,8 @@ sequenceDiagram
    `no_useful_questions`).
 3. Si no, mostrar `questions` y juntar una respuesta por pregunta (`no_se` es
    la forma de saltear una).
-4. **Pedido siguiente**: `round` + 1, los mismos `present_hpo_ids` y
-   `absent_hpo_ids`, y en `answers` las de todas las rondas: las anteriores con
+4. **Pedido siguiente**: `round` + 1, los mismos `present_hpo_ids`,
+   `absent_hpo_ids`, `sex`, `age_years` y `onset_years`, y en `answers` las de todas las rondas: las anteriores con
    su `reading` (copiado de `interpreted_answers` de la primera respuesta que
    las incluyó) y las nuevas sin `reading`.
 5. Repetir. Con los valores por defecto, el cuarto pedido (`round: 4`, con las
@@ -479,7 +494,7 @@ trabajo (el entorno gana; un valor vacío cuenta como no definido). Fuente:
 | `PREGUNTAS_MIN_INFORMATION_GAIN` | `0.05` | Cierra si ninguna pregunta aporta al menos estos bits. |
 | `PREGUNTAS_RERANK_STRATEGY` | `model_sees_present` | Qué ve el modelo: los informados más cada «sí» (`model_sees_present`) o solo los informados (`fixed_prior`). |
 | `PREGUNTAS_ANSWER_WEIGHTING` | `none` | Cómo reordena el agente después del modelo: `none` (no reordena), `asymmetric` o `calibrated` ([ARQUITECTURA.md](ARQUITECTURA.md), 4.3). |
-| `PREGUNTAS_RERANK_NEGATIONS` | `true` | Manda al modelo los «no» efectivos como `excluded_hpo_ids` (2.1). Hoy el servicio lo ignora. |
+| `PREGUNTAS_RERANK_NEGATIONS` | `true` | Manda al modelo los «no» efectivos como `excluded_hpo_ids` (2.1). Los aplica el re-ranker rr-v1 o, con `FT_V11_ENABLED`, ft-v1.1; un servicio sin ninguno de los dos los ignora. |
 | `PREGUNTAS_SELECTOR` | `q2b` | `q2b` o `legacy` (selector anterior, para volver atrás). Ver [DECISIONES.md](DECISIONES.md), D-19. |
 | `PREGUNTAS_ANSWER_WEIGHT` | `0.3` | $k$ de `asymmetric`, en [0, 1). |
 | `PREGUNTAS_ROUND_BUDGET_S` | `75` | Segundos que una ronda puede gastar en llamadas al LLM. |

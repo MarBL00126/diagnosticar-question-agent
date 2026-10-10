@@ -478,3 +478,35 @@ alternativas, las consecuencias y la fecha. El funcionamiento está en
   - **Qué no cambia.** Contrato, salvaguardas, modos, cierre y cómo llegan las
     respuestas al modelo (D-18).
 - **Fecha.** 2026-10-03.
+
+## D-20. El sexo y las edades del paciente llegan al modelo
+
+- **Contexto.** El modelo de staging tiene el ajuste ft-v1.1
+  (`diagnostic.ar-model`, release `ft-v1.1.0`, detrás de `FT_V11_ENABLED`). Con
+  el sexo, la edad y la edad de inicio baja los genes que el caso descarta: uno
+  limitado al otro sexo, o uno cuyo inicio más temprano conocido es posterior
+  al del paciente. Con los «no» como `excluded_hpo_ids` baja los genes que los
+  tienen como hallazgo obligado. Nunca sube a ninguno, y sin datos devuelve
+  exactamente el orden del modelo base. La plataforma ya los manda en su
+  primera consulta a `/rank-genes`; el agente no los recibía, así que la lista
+  con respuestas los perdía.
+- **Decisión.** `RoundRequest` acepta `sex` (`"male"` o `"female"`),
+  `age_years` y `onset_years` (de 0 a 130), los tres opcionales. El agente los
+  manda tal cual en cada llamada a `/rank-genes` de la ronda, también la que
+  rearma el orden previo a las preguntas para el resumen de cierre, que así es
+  comparable con la lista original de la plataforma. No pasan por el
+  re-ranker del agente ni por la selección de preguntas, y no se registran.
+- **Alternativas.** Que el agente lea los datos de otro lado: es sin estado y
+  solo sabe lo que trae el pedido. Que los aplique el propio agente: el ajuste
+  vive en el modelo, que es donde se validó.
+- **Consecuencias.**
+  - **Contrato.** Compatible hacia atrás: un pedido sin los campos es el de
+    antes y produce las mismas llamadas al modelo. Un valor que el modelo no
+    podría leer (un sexo distinto, una edad negativa) es un 422, como cualquier
+    otro campo fuera de contrato, y no se repite en el cuerpo del error.
+  - **Orden de despliegue.** El agente tiene que estar actualizado antes de que
+    Express mande los campos, porque el contrato rechaza los desconocidos.
+  - **Con ft-v1.1 apagado** el modelo ignora los tres campos y nada cambia.
+  - **Qué no cambia.** Selección de preguntas, lectura de notas, salvaguardas,
+    modos y cierre.
+- **Fecha.** 2026-10-09.
