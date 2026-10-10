@@ -358,6 +358,57 @@ class TestModelRejection:
         assert response.json() == {"error": "model-unavailable"}
 
 
+class TestPatientCase:
+    """The case reported with the round reaches the model over the real HTTP client."""
+
+    def test_every_model_call_carries_it_and_no_log_line_does(
+        self, tiny_kb: KnowledgeBase, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        caplog.set_level("DEBUG")
+        sent: list[dict[str, object]] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            sent.append(json.loads(request.content))
+            results = [
+                {"gene_symbol": GENE_A, "score": 0.5},
+                {"gene_symbol": GENE_B, "score": 0.3},
+                {"gene_symbol": GENE_C, "score": 0.2},
+            ]
+            return httpx.Response(200, json={"results": results})
+
+        model = HttpModelClient("http://model.test", transport=httpx.MockTransport(handler))
+        service = Service(
+            rounds=real_rounds(tiny_kb, model),
+            knowledge_base_version=tiny_kb.version,
+            model_service=StubProbe(),
+        )
+        body = round_body(
+            round=2,
+            present_hpo_ids=[MICROCEPHALY],
+            absent_hpo_ids=[],
+            answers=[{"hpo_id": SEIZURE, "answer": "si"}],
+            finish=True,
+            sex="female",
+            age_years=7.25,
+            onset_years=1.5,
+        )
+
+        response = client(service=service).post("/v1/rounds", json=body)
+
+        assert response.status_code == 200
+        assert len(sent) == 2
+        for call in sent:
+            assert (call["sex"], call["age_years"], call["onset_years"]) == ("female", 7.25, 1.5)
+        for value in ("female", "7.25", "1.5"):
+            assert value not in caplog.text
+
+    def test_a_case_field_out_of_range_is_422_and_never_echoed(self) -> None:
+        response = client().post("/v1/rounds", json=round_body(age_years=-3.75))
+
+        assert response.status_code == 422
+        assert "-3.75" not in response.text
+
+
 class TestLogging:
     def test_a_round_logs_metadata_and_timing(self, caplog: pytest.LogCaptureFixture) -> None:
         caplog.set_level("DEBUG")

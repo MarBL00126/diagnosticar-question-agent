@@ -8,7 +8,13 @@ from typing import Any
 
 import httpx
 
-from diagnosticar_preguntas.domain import ModelRanking, ModelRequestError, ModelUnavailableError
+from diagnosticar_preguntas.domain import (
+    NO_CASE,
+    ModelRanking,
+    ModelRequestError,
+    ModelUnavailableError,
+    PatientCase,
+)
 
 NO_KNOWN_HPO_IDS = "no-known-hpo-ids"
 
@@ -28,8 +34,9 @@ class HttpModelClient:
     ``ModelUnavailableError``; a 422 ``no-known-hpo-ids`` raises
     ``NoKnownHpoIdsError`` and any other 4xx ``ModelRequestError``, because
     retrying the same request cannot help. ``excluded_hpo_ids`` is sent only
-    when it is not empty, so a call without exclusions is the one the service
-    has always accepted. Error messages carry status codes
+    when it is not empty, and each field of ``case`` only when it is known, so
+    a call without them is the one the service has always accepted (older
+    services ignore fields they do not know). Error messages carry status codes
     and exception types only: the service's bodies may echo the terms sent.
     """
 
@@ -46,12 +53,23 @@ class HttpModelClient:
         )
 
     def rank(
-        self, hpo_ids: Sequence[str], top_k: int, excluded_hpo_ids: Sequence[str] = ()
+        self,
+        hpo_ids: Sequence[str],
+        top_k: int,
+        excluded_hpo_ids: Sequence[str] = (),
+        *,
+        case: PatientCase = NO_CASE,
     ) -> ModelRanking:
         query = tuple(hpo_ids)
         body: dict[str, Any] = {"hpo_ids": list(query), "top_k": top_k}
         if excluded_hpo_ids:
             body["excluded_hpo_ids"] = list(excluded_hpo_ids)
+        if case.sex is not None:
+            body["sex"] = case.sex
+        if case.age_years is not None:
+            body["age_years"] = case.age_years
+        if case.onset_years is not None:
+            body["onset_years"] = case.onset_years
         try:
             response = self._client.post("/rank-genes", json=body)
         except httpx.TimeoutException as error:

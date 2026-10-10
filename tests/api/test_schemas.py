@@ -75,3 +75,33 @@ def test_a_question_lists_at_most_five_genes_per_answer() -> None:
 
     with pytest.raises(ValidationError):
         QuestionOut(**fields, genes_if_yes=["G1", "G2", "G3", "G4", "G5", "G6"])
+
+
+def test_the_case_is_optional_and_unknown_by_default() -> None:
+    request = RoundRequest.model_validate(BASE)
+
+    assert (request.sex, request.age_years, request.onset_years) == (None, None, None)
+
+
+def test_a_full_case_is_valid() -> None:
+    body = {**BASE, "sex": "female", "age_years": 7.5, "onset_years": 2}
+
+    request = RoundRequest.model_validate(body)
+
+    assert (request.sex, request.age_years, request.onset_years) == ("female", 7.5, 2.0)
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"sex": "femenino"},
+        {"sex": "other"},
+        {"age_years": -1},
+        {"age_years": 131},
+        {"onset_years": -0.5},
+        {"onset_years": "dos"},
+    ],
+)
+def test_a_case_field_the_model_could_not_read_is_rejected(overrides: dict[str, Any]) -> None:
+    with pytest.raises(ValidationError):
+        RoundRequest.model_validate({**BASE, **overrides})
