@@ -40,6 +40,7 @@ esquemas.
 | `round` | entero 1–4 | Ronda que se pide. La 1 no lleva respuestas; con `round` > 3 se cierra sin preguntas. |
 | `present_hpo_ids` | 1–100 ids `HP:0000000` | Hallazgos presentes informados antes de preguntar. |
 | `absent_hpo_ids` | 0–100 ids | Hallazgos negados informados antes de preguntar; disjuntos con los presentes. Se aceptan, no se vuelven a preguntar y quedan registrados; con la configuración por defecto no mueven el ranking. |
+| `sex`, `age_years`, `onset_years` | `"male"` \| `"female"`, números 0–130; opcionales | Sexo, edad actual y edad exacta de inicio informados. Van al modelo en cada llamada de la ronda y solo los lee su ajuste ft-v1.1 ([DECISIONES.md](DECISIONES.md), D-20). |
 | `answers[]` | hasta 9 | Todas las respuestas de la sesión, cada término una sola vez y nunca sobre un hallazgo informado. |
 | `answers[].hpo_id`, `.answer` | id, `"si"` \| `"no"` \| `"no_se"` | El botón que se tocó. |
 | `answers[].note` | texto ≤ 280, opcional | Nota libre. |
