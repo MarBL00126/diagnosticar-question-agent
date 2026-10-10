@@ -28,7 +28,7 @@ from collections.abc import Iterable
 from enum import StrEnum
 from typing import NamedTuple
 
-from diagnosticar_preguntas.domain import Evidence
+from diagnosticar_preguntas.domain import NO_CASE, Evidence, PatientCase
 
 
 class RerankStrategy(StrEnum):
@@ -37,10 +37,11 @@ class RerankStrategy(StrEnum):
 
 
 class ModelQuery(NamedTuple):
-    """What one ``ModelClient.rank`` call carries, both sorted for stable caching."""
+    """What one ``ModelClient.rank`` call carries, the terms sorted for stable caching."""
 
     hpo_ids: tuple[str, ...]
     excluded_hpo_ids: tuple[str, ...] = ()
+    case: PatientCase = NO_CASE
 
 
 def model_query(
@@ -49,6 +50,7 @@ def model_query(
     reported_present: Iterable[str],
     evidence: Evidence,
     answered_no: Iterable[str] = (),
+    case: PatientCase = NO_CASE,
 ) -> ModelQuery:
     """The terms to send to ``ModelClient.rank`` this round.
 
@@ -57,9 +59,11 @@ def model_query(
     effective "no" answers, and nothing else: not "no sé", and not the
     negated findings of the free text, which are not validated. They go to
     the model only under ``MODEL_SEES_PRESENT``, where the re-ranker does not
-    apply them again, and never a term that is also present.
+    apply them again, and never a term that is also present. ``case`` is what
+    the family reported about the patient, not an answer, so it goes with
+    every strategy.
     """
     if strategy is RerankStrategy.FIXED_PRIOR:
-        return ModelQuery(tuple(sorted(set(reported_present))))
+        return ModelQuery(tuple(sorted(set(reported_present))), case=case)
     present = tuple(sorted(evidence.present))
-    return ModelQuery(present, tuple(sorted(set(answered_no) - evidence.present)))
+    return ModelQuery(present, tuple(sorted(set(answered_no) - evidence.present)), case)

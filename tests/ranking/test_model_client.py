@@ -6,7 +6,7 @@ from collections.abc import Callable
 import httpx
 import pytest
 
-from diagnosticar_preguntas.domain import ModelRequestError, ModelUnavailableError
+from diagnosticar_preguntas.domain import ModelRequestError, ModelUnavailableError, PatientCase
 from diagnosticar_preguntas.ranking.model_client import HttpModelClient, NoKnownHpoIdsError
 from fixtures.fake_model import FakeModelClient
 
@@ -76,6 +76,33 @@ def test_rank_omits_the_field_without_excluded_terms() -> None:
         client.rank(["HP:0002205"], 50, excluded_hpo_ids=[])
 
     assert [json.loads(r.content) for r in seen] == [{"hpo_ids": ["HP:0002205"], "top_k": 50}] * 2
+
+
+def test_rank_sends_each_known_field_of_the_case() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=RESPONSE)
+
+    with _client(handler) as client:
+        client.rank(
+            ["HP:0002205"], 50, case=PatientCase(sex="female", age_years=7.5, onset_years=2.0)
+        )
+        client.rank(["HP:0002205"], 50, case=PatientCase(age_years=0.5))
+        client.rank(["HP:0002205"], 50, case=PatientCase())
+
+    assert [json.loads(r.content) for r in seen] == [
+        {
+            "hpo_ids": ["HP:0002205"],
+            "top_k": 50,
+            "sex": "female",
+            "age_years": 7.5,
+            "onset_years": 2.0,
+        },
+        {"hpo_ids": ["HP:0002205"], "top_k": 50, "age_years": 0.5},
+        {"hpo_ids": ["HP:0002205"], "top_k": 50},
+    ]
 
 
 def test_the_rerank_tag_of_the_response_is_kept_and_defaults_to_none() -> None:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from diagnosticar_preguntas.domain import Evidence
+from diagnosticar_preguntas.domain import NO_CASE, Evidence, PatientCase
 from diagnosticar_preguntas.kb.store import KnowledgeBase
 from diagnosticar_preguntas.ranking.likelihood import LikelihoodConfig, LikelihoodModel
 from diagnosticar_preguntas.ranking.reranker import AnswerWeighting, BayesianReranker, RerankConfig
@@ -69,6 +69,23 @@ def test_fixed_prior_never_excludes_anything() -> None:
     )
 
     assert query.excluded_hpo_ids == ()
+
+
+@pytest.mark.parametrize("strategy", list(RerankStrategy))
+def test_every_strategy_carries_the_case(strategy: RerankStrategy) -> None:
+    case = PatientCase(sex="male", age_years=4.0)
+
+    query = model_query(strategy, reported_present=REPORTED, evidence=AFTER_ANSWERS, case=case)
+
+    assert query.case == case
+
+
+def test_the_case_defaults_to_unknown() -> None:
+    query = model_query(
+        RerankStrategy.MODEL_SEES_PRESENT, reported_present=REPORTED, evidence=AFTER_ANSWERS
+    )
+
+    assert query.case == NO_CASE
 
 
 def _scores(query: tuple[str, ...]) -> dict[str, float]:

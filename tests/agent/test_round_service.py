@@ -34,7 +34,14 @@ from diagnosticar_preguntas.agent.round import (
     WARNING_QUESTIONS,
     WARNING_SUMMARY,
 )
-from diagnosticar_preguntas.domain import AnswerValue, GeneScore, Mode, ModelUnavailableError
+from diagnosticar_preguntas.domain import (
+    NO_CASE,
+    AnswerValue,
+    GeneScore,
+    Mode,
+    ModelUnavailableError,
+    PatientCase,
+)
 from diagnosticar_preguntas.llm.claude_cli import ClaudeCliProvider
 from diagnosticar_preguntas.llm.provider import (
     LLMInvalidOutputError,
@@ -53,11 +60,11 @@ NOTE = "creo que no, no estoy segura"
 
 
 class FailsAfterFirstCall(FakeModel):
-    def rank(self, hpo_ids: Any, top_k: int, excluded_hpo_ids: Any = ()) -> Any:
+    def rank(self, hpo_ids: Any, top_k: int, excluded_hpo_ids: Any = (), **kwargs: Any) -> Any:
         if self.calls:
             self.calls.append((list(hpo_ids), top_k))
             raise ModelUnavailableError("model service down")
-        return super().rank(hpo_ids, top_k, excluded_hpo_ids)
+        return super().rank(hpo_ids, top_k, excluded_hpo_ids, **kwargs)
 
 
 class RoundTwoSelector(FakeSelector):
@@ -302,6 +309,54 @@ class TestNegations:
 
             response = round_two(model=model).run(request(round=2, answers=yes_no_answers()))
             assert all(bool(q.genes_if_no) is moves for q in response.questions)
+
+
+CASE = {"sex": "female", "age_years": 7.5, "onset_years": 2.0}
+
+
+class TestPatientCase:
+    def test_the_case_goes_with_every_call_of_the_round(self) -> None:
+        model = FakeModel()
+
+        service(ScriptedLLM(summaries=[summary()]), model=model).run(
+            request(round=2, finish=True, answers=yes_no_answers(), **CASE)
+        )
+
+        assert len(model.calls) == 2
+        assert model.cases == [PatientCase(**CASE)] * 2
+
+    def test_a_partial_case_sends_only_what_is_known(self) -> None:
+        model = FakeModel()
+
+        service(model=model).run(request(sex="male"))
+
+        assert model.cases == [PatientCase(sex="male")]
+
+    def test_without_a_case_the_call_is_the_one_it_always_was(self) -> None:
+        model = FakeModel()
+
+        service(model=model).run(request())
+
+        assert model.cases == [NO_CASE]
+
+    def test_the_case_alone_does_not_ask_for_the_baseline_again(self) -> None:
+        model = FakeModel()
+
+        service(ScriptedLLM(summaries=[summary()]), model=model).run(
+            request(round=2, finish=True, **CASE)
+        )
+
+        assert model.calls == [(sorted(PRESENT), 50)]
+        assert model.cases == [PatientCase(**CASE)]
+
+    def test_the_fixed_prior_strategy_sends_the_case_too(self) -> None:
+        model = FakeModel()
+
+        round_two(model=model, rerank_strategy=RerankStrategy.FIXED_PRIOR).run(
+            request(round=2, answers=yes_no_answers(), **CASE)
+        )
+
+        assert model.cases == [PatientCase(**CASE)]
 
 
 class TestAnswers:

@@ -12,7 +12,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
-from diagnosticar_preguntas.domain import AnswerValue, Mode
+from diagnosticar_preguntas.domain import AnswerValue, Mode, Sex
 
 HpoId = Annotated[str, StringConstraints(pattern=r"^HP:\d{7}$")]
 Note = Annotated[str, StringConstraints(strip_whitespace=True, max_length=280)]
@@ -21,6 +21,7 @@ MAX_ROUNDS = 3
 QUESTIONS_PER_ROUND = 3
 MAX_NOTE_SUMMARY_CHARS = 200
 MAX_GENES_PER_SIDE = 5
+MAX_AGE_YEARS = 130
 
 NoteSummary = Annotated[str, StringConstraints(max_length=MAX_NOTE_SUMMARY_CHARS)]
 
@@ -70,12 +71,20 @@ class RoundRequest(_Strict):
     before any question (the extraction step) and must not overlap.
     ``answers`` are only for questions the agent asked, so none of them may
     repeat a reported finding.
+
+    ``sex``, ``age_years`` and ``onset_years`` are what the family reported
+    about the patient, all optional. They go to the model with every call of
+    the round and only its ft-v1.1 adjustment reads them. ``onset_years`` is
+    the earliest exact age at onset, never a range.
     """
 
     mode: Mode
     round: int = Field(ge=1, le=MAX_ROUNDS + 1)
     present_hpo_ids: list[HpoId] = Field(min_length=1, max_length=100)
     absent_hpo_ids: list[HpoId] = Field(default_factory=list, max_length=100)
+    sex: Sex | None = None
+    age_years: float | None = Field(default=None, ge=0, le=MAX_AGE_YEARS)
+    onset_years: float | None = Field(default=None, ge=0, le=MAX_AGE_YEARS)
     answers: list[AnswerIn] = Field(
         default_factory=list, max_length=MAX_ROUNDS * QUESTIONS_PER_ROUND
     )
