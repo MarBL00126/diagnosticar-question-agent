@@ -16,6 +16,7 @@ import logging
 import time
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field, replace
+from typing import Any
 
 from diagnosticar_preguntas import __version__
 from diagnosticar_preguntas.agent.evidence import build_evidence, interpret_answers, needs_reading
@@ -47,6 +48,7 @@ from diagnosticar_preguntas.domain import (
     ModelRanking,
     ModelRequestError,
     ModelUnavailableError,
+    PatientCase,
     Posterior,
     QuestionSelector,
     Reranker,
@@ -154,6 +156,7 @@ class RoundService:
             reported_present=request.present_hpo_ids,
             evidence=evidence,
             answered_no=self._answered_no(interpreted),
+            case=_case(request),
         )
         ranking = self._rank(query)
         posterior = self._reranker.rerank(ranking, evidence)
@@ -215,11 +218,14 @@ class RoundService:
         return [a.hpo_id for a in interpreted if a.effective_answer is AnswerValue.NO]
 
     def _rank(self, query: ModelQuery) -> ModelRanking:
+        # Only what the query carries is passed, so a client that predates a
+        # field keeps working for every request that does not use it.
+        extra: dict[str, Any] = {}
         if query.excluded_hpo_ids:
-            return self._model.rank(
-                query.hpo_ids, top_k=RANKING_TOP_K, excluded_hpo_ids=query.excluded_hpo_ids
-            )
-        return self._model.rank(query.hpo_ids, top_k=RANKING_TOP_K)
+            extra["excluded_hpo_ids"] = query.excluded_hpo_ids
+        if not query.case.is_empty():
+            extra["case"] = query.case
+        return self._model.rank(query.hpo_ids, top_k=RANKING_TOP_K, **extra)
 
     def _call_timeout(self, state: _Round, reserve: float = 0.0) -> float | None:
         """Timeout for the next LLM call, keeping ``reserve`` seconds for later calls.
@@ -395,21 +401,21 @@ class RoundService:
     def _ranks_before_questions(
         self, request: RoundRequest, query: ModelQuery, ranking: ModelRanking, state: _Round
     ) -> dict[str, int] | None:
-        """Each gene's rank for the findings reported before any question.
+        """Each gene's rank for the findings reported before any question, with the same case.
 
         That is this round's ranking unless the model was also sent answers,
         "sí" or "no"; then it takes one more call, made only while the round's budget can
         still absorb the model service's timeout, so the caller's timeout
         keeps holding. ``None`` when that is not possible.
         """
-        reported = tuple(sorted(set(request.present_hpo_ids)))
-        if query.hpo_ids == reported and not query.excluded_hpo_ids:
+        reported = ModelQuery(tuple(sorted(set(request.present_hpo_ids))), case=query.case)
+        if query == reported:
             return _ranks(ranking)
         if state.deadline.remaining() < self._settings.model_service_timeout_s:
             logger.warning("round budget too short to rank the reported findings again")
             return None
         try:
-            return _ranks(self._model.rank(reported, top_k=RANKING_TOP_K))
+            return _ranks(self._rank(reported))
         except (ModelUnavailableError, ModelRequestError, NoKnownHpoIdsError) as exc:
             logger.warning("could not rank the reported findings again (%s)", type(exc).__name__)
             return None
@@ -465,6 +471,12 @@ class RoundService:
 
     def _labeled(self, hpo_ids: Iterable[str]) -> tuple[LabeledTerm, ...]:
         return tuple(LabeledTerm(h, self._label(h)) for h in sorted(hpo_ids))
+
+
+def _case(request: RoundRequest) -> PatientCase:
+    return PatientCase(
+        sex=request.sex, age_years=request.age_years, onset_years=request.onset_years
+    )
 
 
 def _ranks(ranking: ModelRanking) -> dict[str, int]:

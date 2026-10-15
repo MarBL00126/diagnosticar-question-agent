@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 
 class Mode(StrEnum):
@@ -59,6 +59,30 @@ class Evidence:
         return self.present | self.absent | self.unknown
 
 
+Sex = Literal["male", "female"]
+
+
+@dataclass(frozen=True, slots=True)
+class PatientCase:
+    """What the family reported about the patient besides findings.
+
+    The model reads it only when its ft-v1.1 adjustment is on, and then it can
+    only lower genes the case rules out: one limited to the other sex, or one
+    whose earliest known onset is after ``onset_years`` (or ``age_years`` when
+    no onset is given). ``None`` is unknown and adjusts nothing.
+    """
+
+    sex: Sex | None = None
+    age_years: float | None = None
+    onset_years: float | None = None
+
+    def is_empty(self) -> bool:
+        return self.sex is None and self.age_years is None and self.onset_years is None
+
+
+NO_CASE = PatientCase()
+
+
 @dataclass(frozen=True, slots=True)
 class ModelRanking:
     """Output of one call to the diagnostic.ar model (``/rank-genes``).
@@ -72,7 +96,8 @@ class ModelRanking:
     means "not recorded" and is read as "the model saw every present term".
 
     ``rerank`` is the tag of the re-ranker the service applied to the excluded
-    terms of this call (for example ``rr-v1[neg=0.5]``), and ``None`` when it
+    terms of this call (for example ``rr-v1[neg=0.5]``, or ``ft-v1.1-confirmed``
+    while the model's ft-v1.1 adjustment is on), and ``None`` when it
     applied none, including every service that does not know the field.
     """
 
@@ -163,9 +188,16 @@ class ModelRequestError(RuntimeError):
 
 class ModelClient(Protocol):
     def rank(
-        self, hpo_ids: Sequence[str], top_k: int, excluded_hpo_ids: Sequence[str] = ()
+        self,
+        hpo_ids: Sequence[str],
+        top_k: int,
+        excluded_hpo_ids: Sequence[str] = (),
+        *,
+        case: PatientCase = NO_CASE,
     ) -> ModelRanking:
         """Rank genes for ``hpo_ids``, penalising those that annotate ``excluded_hpo_ids``.
+
+        ``case`` lowers the genes the patient's sex or age rules out (see ``PatientCase``).
 
         Raises ``ModelUnavailableError`` or ``ModelRequestError``. Messages
         never carry the terms sent or the service's response body.
