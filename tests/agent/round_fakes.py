@@ -13,6 +13,7 @@ from diagnosticar_preguntas.agent.round import RoundService
 from diagnosticar_preguntas.api.schemas import RoundRequest
 from diagnosticar_preguntas.config import LLMProviderName, Settings
 from diagnosticar_preguntas.domain import (
+    NO_CASE,
     CandidateTerm,
     Evidence,
     GeneScore,
@@ -20,6 +21,7 @@ from diagnosticar_preguntas.domain import (
     Mode,
     ModelRanking,
     ModelUnavailableError,
+    PatientCase,
     Posterior,
 )
 from diagnosticar_preguntas.llm.provider import LLMProvider, LLMRequest
@@ -123,12 +125,19 @@ class FakeModel:
     fail: bool = False
     calls: list[tuple[list[str], int]] = field(default_factory=list)
     excluded: list[list[str]] = field(default_factory=list)
+    cases: list[PatientCase] = field(default_factory=list)
 
     def rank(
-        self, hpo_ids: Sequence[str], top_k: int, excluded_hpo_ids: Sequence[str] = ()
+        self,
+        hpo_ids: Sequence[str],
+        top_k: int,
+        excluded_hpo_ids: Sequence[str] = (),
+        *,
+        case: PatientCase = NO_CASE,
     ) -> ModelRanking:
         self.calls.append((list(hpo_ids), top_k))
         self.excluded.append(list(excluded_hpo_ids))
+        self.cases.append(case)
         if self.fail:
             raise ModelUnavailableError("model service down")
         return replace(self.ranking, query_hpo_ids=tuple(hpo_ids))
