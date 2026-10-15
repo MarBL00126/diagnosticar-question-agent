@@ -1,0 +1,24 @@
+{
+ "commit": "c2e3548e85b620e3994800263949fd296bd4d8f9",
+ "langchain_text_splitters": "1.1.2",
+ "langchain_core": "1.6.5",
+ "documentos": 3883,
+ "caracteres_por_documento": {
+  "mediana": 2176,
+  "max": 3220
+ },
+ "fragmentos": 11359,
+ "documentos_partidos": 3883,
+ "fragmentos_por_documento": {
+  "2": 1359,
+  "3": 1680,
+  "4": 652,
+  "5": 159,
+  "6": 33
+ },
+ "fragmentos_sin_el_nombre_en_el_texto": 3411,
+ "fragmentos_con_fenotipos_sin_el_nombre": 2966,
+ "primeros_fragmentos_sin_fenotipos": 2416,
+ "enfermedades_con_la_lista_de_fenotipos_partida": 577,
+ "contexto_llega_como_repr_de_python": true
+}

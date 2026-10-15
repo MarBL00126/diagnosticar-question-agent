@@ -1,0 +1,14 @@
+{
+ "_comment": "Code defaults before the evaluation (up to commit 46e7daa), for reproducing section 6.2 of docs/EVALUACION.md. The tuned configuration of section 6.1 is eval/configs/tuned_calibrated.json; the current code defaults use the asymmetric answer weighting (section 11.8).",
+ "config": {
+  "strategy": "model_sees_present",
+  "temperature": 3.0,
+  "background": 0.05,
+  "missing_frequency": 0.5,
+  "epsilon": 0.02,
+  "p_unknown": 0.2,
+  "confident_threshold": 0.8,
+  "min_information_gain": 0.01,
+  "answer_weighting": "calibrated"
+ }
+}

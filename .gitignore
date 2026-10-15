@@ -1,23 +1,16 @@
 .env
 .venv/
-venv/
-env/
 __pycache__/
 *.py[cod]
+*.egg-info/
+build/
+dist/
 .pytest_cache/
 .pytest_tmp/
 .mypy_cache/
 .ruff_cache/
-.ipynb_checkpoints/
-*.ipynb
 
-# Chroma/vector-store local artifacts. Rebuild with:
-# python -m genphenai_repreguntas.cli index
-db_repreguntas_demo/
-db_genphenai_medical_docs/
-
-# Local reports/exports
-outputs/
-reports/
+# Knowledge-base inputs and build output. Rebuild with `make kb`.
+/data/
+eval/results/
 *.log
-data/

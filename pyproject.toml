@@ -1,40 +1,62 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "genphenai-repreguntas"
-version = "1.0.0"
-description = "Sistema de repreguntas diagnosticas trazables sobre Orphadata-HPO para Diagnostic.ar."
+name = "diagnosticar-preguntas"
+version = "2.0.0.dev0"
+description = "Agente de preguntas de seguimiento para refinar el ranking de genes de diagnostic.ar"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
+authors = [
+  { name = "Mariano Brizuela" },
+  { name = "Mate", email = "mateoalvarez2012@gmail.com" },
+]
 dependencies = [
-  "fastapi",
-  "uvicorn[standard]",
-  "openai",
-  "langchain",
-  "langchain-core",
-  "langchain-community",
-  "langchain-openai",
-  "langchain-chroma",
-  "langchain-text-splitters",
-  "chromadb",
-  "pydantic",
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.8",
+  "pydantic-settings>=2.4",
+  "httpx>=0.27",
+  "numpy>=2.0",
+  "anthropic>=1.4",
+  "pyjwt[crypto]>=2.9",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "pytest",
+  "pytest>=8.3",
+  "ruff>=0.6",
+  "mypy>=1.11",
 ]
 
 [project.scripts]
-genphenai-repreguntas = "genphenai_repreguntas.cli:main"
-genphenai-repreguntas-api = "genphenai_repreguntas.api:main"
+diagnosticar-preguntas = "diagnosticar_preguntas.api.__main__:main"
+diagnosticar-preguntas-kb = "diagnosticar_preguntas.kb.build:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+diagnosticar_preguntas = ["llm/prompts/*.md"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
-addopts = "-q --basetemp=.pytest_tmp -p no:cacheprovider"
+pythonpath = ["src", "."]
+addopts = "-q -p no:cacheprovider"
+markers = [
+  "live: calls a real LLM or model service; excluded by default (run with -m live)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "eval"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]

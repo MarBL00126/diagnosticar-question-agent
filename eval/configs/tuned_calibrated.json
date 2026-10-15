@@ -1,0 +1,14 @@
+{
+ "_comment": "The configuration chosen on the TUNING split (docs/EVALUACION.md, section 5) and the code defaults until 2026-09-28, for reproducing sections 6.1 and 6.3 to 6.5. The current defaults replace the calibrated answer weighting with the asymmetric one (section 11.8).",
+ "config": {
+  "strategy": "fixed_prior",
+  "temperature": 1.0,
+  "background": 0.1,
+  "missing_frequency": 0.3,
+  "epsilon": 0.02,
+  "p_unknown": 0.2,
+  "confident_threshold": 0.9,
+  "min_information_gain": 0.05,
+  "answer_weighting": "calibrated"
+ }
+}

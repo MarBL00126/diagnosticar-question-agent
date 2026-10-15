@@ -1,0 +1,8235 @@
+{
+ "meta": {
+  "seed": 20260926,
+  "kb_version": "kb1+hpo.2026-02-16",
+  "model_vocabulary_genes": 5229,
+  "kb_genes": 5504,
+  "kb_genes_in_model_vocabulary": 5128,
+  "eligible_diseases": {
+   "OMIM": 4427,
+   "ORPHA": 1571
+  },
+  "rules": {
+   "min_positive_annotations": 8,
+   "single_gene_diseases_only": true,
+   "gene_in_model_vocabulary": true,
+   "one_case_per_gene": true,
+   "present_terms": "3-6, weighted by frequency, missing frequency 0.5",
+   "negated_terms": "one with probability 0.5, unsupported by the disease"
+  }
+ },
+ "cases": [
+  {
+   "case_id": "tuning-omim-000",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:605432",
+   "disease_name": "Radioulnar synostosis with amegakaryocytic thrombocytopenia",
+   "gene": "HOXA11",
+   "present": [
+    "HP:0000407",
+    "HP:0002827",
+    "HP:0002986",
+    "HP:0005548"
+   ],
+   "absent": [
+    "HP:0010920"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-001",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:300912",
+   "disease_name": "Intellectual developmental disorder, X-linked 98",
+   "gene": "NEXMIF",
+   "present": [
+    "HP:0000400",
+    "HP:0001508",
+    "HP:0005484"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-002",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:617392",
+   "disease_name": "Ectodermal dysplasia 13, Hair/tooth type",
+   "gene": "KREMEN1",
+   "present": [
+    "HP:0000494",
+    "HP:0000677",
+    "HP:0002299",
+    "HP:0005280",
+    "HP:0045074"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-003",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:607432",
+   "disease_name": "Lissencephaly 1",
+   "gene": "PAFAH1B1",
+   "present": [
+    "HP:0001249",
+    "HP:0001321",
+    "HP:0002119",
+    "HP:0032409"
+   ],
+   "absent": [
+    "HP:0100784"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-004",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:156500",
+   "disease_name": "Metaphyseal chondrodysplasia, Schmid type",
+   "gene": "COL10A1",
+   "present": [
+    "HP:0002970",
+    "HP:0003508",
+    "HP:0006208"
+   ],
+   "absent": [
+    "HP:0030884"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-005",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:621226",
+   "disease_name": "Spastic ataxia 11, autosomal dominant",
+   "gene": "TUBA4A",
+   "present": [
+    "HP:0001288",
+    "HP:0002075",
+    "HP:0007377",
+    "HP:0011448"
+   ],
+   "absent": [
+    "HP:0034405"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-006",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:615987",
+   "disease_name": "Bardet-Biedl syndrome 10",
+   "gene": "BBS10",
+   "present": [
+    "HP:0000135",
+    "HP:0000556",
+    "HP:0001250",
+    "HP:0001263",
+    "HP:0001513"
+   ],
+   "absent": [
+    "HP:0100635"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-007",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:617113",
+   "disease_name": "Epileptic encephalopathy, early infantile, 43",
+   "gene": "GABRB3",
+   "present": [
+    "HP:0000752",
+    "HP:0002069",
+    "HP:0010819"
+   ],
+   "absent": [
+    "HP:0040186"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-008",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:603546",
+   "disease_name": "Spondyloepimetaphyseal dysplasia with joint laxity, type 2",
+   "gene": "KIF22",
+   "present": [
+    "HP:0001290",
+    "HP:0002808",
+    "HP:0012297",
+    "HP:0100531"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-009",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:609283",
+   "disease_name": "Progressive external ophthalmoplegia with mitochondrial DNA deletions, autosomal dominant 2",
+   "gene": "SLC25A4",
+   "present": [
+    "HP:0000590",
+    "HP:0003200",
+    "HP:0003458",
+    "HP:0003546",
+    "HP:0003689"
+   ],
+   "absent": [
+    "HP:0010284"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-010",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:230400",
+   "disease_name": "Galactosemia",
+   "gene": "GALT",
+   "present": [
+    "HP:0001290",
+    "HP:0001878",
+    "HP:0002069",
+    "HP:0003355",
+    "HP:4000208"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-011",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:617276",
+   "disease_name": "Developmental and epileptic encephalopathy 48",
+   "gene": "AP3B2",
+   "present": [
+    "HP:0000817",
+    "HP:0002509",
+    "HP:0025336"
+   ],
+   "absent": [
+    "HP:0006727"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-012",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:619548",
+   "disease_name": "Usmani-Riazuddin syndrome, autosomal recessive",
+   "gene": "AP1G1",
+   "present": [
+    "HP:0000218",
+    "HP:0000286",
+    "HP:0000750",
+    "HP:0001249",
+    "HP:0001250",
+    "HP:0001274"
+   ],
+   "absent": [
+    "HP:0012405"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-013",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:618731",
+   "disease_name": "Neurodevelopmental disorder with brain anomalies and with or without vertebral or cardiac anomalies",
+   "gene": "DHX37",
+   "present": [
+    "HP:0000316",
+    "HP:0000411",
+    "HP:0001263",
+    "HP:0001357",
+    "HP:0011800"
+   ],
+   "absent": [
+    "HP:0032132"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-014",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:620666",
+   "disease_name": "Spastic ataxia 10, autosomal recessive",
+   "gene": "COQ4",
+   "present": [
+    "HP:0001272",
+    "HP:0001276",
+    "HP:0001320",
+    "HP:0002505",
+    "HP:0011449",
+    "HP:0031993"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-015",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:235730",
+   "disease_name": "Mowat-Wilson syndrome",
+   "gene": "ZEB2",
+   "present": [
+    "HP:0000518",
+    "HP:0000684",
+    "HP:0000687",
+    "HP:0002251",
+    "HP:0002558",
+    "HP:0004322"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-016",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:608643",
+   "disease_name": "Aromatic L-amino acid decarboxylase deficiency",
+   "gene": "DDC",
+   "present": [
+    "HP:0001336",
+    "HP:0002305",
+    "HP:0002374",
+    "HP:0002615"
+   ],
+   "absent": [
+    "HP:0008232"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-017",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:618852",
+   "disease_name": "Autoinflammation with episodic fever and lymphadenopathy",
+   "gene": "RIPK1",
+   "present": [
+    "HP:0000155",
+    "HP:0001954",
+    "HP:0002027",
+    "HP:0002716",
+    "HP:0002923",
+    "HP:0011110"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-018",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:619790",
+   "disease_name": "Oculopharyngodistal myopathy 4",
+   "gene": "RILPL1",
+   "present": [
+    "HP:0000218",
+    "HP:0000651",
+    "HP:0002174",
+    "HP:0002460"
+   ],
+   "absent": [
+    "HP:0025439"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-019",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:184260",
+   "disease_name": "Osteochondrodysplasia",
+   "gene": "TRIP11",
+   "present": [
+    "HP:0000275",
+    "HP:0001156",
+    "HP:0002816",
+    "HP:0003021"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-020",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:619479",
+   "disease_name": "Short-rib thoracic dysplasia 21 without polydactyly",
+   "gene": "KIAA0753",
+   "present": [
+    "HP:0000687",
+    "HP:0000750",
+    "HP:0001252",
+    "HP:0012368"
+   ],
+   "absent": [
+    "HP:0011649"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-021",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:260600",
+   "disease_name": "Leukodystrophy, hypomyelinating, 3",
+   "gene": "AIMP1",
+   "present": [
+    "HP:0000280",
+    "HP:0001622",
+    "HP:0008936",
+    "HP:0030211"
+   ],
+   "absent": [
+    "HP:0007271"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-022",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:604116",
+   "disease_name": "Cone-rod dystrophy 3",
+   "gene": "ABCA4",
+   "present": [
+    "HP:0000548",
+    "HP:0000551",
+    "HP:0007843",
+    "HP:0007994",
+    "HP:0011504"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-023",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:607371",
+   "disease_name": "Dystonia, juvenile-onset",
+   "gene": "ACTB",
+   "present": [
+    "HP:0000175",
+    "HP:0000204",
+    "HP:0000348",
+    "HP:0000407",
+    "HP:0002571"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-024",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:619083",
+   "disease_name": "Delpire-Mcneill syndrome",
+   "gene": "SLC12A2",
+   "present": [
+    "HP:0001274",
+    "HP:0001344",
+    "HP:0031936"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-025",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:601154",
+   "disease_name": "Cardiomyopathy, dilated, 1E",
+   "gene": "SCN5A",
+   "present": [
+    "HP:0001678",
+    "HP:0001962",
+    "HP:0006673"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-026",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:108600",
+   "disease_name": "Spastic ataxia 1, autosomal dominant",
+   "gene": "VAMP1",
+   "present": [
+    "HP:0000514",
+    "HP:0001258",
+    "HP:0001260",
+    "HP:0002354",
+    "HP:0008969"
+   ],
+   "absent": [
+    "HP:0005376"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-027",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:301076",
+   "disease_name": "Intellectual developmental disorder, X-linked, syndromic, Pilorge type",
+   "gene": "GLRA2",
+   "present": [
+    "HP:0000403",
+    "HP:0000717",
+    "HP:0000732",
+    "HP:0000752",
+    "HP:0002069",
+    "HP:0011003"
+   ],
+   "absent": [
+    "HP:0009058"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-028",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:604757",
+   "disease_name": "Craniosynostosis 2",
+   "gene": "MSX2",
+   "present": [
+    "HP:0000262",
+    "HP:0000601",
+    "HP:0001123",
+    "HP:0001363",
+    "HP:0011069"
+   ],
+   "absent": [
+    "HP:0006596"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-029",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:607326",
+   "disease_name": "Smith-Mccort dysplasia 1",
+   "gene": "DYM",
+   "present": [
+    "HP:0001376",
+    "HP:0002970",
+    "HP:0003521"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-030",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:263800",
+   "disease_name": "Gitelman syndrome",
+   "gene": "SLC12A3",
+   "present": [
+    "HP:0000934",
+    "HP:0001281",
+    "HP:0001962"
+   ],
+   "absent": [
+    "HP:0008028"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-031",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:619595",
+   "disease_name": "Developmental delay, hypotonia, musculoskeletal defects, and behavioral abnormalities",
+   "gene": "SRCAP",
+   "present": [
+    "HP:0000154",
+    "HP:0000486",
+    "HP:0001249",
+    "HP:0002020",
+    "HP:0045025"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-032",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:169400",
+   "disease_name": "Pelger-Huet anomaly",
+   "gene": "LBR",
+   "present": [
+    "HP:0000256",
+    "HP:0001250",
+    "HP:0001508",
+    "HP:0001874",
+    "HP:0005280",
+    "HP:0006895"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-033",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:300243",
+   "disease_name": "Intellectual developmental disorder, X-linked syndromic, Christianson type",
+   "gene": "SLC9A6",
+   "present": [
+    "HP:0000194",
+    "HP:0000252",
+    "HP:0000574",
+    "HP:0001371",
+    "HP:0010864",
+    "HP:0040082"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-034",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:151660",
+   "disease_name": "Lipodystrophy, familial partial, type 2",
+   "gene": "LMNA",
+   "present": [
+    "HP:0000956",
+    "HP:0001513",
+    "HP:0001735",
+    "HP:0001744",
+    "HP:0012645"
+   ],
+   "absent": [
+    "HP:0004365"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-035",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:617020",
+   "disease_name": "Epileptic encephalopathy, early infantile, 38",
+   "gene": "ARV1",
+   "present": [
+    "HP:0001332",
+    "HP:0002033",
+    "HP:0002509",
+    "HP:0008936",
+    "HP:0012736"
+   ],
+   "absent": [
+    "HP:0002814"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-036",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:227810",
+   "disease_name": "Fanconi-Bickel syndrome",
+   "gene": "SLC2A2",
+   "present": [
+    "HP:0001941",
+    "HP:0002024",
+    "HP:0002240",
+    "HP:0003270",
+    "HP:0030948",
+    "HP:0031964"
+   ],
+   "absent": [
+    "HP:0100712"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-037",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:176100",
+   "disease_name": "Porphyria cutanea tarda",
+   "gene": "UROD",
+   "present": [
+    "HP:0000992",
+    "HP:0001030",
+    "HP:0001402",
+    "HP:0005586",
+    "HP:0010473",
+    "HP:0100324"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-038",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:619707",
+   "disease_name": "Agammaglobulinemia 10, autosomal dominant",
+   "gene": "SPI1",
+   "present": [
+    "HP:0002850",
+    "HP:0004315",
+    "HP:0004432",
+    "HP:0011108",
+    "HP:0030252",
+    "HP:0410255"
+   ],
+   "absent": [
+    "HP:0031028"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-039",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:248450",
+   "disease_name": "Manitoba oculotrichoanal syndrome",
+   "gene": "FREM1",
+   "present": [
+    "HP:0000568",
+    "HP:0000579",
+    "HP:0000625",
+    "HP:0009553"
+   ],
+   "absent": [
+    "HP:0002724"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-040",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:309510",
+   "disease_name": "Partington syndrome",
+   "gene": "ARX",
+   "present": [
+    "HP:0000325",
+    "HP:0000750",
+    "HP:0002353"
+   ],
+   "absent": [
+    "HP:0030868"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-041",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:616723",
+   "disease_name": "Spondyloepimetaphyseal dysplasia, Faden-Alkuraya type",
+   "gene": "RSPRY1",
+   "present": [
+    "HP:0001363",
+    "HP:0001377",
+    "HP:0002750",
+    "HP:0003196",
+    "HP:0004322"
+   ],
+   "absent": [
+    "HP:0006070"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-042",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:605670",
+   "disease_name": "Retinal degeneration, late-onset, autosomal dominant",
+   "gene": "C1QTNF5",
+   "present": [
+    "HP:0000572",
+    "HP:0007830",
+    "HP:0011506",
+    "HP:0031531"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-043",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:225250",
+   "disease_name": "Hypothyroidism, congenital, nongoitrous, 5",
+   "gene": "NKX2-5",
+   "present": [
+    "HP:0000821",
+    "HP:0002925",
+    "HP:0005990",
+    "HP:0033078",
+    "HP:0100028"
+   ],
+   "absent": [
+    "HP:0002006"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-044",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:264090",
+   "disease_name": "Wiedemann-Rautenstrauch syndrome",
+   "gene": "POLR3A",
+   "present": [
+    "HP:0001508",
+    "HP:0003269",
+    "HP:0004492",
+    "HP:0030088"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-045",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:184840",
+   "disease_name": "Stickler syndrome, type III",
+   "gene": "COL11A2",
+   "present": [
+    "HP:0000201",
+    "HP:0000463",
+    "HP:0002656",
+    "HP:0002829",
+    "HP:0010580",
+    "HP:0011800"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-046",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:620236",
+   "disease_name": "Cardiomyopathy, familial hypertrophic, 29, with polyglucosan bodies",
+   "gene": "KLHL24",
+   "present": [
+    "HP:0001645",
+    "HP:0001653",
+    "HP:0001962",
+    "HP:0031319",
+    "HP:0034386",
+    "HP:0034532"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-047",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:600858",
+   "disease_name": "Cardiomyopathy, familial hypertrophic, 6",
+   "gene": "PRKAG2",
+   "present": [
+    "HP:0001670",
+    "HP:0001716",
+    "HP:0001962",
+    "HP:0006677"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-048",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:621164",
+   "disease_name": "Polycystic kidney disease 9, susceptibility to",
+   "gene": "IFT140",
+   "present": [
+    "HP:0000023",
+    "HP:0000074",
+    "HP:0001407",
+    "HP:0012624"
+   ],
+   "absent": [
+    "HP:0001734"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-049",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:312600",
+   "disease_name": "Retinitis pigmentosa 2, X-linked",
+   "gene": "RP2",
+   "present": [
+    "HP:0000510",
+    "HP:0000518",
+    "HP:0000580",
+    "HP:0000662",
+    "HP:0001133",
+    "HP:0011003"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-050",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:617162",
+   "disease_name": "Epileptic encephalopathy, early infantile, 46",
+   "gene": "GRIN2D",
+   "present": [
+    "HP:0001763",
+    "HP:0100704",
+    "HP:0200134"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-051",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:257980",
+   "disease_name": "Odontoonychodermal dysplasia",
+   "gene": "WNT10A",
+   "present": [
+    "HP:0000958",
+    "HP:0000972",
+    "HP:0001810",
+    "HP:0010783",
+    "HP:0025092"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-052",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:620331",
+   "disease_name": "Hatipoglu immunodeficiency syndrome",
+   "gene": "DPP9",
+   "present": [
+    "HP:0000494",
+    "HP:0000729",
+    "HP:0002099",
+    "HP:0002286",
+    "HP:0002937"
+   ],
+   "absent": [
+    "HP:0008066"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-053",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:607115",
+   "disease_name": "Cinca syndrome",
+   "gene": "NLRP3",
+   "present": [
+    "HP:0000520",
+    "HP:0001085",
+    "HP:0001287"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-054",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:613376",
+   "disease_name": "Neuronopathy, distal hereditary motor, type IIC",
+   "gene": "HSPB3",
+   "present": [
+    "HP:0003388",
+    "HP:0003438",
+    "HP:0003445",
+    "HP:0008959",
+    "HP:0009053"
+   ],
+   "absent": [
+    "HP:0002362"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-055",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:158350",
+   "disease_name": "Cowden syndrome 1",
+   "gene": "PTEN",
+   "present": [
+    "HP:0000138",
+    "HP:0000545",
+    "HP:0000821",
+    "HP:0000853",
+    "HP:0002858"
+   ],
+   "absent": [
+    "HP:0011665"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-056",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:239500",
+   "disease_name": "Hyperprolinemia, type I",
+   "gene": "PRODH",
+   "present": [
+    "HP:0001250",
+    "HP:0003108",
+    "HP:0008358"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-057",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:610356",
+   "disease_name": "Retinal cone dystrophy 3B",
+   "gene": "KCNV2",
+   "present": [
+    "HP:0000548",
+    "HP:0000575",
+    "HP:0000613",
+    "HP:0007663"
+   ],
+   "absent": [
+    "HP:0004332"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-058",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:610199",
+   "disease_name": "Diabetes mellitus, neonatal, with congenital hypothyroidism",
+   "gene": "GLIS3",
+   "present": [
+    "HP:0000343",
+    "HP:0001396",
+    "HP:0002719",
+    "HP:0002944",
+    "HP:0007906",
+    "HP:0031507"
+   ],
+   "absent": [
+    "HP:0008208"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-059",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:233600",
+   "disease_name": "Immunodeficiency 59 and hypoglycemia",
+   "gene": "HYOU1",
+   "present": [
+    "HP:0002240",
+    "HP:0002783",
+    "HP:0004322"
+   ],
+   "absent": [
+    "HP:0045040"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-060",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:618093",
+   "disease_name": "Spinocerebellar ataxia 48",
+   "gene": "STUB1",
+   "present": [
+    "HP:0000716",
+    "HP:0001251",
+    "HP:0001260",
+    "HP:0001268",
+    "HP:0001300",
+    "HP:0004326"
+   ],
+   "absent": [
+    "HP:0100380"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-061",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:619112",
+   "disease_name": "Neuropathy, distal hereditary motor, type VC",
+   "gene": "BSCL2",
+   "present": [
+    "HP:0002359",
+    "HP:0009053",
+    "HP:0033383"
+   ],
+   "absent": [
+    "HP:0003546"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-062",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:301094",
+   "disease_name": "Neurodevelopmental disorder with gait disturbance, dysmorphic facies and behavioral abnormalities, X-linked",
+   "gene": "TCEAL1",
+   "present": [
+    "HP:0000486",
+    "HP:0000733",
+    "HP:0000750",
+    "HP:0001288",
+    "HP:0012450"
+   ],
+   "absent": [
+    "HP:0008242"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-063",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:620370",
+   "disease_name": "RECON progeroid syndrome",
+   "gene": "RECQL",
+   "present": [
+    "HP:0000678",
+    "HP:0001097",
+    "HP:0004322",
+    "HP:0005328"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-064",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:615356",
+   "disease_name": "Muscular dystrophy, limb-girdle, autosomal recessive 18",
+   "gene": "TRAPPC11",
+   "present": [
+    "HP:0001250",
+    "HP:0002059",
+    "HP:0002650",
+    "HP:0003307",
+    "HP:0011968"
+   ],
+   "absent": [
+    "HP:0009463"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-065",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:619057",
+   "disease_name": "Combined oxidative phosphorylation deficiency 51",
+   "gene": "PTCD3",
+   "present": [
+    "HP:0000365",
+    "HP:0001336",
+    "HP:0001511",
+    "HP:0003510",
+    "HP:0011923",
+    "HP:0012692"
+   ],
+   "absent": [
+    "HP:0012043"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-066",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:263210",
+   "disease_name": "Gillessen-Kaesbach-Nishimura syndrome",
+   "gene": "ALG9",
+   "present": [
+    "HP:0000113",
+    "HP:0000347",
+    "HP:0000474",
+    "HP:0001562",
+    "HP:0001627",
+    "HP:0003375"
+   ],
+   "absent": [
+    "HP:0034295"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-067",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:191800",
+   "disease_name": "Bladder dysfunction, autonomic, with impaired pupillary reflex and secondary CAKUT",
+   "gene": "CHRNA3",
+   "present": [
+    "HP:0000010",
+    "HP:0000011",
+    "HP:0001278",
+    "HP:0012624",
+    "HP:0030211"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-068",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:613195",
+   "disease_name": "Weill-Marchesani syndrome 4",
+   "gene": "ADAMTS17",
+   "present": [
+    "HP:0000594",
+    "HP:0004322",
+    "HP:0007906",
+    "HP:0011003",
+    "HP:0011484"
+   ],
+   "absent": [
+    "HP:0031528"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-069",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:278730",
+   "disease_name": "Xeroderma pigmentosum, complementation group D",
+   "gene": "ERCC2",
+   "present": [
+    "HP:0000491",
+    "HP:0001029",
+    "HP:0001257",
+    "HP:0001265",
+    "HP:0003079",
+    "HP:0011496"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-070",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:618870",
+   "disease_name": "Skeletal dysplasia, mild, with joint laxity and advanced bone age",
+   "gene": "CSGALNACT1",
+   "present": [
+    "HP:0001377",
+    "HP:0003417",
+    "HP:0005180"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-071",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:301025",
+   "disease_name": "Paganini-Miozzo syndrome",
+   "gene": "HS6ST2",
+   "present": [
+    "HP:0000233",
+    "HP:0000303",
+    "HP:0001263",
+    "HP:0011003",
+    "HP:0011968",
+    "HP:0031936"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-072",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:617082",
+   "disease_name": "Congenital disorder of glycosylation, type IAA",
+   "gene": "NUS1",
+   "present": [
+    "HP:0000365",
+    "HP:0001263",
+    "HP:0007024",
+    "HP:0100704"
+   ],
+   "absent": [
+    "HP:0012583"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-073",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:186500",
+   "disease_name": "Multiple synostoses syndrome 1",
+   "gene": "NOG",
+   "present": [
+    "HP:0000275",
+    "HP:0003083",
+    "HP:0004691",
+    "HP:0009881"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-074",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:614558",
+   "disease_name": "Epileptic encephalopathy, early infantile, 13",
+   "gene": "SCN8A",
+   "present": [
+    "HP:0000722",
+    "HP:0000729",
+    "HP:0001270",
+    "HP:0002121",
+    "HP:0020221"
+   ],
+   "absent": [
+    "HP:6000937"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-075",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:615330",
+   "disease_name": "Multiple mitochondrial dysfunctions syndrome 3",
+   "gene": "IBA57",
+   "present": [
+    "HP:0000278",
+    "HP:0002079",
+    "HP:0011923",
+    "HP:0011968"
+   ],
+   "absent": [
+    "HP:0008069"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-076",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:610313",
+   "disease_name": "Cold-Induced sweating syndrome 2",
+   "gene": "CLCF1",
+   "present": [
+    "HP:0001377",
+    "HP:0002938",
+    "HP:0011968",
+    "HP:0025278",
+    "HP:0030084"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-077",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:160900",
+   "disease_name": "Myotonic dystrophy 1",
+   "gene": "DMPK",
+   "present": [
+    "HP:0000029",
+    "HP:0001262",
+    "HP:0002059",
+    "HP:0008770",
+    "HP:0010864"
+   ],
+   "absent": [
+    "HP:0003049"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-078",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:616335",
+   "disease_name": "Microcephaly and chorioretinopathy, autosomal recessive, 3",
+   "gene": "TUBGCP4",
+   "present": [
+    "HP:0000505",
+    "HP:0000639",
+    "HP:0001263",
+    "HP:0007731"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-079",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:613573",
+   "disease_name": "Ectodermal dysplasia-syndactyly syndrome 1",
+   "gene": "NECTIN4",
+   "present": [
+    "HP:0000653",
+    "HP:0003777",
+    "HP:0005709",
+    "HP:0010709"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-080",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:105600",
+   "disease_name": "Anemia, dyserythropoietic congenital, type III",
+   "gene": "KIF23",
+   "present": [
+    "HP:0000952",
+    "HP:0001972",
+    "HP:0004810",
+    "HP:0012543"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-081",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:305620",
+   "disease_name": "Frontometaphyseal dysplasia",
+   "gene": "FLNA",
+   "present": [
+    "HP:0000365",
+    "HP:0001166",
+    "HP:0001220",
+    "HP:0001239",
+    "HP:0001634",
+    "HP:0002673"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-082",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:618505",
+   "disease_name": "Stolerman neurodevelopmental syndrome",
+   "gene": "KDM6B",
+   "present": [
+    "HP:0000162",
+    "HP:0000545",
+    "HP:0002090",
+    "HP:0012412"
+   ],
+   "absent": [
+    "HP:0040047"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-083",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:607903",
+   "disease_name": "Hypotrichosis 6",
+   "gene": "DSG4",
+   "present": [
+    "HP:0000989",
+    "HP:0002299",
+    "HP:0003777"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-084",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:608907",
+   "disease_name": "Alzheimer disease 9, susceptibility to",
+   "gene": "ABCA7",
+   "present": [
+    "HP:0000716",
+    "HP:0000734",
+    "HP:0100256"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-085",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:213300",
+   "disease_name": "Joubert syndrome 1",
+   "gene": "INPP5E",
+   "present": [
+    "HP:0000718",
+    "HP:0001320",
+    "HP:0002421",
+    "HP:0002871",
+    "HP:0007772"
+   ],
+   "absent": [
+    "HP:0006882"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-086",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:618653",
+   "disease_name": "Intellectual developmental disorder with impaired language and dysmorphic facies",
+   "gene": "DDX6",
+   "present": [
+    "HP:0002007",
+    "HP:0002558",
+    "HP:0030148",
+    "HP:0100694"
+   ],
+   "absent": [
+    "HP:0032497"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-087",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:280000",
+   "disease_name": "CHIME syndrome",
+   "gene": "PIGL",
+   "present": [
+    "HP:0000034",
+    "HP:0001833",
+    "HP:0003155"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-088",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:183900",
+   "disease_name": "Spondyloepiphyseal dysplasia congenita",
+   "gene": "COL2A1",
+   "present": [
+    "HP:0002650",
+    "HP:0002829",
+    "HP:0003071",
+    "HP:0008800",
+    "HP:0008857"
+   ],
+   "absent": [
+    "HP:0030182"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-089",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:277950",
+   "disease_name": "Winchester syndrome",
+   "gene": "MMP14",
+   "present": [
+    "HP:0000212",
+    "HP:0001495",
+    "HP:0002808",
+    "HP:0003040",
+    "HP:0006234",
+    "HP:0040160"
+   ],
+   "absent": [
+    "HP:0011356"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-090",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:613810",
+   "disease_name": "Retinitis pigmentosa 43",
+   "gene": "PDE6A",
+   "present": [
+    "HP:0000505",
+    "HP:0000543",
+    "HP:0000662",
+    "HP:0007843"
+   ],
+   "absent": [
+    "HP:0012905"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-091",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:614815",
+   "disease_name": "Joubert syndrome 18",
+   "gene": "TCTN3",
+   "present": [
+    "HP:0001382",
+    "HP:0002139",
+    "HP:0100259"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-092",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:601775",
+   "disease_name": "Megaloblastic anemia, folate-responsive",
+   "gene": "SLC19A1",
+   "present": [
+    "HP:0002160",
+    "HP:0002904",
+    "HP:0004802",
+    "HP:0004821",
+    "HP:0031688"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-093",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:618590",
+   "disease_name": "Neurodevelopmental disorder with brain anomalies, seizures, and scoliosis",
+   "gene": "PIGU",
+   "present": [
+    "HP:0000272",
+    "HP:0000276",
+    "HP:0000319",
+    "HP:0000348",
+    "HP:0011471"
+   ],
+   "absent": [
+    "HP:0005092"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-094",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:226750",
+   "disease_name": "Kohlschutter-Tonz syndrome",
+   "gene": "ROGDI",
+   "present": [
+    "HP:0001251",
+    "HP:0002059",
+    "HP:0002069",
+    "HP:0002521"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-095",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:613676",
+   "disease_name": "Seckel syndrome 4",
+   "gene": "CPAP",
+   "present": [
+    "HP:0000278",
+    "HP:0000348",
+    "HP:0000369",
+    "HP:0000430",
+    "HP:0001525",
+    "HP:0010455"
+   ],
+   "absent": [
+    "HP:0100517"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-096",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:618010",
+   "disease_name": "Glycosylphosphatidylinositol biosynthesis defect 17",
+   "gene": "PIGH",
+   "present": [
+    "HP:0001250",
+    "HP:0001328",
+    "HP:0002465"
+   ],
+   "absent": [
+    "HP:0000375"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-097",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:620073",
+   "disease_name": "Neurodevelopmental disorder with dysmorphic facies and skeletal and brain abnormalities",
+   "gene": "HNRNPR",
+   "present": [
+    "HP:0001250",
+    "HP:0001274",
+    "HP:0001320",
+    "HP:0008081",
+    "HP:0200134"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-omim-098",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:616994",
+   "disease_name": "Craniofacial dysmorphism, skeletal anomalies, and impaired intellectual development syndrome 2",
+   "gene": "RAB5IF",
+   "present": [
+    "HP:0000369",
+    "HP:0000914",
+    "HP:0001344",
+    "HP:0002389",
+    "HP:0002943"
+   ],
+   "absent": [
+    "HP:0031689"
+   ]
+  },
+  {
+   "case_id": "tuning-omim-099",
+   "split": "tuning",
+   "source": "OMIM",
+   "disease_id": "OMIM:614083",
+   "disease_name": "Fanconi anemia, complementation group L",
+   "gene": "FANCL",
+   "present": [
+    "HP:0000316",
+    "HP:0000957",
+    "HP:0007018",
+    "HP:0009892"
+   ],
+   "absent": [
+    "HP:0100631"
+   ]
+  },
+  {
+   "case_id": "test-omim-100",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617406",
+   "disease_name": "Bardet-Biedl syndrome 21",
+   "gene": "CFAP418",
+   "present": [
+    "HP:0000618",
+    "HP:0000668",
+    "HP:0002910",
+    "HP:0007750",
+    "HP:0025502"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-101",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:620806",
+   "disease_name": "Developmental and epileptic encephalopathy 116",
+   "gene": "GLUL",
+   "present": [
+    "HP:0012736",
+    "HP:0032794",
+    "HP:0200134",
+    "HP:0500147"
+   ],
+   "absent": [
+    "HP:0008430"
+   ]
+  },
+  {
+   "case_id": "test-omim-102",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:615821",
+   "disease_name": "Cardiomyopathy, dilated, with woolly hair, keratoderma, and tooth agenesis",
+   "gene": "DSP",
+   "present": [
+    "HP:0000962",
+    "HP:0001036",
+    "HP:0001279",
+    "HP:0001644",
+    "HP:0004756",
+    "HP:0010783"
+   ],
+   "absent": [
+    "HP:0000237"
+   ]
+  },
+  {
+   "case_id": "test-omim-103",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:614609",
+   "disease_name": "Coffin-Siris syndrome 4",
+   "gene": "SMARCA4",
+   "present": [
+    "HP:0000154",
+    "HP:0000219",
+    "HP:0000343",
+    "HP:0000508",
+    "HP:0005280",
+    "HP:0010803"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-104",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:614898",
+   "disease_name": "Spastic paraplegia 53, autosomal recessive",
+   "gene": "VPS37A",
+   "present": [
+    "HP:0002169",
+    "HP:0002808",
+    "HP:0200049"
+   ],
+   "absent": [
+    "HP:0030513"
+   ]
+  },
+  {
+   "case_id": "test-omim-105",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617564",
+   "disease_name": "Meier-Gorlin syndrome 8",
+   "gene": "MCM5",
+   "present": [
+    "HP:0001511",
+    "HP:0008551",
+    "HP:0008689"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-106",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:609583",
+   "disease_name": "Joubert syndrome 4",
+   "gene": "NPHP1",
+   "present": [
+    "HP:0000083",
+    "HP:0001252",
+    "HP:0001320"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-107",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:236700",
+   "disease_name": "Mckusick-Kaufman syndrome",
+   "gene": "MKKS",
+   "present": [
+    "HP:0000148",
+    "HP:0000969",
+    "HP:0001586",
+    "HP:0030010",
+    "HP:0030680"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-108",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:203450",
+   "disease_name": "Alexander disease",
+   "gene": "GFAP",
+   "present": [
+    "HP:0000238",
+    "HP:0001250",
+    "HP:0001251",
+    "HP:0001260",
+    "HP:0002922",
+    "HP:0100321"
+   ],
+   "absent": [
+    "HP:0007464"
+   ]
+  },
+  {
+   "case_id": "test-omim-109",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:611773",
+   "disease_name": "Angiopathy, hereditary, with nephropathy, aneurysms, and muscle cramps",
+   "gene": "COL4A1",
+   "present": [
+    "HP:0000107",
+    "HP:0000790",
+    "HP:0001136",
+    "HP:0002518"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-110",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:251300",
+   "disease_name": "Galloway-Mowat syndrome 1",
+   "gene": "WDR73",
+   "present": [
+    "HP:0000418",
+    "HP:0000448",
+    "HP:0001792",
+    "HP:0007759",
+    "HP:0009473",
+    "HP:0012385"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-111",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:309530",
+   "disease_name": "Intellectual developmental disorder, X-linked 1",
+   "gene": "IQSEC2",
+   "present": [
+    "HP:0000486",
+    "HP:0002069",
+    "HP:0002376",
+    "HP:0010819"
+   ],
+   "absent": [
+    "HP:0007328"
+   ]
+  },
+  {
+   "case_id": "test-omim-112",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:608099",
+   "disease_name": "Muscular dystrophy, limb-girdle, type 2D",
+   "gene": "SGCA",
+   "present": [
+    "HP:0003325",
+    "HP:0003557",
+    "HP:0003691",
+    "HP:0006785"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-113",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618768",
+   "disease_name": "Spastic paraplegia 81, autosomal recessive",
+   "gene": "SELENOI",
+   "present": [
+    "HP:0000252",
+    "HP:0000750",
+    "HP:0003487",
+    "HP:0011448",
+    "HP:0012841"
+   ],
+   "absent": [
+    "HP:0003508"
+   ]
+  },
+  {
+   "case_id": "test-omim-114",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:119580",
+   "disease_name": "Blepharocheilodontic syndrome 1",
+   "gene": "CDH1",
+   "present": [
+    "HP:0000204",
+    "HP:0000348",
+    "HP:0001792",
+    "HP:0002164"
+   ],
+   "absent": [
+    "HP:0025132"
+   ]
+  },
+  {
+   "case_id": "test-omim-115",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:163800",
+   "disease_name": "Sick sinus syndrome 2",
+   "gene": "HCN4",
+   "present": [
+    "HP:0001279",
+    "HP:0001688",
+    "HP:0011704",
+    "HP:0031677"
+   ],
+   "absent": [
+    "HP:0007117"
+   ]
+  },
+  {
+   "case_id": "test-omim-116",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618709",
+   "disease_name": "Neurodevelopmental disorder with nonspecific brain abnormalities and with or without seizures",
+   "gene": "DLL1",
+   "present": [
+    "HP:0001249",
+    "HP:0001250",
+    "HP:0001252",
+    "HP:0001263",
+    "HP:0003468",
+    "HP:0012443"
+   ],
+   "absent": [
+    "HP:0011682"
+   ]
+  },
+  {
+   "case_id": "test-omim-117",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:620359",
+   "disease_name": "Mitochondrial complex V (ATP synthase) deficiency, nuclear type 7",
+   "gene": "ATP5PO",
+   "present": [
+    "HP:0001250",
+    "HP:0002490",
+    "HP:0005484",
+    "HP:0012444"
+   ],
+   "absent": [
+    "HP:0010313"
+   ]
+  },
+  {
+   "case_id": "test-omim-118",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:264700",
+   "disease_name": "Vitamin D hydroxylation-deficient rickets, type 1A",
+   "gene": "CYP27B1",
+   "present": [
+    "HP:0001324",
+    "HP:0002752",
+    "HP:0002982"
+   ],
+   "absent": [
+    "HP:0004273"
+   ]
+  },
+  {
+   "case_id": "test-omim-119",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:614817",
+   "disease_name": "Interstitial nephritis, karyomegalic",
+   "gene": "FAN1",
+   "present": [
+    "HP:0002910",
+    "HP:0003138",
+    "HP:0003259",
+    "HP:0032948",
+    "HP:0041050"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-120",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:122000",
+   "disease_name": "Corneal dystrophy, posterior polymorphous, 1",
+   "gene": "OVOL2",
+   "present": [
+    "HP:0000501",
+    "HP:0007957",
+    "HP:0009926",
+    "HP:0011488",
+    "HP:0025358"
+   ],
+   "absent": [
+    "HP:0004415"
+   ]
+  },
+  {
+   "case_id": "test-omim-121",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:135500",
+   "disease_name": "Zimmermann-Laband syndrome 1",
+   "gene": "KCNH1",
+   "present": [
+    "HP:0000303",
+    "HP:0000545",
+    "HP:0000684",
+    "HP:0001252",
+    "HP:0010864"
+   ],
+   "absent": [
+    "HP:0005613"
+   ]
+  },
+  {
+   "case_id": "test-omim-122",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:620379",
+   "disease_name": "Spastic paraplegia 89, autosomal recessive",
+   "gene": "AMFR",
+   "present": [
+    "HP:0001250",
+    "HP:0001256",
+    "HP:0001258",
+    "HP:0001270",
+    "HP:0002395",
+    "HP:0033725"
+   ],
+   "absent": [
+    "HP:0007937"
+   ]
+  },
+  {
+   "case_id": "test-omim-123",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:613435",
+   "disease_name": "Amyotrophic lateral sclerosis 12 with or without frontotemporal dementia",
+   "gene": "OPTN",
+   "present": [
+    "HP:0001260",
+    "HP:0001308",
+    "HP:0002505",
+    "HP:0007354",
+    "HP:0030007"
+   ],
+   "absent": [
+    "HP:0009815"
+   ]
+  },
+  {
+   "case_id": "test-omim-124",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619027",
+   "disease_name": "Spastic paraplegia 83, autosomal recessive",
+   "gene": "HPDL",
+   "present": [
+    "HP:0001258",
+    "HP:0002317",
+    "HP:0003326",
+    "HP:0003487"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-125",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619188",
+   "disease_name": "Intellectual developmental disorder, autosomal dominant 64",
+   "gene": "ZNF292",
+   "present": [
+    "HP:0000316",
+    "HP:0001510",
+    "HP:0004209"
+   ],
+   "absent": [
+    "HP:0032786"
+   ]
+  },
+  {
+   "case_id": "test-omim-126",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:300322",
+   "disease_name": "Lesch-Nyhan syndrome",
+   "gene": "HPRT1",
+   "present": [
+    "HP:0000121",
+    "HP:0001249",
+    "HP:0002015",
+    "HP:0100716"
+   ],
+   "absent": [
+    "HP:0100334"
+   ]
+  },
+  {
+   "case_id": "test-omim-127",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:613027",
+   "disease_name": "Glycogen storage disease IXc",
+   "gene": "PHKG2",
+   "present": [
+    "HP:0001252",
+    "HP:0002240",
+    "HP:0002910",
+    "HP:0003128",
+    "HP:6000333",
+    "HP:6000832"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-128",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618480",
+   "disease_name": "Neurodevelopmental disorder with seizures and speech and walking impairment",
+   "gene": "DHPS",
+   "present": [
+    "HP:0000219",
+    "HP:0000369",
+    "HP:0001250",
+    "HP:0001263",
+    "HP:0010880",
+    "HP:0011856"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-129",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:610828",
+   "disease_name": "Holoprosencephaly 7",
+   "gene": "PTCH1",
+   "present": [
+    "HP:0000161",
+    "HP:0001263",
+    "HP:0100336"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-130",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619503",
+   "disease_name": "Neurodevelopmental disorder with hypotonia and dysmorphic facies",
+   "gene": "GNB2",
+   "present": [
+    "HP:0000592",
+    "HP:0002353",
+    "HP:0006349",
+    "HP:0006659"
+   ],
+   "absent": [
+    "HP:0008722"
+   ]
+  },
+  {
+   "case_id": "test-omim-131",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:614830",
+   "disease_name": "Muscular dystrophy-dystroglycanopathy (congenital with brain and eye anomalies), type A, 8",
+   "gene": "POMGNT2",
+   "present": [
+    "HP:0001252",
+    "HP:0001321",
+    "HP:0007260"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-132",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:614699",
+   "disease_name": "Immunodeficiency, common variable, 7",
+   "gene": "CR2",
+   "present": [
+    "HP:0001744",
+    "HP:0001945",
+    "HP:0002720",
+    "HP:0003326"
+   ],
+   "absent": [
+    "HP:0010826"
+   ]
+  },
+  {
+   "case_id": "test-omim-133",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617425",
+   "disease_name": "Immunoskeletal dysplasia with neurodevelopmental abnormalitie",
+   "gene": "EXTL3",
+   "present": [
+    "HP:0000960",
+    "HP:0001880",
+    "HP:0006532"
+   ],
+   "absent": [
+    "HP:0001702"
+   ]
+  },
+  {
+   "case_id": "test-omim-134",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:241080",
+   "disease_name": "Woodhouse-Sakati syndrome",
+   "gene": "DCAF17",
+   "present": [
+    "HP:0000044",
+    "HP:0000786",
+    "HP:0040171"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-135",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:300842",
+   "disease_name": "Mcleod syndrome",
+   "gene": "XK",
+   "present": [
+    "HP:0001927",
+    "HP:0012075",
+    "HP:0020181",
+    "HP:0025435"
+   ],
+   "absent": [
+    "HP:0000778"
+   ]
+  },
+  {
+   "case_id": "test-omim-136",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618727",
+   "disease_name": "Ectodermal dysplasia with facial dysmorphism and acral, ocular, and brain anomalies, somatic mosaic",
+   "gene": "RHOA",
+   "present": [
+    "HP:0000324",
+    "HP:0000431",
+    "HP:0000691",
+    "HP:0006297",
+    "HP:0007663"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-137",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618089",
+   "disease_name": "Intellectual developmental disorder with dysmorphic facies and behavioral abnormalities",
+   "gene": "FBXO11",
+   "present": [
+    "HP:0000486",
+    "HP:0000736",
+    "HP:0000750",
+    "HP:0005617",
+    "HP:0008551"
+   ],
+   "absent": [
+    "HP:0003462"
+   ]
+  },
+  {
+   "case_id": "test-omim-138",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617389",
+   "disease_name": "Epileptic encephalopathy, early infantile, 53",
+   "gene": "SYNJ1",
+   "present": [
+    "HP:0001252",
+    "HP:0001263",
+    "HP:0003236",
+    "HP:0032794"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-139",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:301058",
+   "disease_name": "Developmental and epileptic encephalopathy 90",
+   "gene": "FGF13",
+   "present": [
+    "HP:0002521",
+    "HP:0007359",
+    "HP:0011448"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-140",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:229300",
+   "disease_name": "Friedreich ataxia 1",
+   "gene": "FXN",
+   "present": [
+    "HP:0000505",
+    "HP:0001626",
+    "HP:0001761"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-141",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617008",
+   "disease_name": "Cerebral palsy, spastic quadriplegic, 3",
+   "gene": "ADD3",
+   "present": [
+    "HP:0000252",
+    "HP:0000486",
+    "HP:0000750",
+    "HP:0001250",
+    "HP:0001263",
+    "HP:0001264"
+   ],
+   "absent": [
+    "HP:0000540"
+   ]
+  },
+  {
+   "case_id": "test-omim-142",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:130000",
+   "disease_name": "Ehlers-danlos syndrome, type I",
+   "gene": "COL5A1",
+   "present": [
+    "HP:0000974",
+    "HP:0000977",
+    "HP:0001030",
+    "HP:0002783",
+    "HP:0008947"
+   ],
+   "absent": [
+    "HP:0034609"
+   ]
+  },
+  {
+   "case_id": "test-omim-143",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618354",
+   "disease_name": "Neurodevelopmental disorder and language delay with or without structural brain abnormalities",
+   "gene": "PPP2CA",
+   "present": [
+    "HP:0000505",
+    "HP:0002119",
+    "HP:0007018",
+    "HP:0011968"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-144",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:615065",
+   "disease_name": "Arthrogryposis, distal, type 5D",
+   "gene": "ECEL1",
+   "present": [
+    "HP:0000194",
+    "HP:0000470",
+    "HP:0012473"
+   ],
+   "absent": [
+    "HP:0003639"
+   ]
+  },
+  {
+   "case_id": "test-omim-145",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:620851",
+   "disease_name": "ReNU syndrome",
+   "gene": "RNU4-2",
+   "present": [
+    "HP:0000286",
+    "HP:0001508",
+    "HP:0002540",
+    "HP:0033454",
+    "HP:0034323"
+   ],
+   "absent": [
+    "HP:0012706"
+   ]
+  },
+  {
+   "case_id": "test-omim-146",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:616896",
+   "disease_name": "Mitochondrial DNA depletion syndrome 14 (encephalocardiomyopathic type)",
+   "gene": "OPA1",
+   "present": [
+    "HP:0000546",
+    "HP:0000648",
+    "HP:0002151",
+    "HP:0002179",
+    "HP:0009141",
+    "HP:0012736"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-147",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618167",
+   "disease_name": "Osteochondrodysplasia, brachydactyly, and overlapping malformed digits",
+   "gene": "CHST11",
+   "present": [
+    "HP:0001156",
+    "HP:0002829",
+    "HP:0002999",
+    "HP:0009778",
+    "HP:0010055",
+    "HP:0010557"
+   ],
+   "absent": [
+    "HP:0004784"
+   ]
+  },
+  {
+   "case_id": "test-omim-148",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:606595",
+   "disease_name": "Charcot-Marie-Tooth disease, axonal, type 2F",
+   "gene": "HSPB1",
+   "present": [
+    "HP:0002460",
+    "HP:0002522",
+    "HP:0003431",
+    "HP:0007267",
+    "HP:0012391"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-149",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:118220",
+   "disease_name": "Charcot-Marie-Tooth disease, demyelinating, type 1A",
+   "gene": "PMP22",
+   "present": [
+    "HP:0001171",
+    "HP:0003382",
+    "HP:0003481",
+    "HP:0004336"
+   ],
+   "absent": [
+    "HP:0034273"
+   ]
+  },
+  {
+   "case_id": "test-omim-150",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:108120",
+   "disease_name": "Arthrogryposis, distal, type 1A",
+   "gene": "TPM2",
+   "present": [
+    "HP:0000508",
+    "HP:0001374",
+    "HP:0010557"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-151",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:260540",
+   "disease_name": "Supranuclear palsy, progressive atypical",
+   "gene": "MAPT",
+   "present": [
+    "HP:0000597",
+    "HP:0000726",
+    "HP:0001337",
+    "HP:0002062"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-152",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:152950",
+   "disease_name": "Microcephaly with or without chorioretinopathy, lymphedema, or impaired intellectual development",
+   "gene": "KIF11",
+   "present": [
+    "HP:0000482",
+    "HP:0001256",
+    "HP:0007663"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-153",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:610006",
+   "disease_name": "2-Methylbutyryl-Coa dehydrogenase deficiency",
+   "gene": "ACADSB",
+   "present": [
+    "HP:0001252",
+    "HP:0001270",
+    "HP:0005949",
+    "HP:0033220"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-154",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:615009",
+   "disease_name": "Schuurs-Hoeijmakers syndrome",
+   "gene": "PACS1",
+   "present": [
+    "HP:0000369",
+    "HP:0000699",
+    "HP:0006610",
+    "HP:0011968"
+   ],
+   "absent": [
+    "HP:0008407"
+   ]
+  },
+  {
+   "case_id": "test-omim-155",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:216360",
+   "disease_name": "Coach syndrome 1",
+   "gene": "TMEM67",
+   "present": [
+    "HP:0000508",
+    "HP:0000657",
+    "HP:0001395"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-156",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617967",
+   "disease_name": "Hydrocephalus, congenital, 3, with brain anomalies",
+   "gene": "WDR81",
+   "present": [
+    "HP:0000238",
+    "HP:0001561",
+    "HP:0012444",
+    "HP:0012642"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-157",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:614067",
+   "disease_name": "Spastic paraplegia 52, autosomal recessive",
+   "gene": "AP4S1",
+   "present": [
+    "HP:0004322",
+    "HP:0010864",
+    "HP:0100962"
+   ],
+   "absent": [
+    "HP:0004979"
+   ]
+  },
+  {
+   "case_id": "test-omim-158",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:162350",
+   "disease_name": "Ceroid lipofuscinosis, neuronal, 4B, autosomal dominant",
+   "gene": "DNAJC5",
+   "present": [
+    "HP:0001251",
+    "HP:0001336",
+    "HP:0003657"
+   ],
+   "absent": [
+    "HP:0025437"
+   ]
+  },
+  {
+   "case_id": "test-omim-159",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:311510",
+   "disease_name": "Waisman syndrome",
+   "gene": "RAB39B",
+   "present": [
+    "HP:0000256",
+    "HP:0001260",
+    "HP:0001355",
+    "HP:0002063",
+    "HP:0002172",
+    "HP:0100660"
+   ],
+   "absent": [
+    "HP:0005446"
+   ]
+  },
+  {
+   "case_id": "test-omim-160",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:210200",
+   "disease_name": "3-Methylcrotonyl-CoA carboxylase 1 deficiency",
+   "gene": "MCCC1",
+   "present": [
+    "HP:0001249",
+    "HP:0001263",
+    "HP:0001347",
+    "HP:0002104",
+    "HP:0008872"
+   ],
+   "absent": [
+    "HP:0025681"
+   ]
+  },
+  {
+   "case_id": "test-omim-161",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:614816",
+   "disease_name": "Loeys-Dietz syndrome 4",
+   "gene": "TGFB2",
+   "present": [
+    "HP:0000193",
+    "HP:0000977",
+    "HP:0002705",
+    "HP:0004970",
+    "HP:0006687",
+    "HP:0012532"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-162",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618524",
+   "disease_name": "Myopathy, congenital, with tremor",
+   "gene": "MYBPC1",
+   "present": [
+    "HP:0002174",
+    "HP:0002650",
+    "HP:0003306",
+    "HP:0003327",
+    "HP:0005272",
+    "HP:0031947"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-163",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619063",
+   "disease_name": "Mitochondrial complex IV deficiency, nuclear type 19",
+   "gene": "PET117",
+   "present": [
+    "HP:0002067",
+    "HP:0002376",
+    "HP:0003487",
+    "HP:0008347"
+   ],
+   "absent": [
+    "HP:0010877"
+   ]
+  },
+  {
+   "case_id": "test-omim-164",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619133",
+   "disease_name": "Amyotrophic lateral sclerosis 26 with or without frontotemporal dementia",
+   "gene": "TIA1",
+   "present": [
+    "HP:0002145",
+    "HP:0003690",
+    "HP:0007354",
+    "HP:0100315"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-165",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:620351",
+   "disease_name": "Congenital myopathy 22A, classic",
+   "gene": "SCN4A",
+   "present": [
+    "HP:0000218",
+    "HP:0000544",
+    "HP:0001270",
+    "HP:0002343"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-166",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617787",
+   "disease_name": "Intellectual developmental disorder, autosomal dominant 50, with behavioral abnormalities",
+   "gene": "NAA15",
+   "present": [
+    "HP:0000750",
+    "HP:0001249",
+    "HP:0001263",
+    "HP:0001270",
+    "HP:0007018",
+    "HP:0011968"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-167",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:612923",
+   "disease_name": "Hemolytic uremic syndrome, atypical, susceptibility to, 3",
+   "gene": "CFI",
+   "present": [
+    "HP:0000093",
+    "HP:0000790",
+    "HP:0001919",
+    "HP:0001937",
+    "HP:0003259",
+    "HP:0005421"
+   ],
+   "absent": [
+    "HP:0001118"
+   ]
+  },
+  {
+   "case_id": "test-omim-168",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:612437",
+   "disease_name": "Epilepsy, progressive myoclonic 1B",
+   "gene": "PRICKLE1",
+   "present": [
+    "HP:0001260",
+    "HP:0001310",
+    "HP:0001337",
+    "HP:0002123",
+    "HP:0003390",
+    "HP:0010819"
+   ],
+   "absent": [
+    "HP:0010821"
+   ]
+  },
+  {
+   "case_id": "test-omim-169",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:609528",
+   "disease_name": "Cerebral dysgenesis, neuropathy, ichthyosis, and palmoplantar keratoderma syndrome",
+   "gene": "SNAP29",
+   "present": [
+    "HP:0000982",
+    "HP:0001271",
+    "HP:0001508",
+    "HP:0002539"
+   ],
+   "absent": [
+    "HP:0034435"
+   ]
+  },
+  {
+   "case_id": "test-omim-170",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618141",
+   "disease_name": "Epileptic encephalopathy, early infantile, 67",
+   "gene": "CUX2",
+   "present": [
+    "HP:0001249",
+    "HP:0002123",
+    "HP:0032792"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-171",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:616311",
+   "disease_name": "Intellectual developmental disorder, autosomal dominant 33",
+   "gene": "DPP6",
+   "present": [
+    "HP:0000252",
+    "HP:0000646",
+    "HP:0001249",
+    "HP:0002750",
+    "HP:0004325"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-172",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:620680",
+   "disease_name": "Lipodystrophy, congenital generalized, type 5",
+   "gene": "PCYT1A",
+   "present": [
+    "HP:0000842",
+    "HP:0000855",
+    "HP:0005978",
+    "HP:0009125"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-173",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:612292",
+   "disease_name": "Birk-Barel syndrome",
+   "gene": "KCNK9",
+   "present": [
+    "HP:0000218",
+    "HP:0000527",
+    "HP:0002553",
+    "HP:0010804"
+   ],
+   "absent": [
+    "HP:0000081"
+   ]
+  },
+  {
+   "case_id": "test-omim-174",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619075",
+   "disease_name": "Neurodevelopmental disorder with alopecia and brain abnormalities",
+   "gene": "ODC1",
+   "present": [
+    "HP:0000378",
+    "HP:0000958",
+    "HP:0001558",
+    "HP:0002061"
+   ],
+   "absent": [
+    "HP:0001952"
+   ]
+  },
+  {
+   "case_id": "test-omim-175",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:615244",
+   "disease_name": "Nephrotic syndrome, type 8",
+   "gene": "ARHGDIA",
+   "present": [
+    "HP:0000407",
+    "HP:0001249",
+    "HP:0001250",
+    "HP:0003073",
+    "HP:0003774",
+    "HP:0007430"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-176",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:215045",
+   "disease_name": "Chondrodysplasia, Blomstrand type",
+   "gene": "PTH1R",
+   "present": [
+    "HP:0001622",
+    "HP:0001789",
+    "HP:0001791",
+    "HP:0003015",
+    "HP:0005151"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-177",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:620757",
+   "disease_name": "Thrombocytopenia 12 with or without myopathy",
+   "gene": "GNE",
+   "present": [
+    "HP:0000421",
+    "HP:0000967",
+    "HP:0001873",
+    "HP:0005513"
+   ],
+   "absent": [
+    "HP:0033052"
+   ]
+  },
+  {
+   "case_id": "test-omim-178",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:610967",
+   "disease_name": "Osteogenesis imperfecta, type V",
+   "gene": "IFITM5",
+   "present": [
+    "HP:0002645",
+    "HP:0002757",
+    "HP:0005084",
+    "HP:0006394"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-179",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617050",
+   "disease_name": "Hermansky-Pudlak syndrome 10",
+   "gene": "AP3D1",
+   "present": [
+    "HP:0000278",
+    "HP:0000369",
+    "HP:0001744",
+    "HP:0002188",
+    "HP:0002205",
+    "HP:0011166"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-180",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619487",
+   "disease_name": "Aicardi-Goutieres syndrome 9",
+   "gene": "RNU7-1",
+   "present": [
+    "HP:0000252",
+    "HP:0000737",
+    "HP:0001332",
+    "HP:0001344",
+    "HP:0001878",
+    "HP:0002514"
+   ],
+   "absent": [
+    "HP:0002435"
+   ]
+  },
+  {
+   "case_id": "test-omim-181",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:614325",
+   "disease_name": "Pitt-Hopkins-Like syndrome 2",
+   "gene": "NRXN1",
+   "present": [
+    "HP:0001252",
+    "HP:0002883",
+    "HP:0011968"
+   ],
+   "absent": [
+    "HP:0008400"
+   ]
+  },
+  {
+   "case_id": "test-omim-182",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:608779",
+   "disease_name": "Congenital disorder of glycosylation, type IIe",
+   "gene": "COG7",
+   "present": [
+    "HP:0001252",
+    "HP:0001265",
+    "HP:0002059",
+    "HP:0002079",
+    "HP:0011682"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-183",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:211900",
+   "disease_name": "Tumoral calcinosis, hyperphosphatemic, familial, 1",
+   "gene": "GALNT3",
+   "present": [
+    "HP:0001102",
+    "HP:0002905",
+    "HP:0003771",
+    "HP:0004934",
+    "HP:0007799"
+   ],
+   "absent": [
+    "HP:0010465"
+   ]
+  },
+  {
+   "case_id": "test-omim-184",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:309590",
+   "disease_name": "Intellectual developmental disorder, X-linked syndromic, Turner type",
+   "gene": "HUWE1",
+   "present": [
+    "HP:0000248",
+    "HP:0000256",
+    "HP:0000414",
+    "HP:0000455",
+    "HP:0000545",
+    "HP:0002059"
+   ],
+   "absent": [
+    "HP:0009881"
+   ]
+  },
+  {
+   "case_id": "test-omim-185",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:301045",
+   "disease_name": "Congenital disorder of glycosylation, type IIr",
+   "gene": "ATP6AP2",
+   "present": [
+    "HP:0000047",
+    "HP:0000369",
+    "HP:0000973",
+    "HP:0002240",
+    "HP:0002910"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-186",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:601162",
+   "disease_name": "Spastic paraplegia 9A, autosomal dominant",
+   "gene": "ALDH18A1",
+   "present": [
+    "HP:0001258",
+    "HP:0001498",
+    "HP:0002495",
+    "HP:0007299"
+   ],
+   "absent": [
+    "HP:0006851"
+   ]
+  },
+  {
+   "case_id": "test-omim-187",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:613493",
+   "disease_name": "Immunodeficiency, common variable, 3",
+   "gene": "CD19",
+   "present": [
+    "HP:0002850",
+    "HP:0030388",
+    "HP:0032139"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-188",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:613762",
+   "disease_name": "46,xy sex reversal 6",
+   "gene": "MAP3K1",
+   "present": [
+    "HP:0000041",
+    "HP:0000047",
+    "HP:0000133",
+    "HP:0001007",
+    "HP:0002215",
+    "HP:0012245"
+   ],
+   "absent": [
+    "HP:0040235"
+   ]
+  },
+  {
+   "case_id": "test-omim-189",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:607932",
+   "disease_name": "Microphthalmia, syndromic 6",
+   "gene": "BMP4",
+   "present": [
+    "HP:0000218",
+    "HP:0000556",
+    "HP:0002120",
+    "HP:0006829",
+    "HP:0007370"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-190",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619995",
+   "disease_name": "Neurodevelopmental disorder with intention tremor, pyramidal signs, dyspraxia, and ocular anomalies",
+   "gene": "SMG9",
+   "present": [
+    "HP:0000750",
+    "HP:0002359",
+    "HP:0006895",
+    "HP:0008081",
+    "HP:0011448"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-191",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:208050",
+   "disease_name": "Arterial tortuosity syndrome",
+   "gene": "SLC2A10",
+   "present": [
+    "HP:0000218",
+    "HP:0000276",
+    "HP:0000444",
+    "HP:0000776",
+    "HP:0001382"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-192",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:177170",
+   "disease_name": "Pseudoachondroplasia",
+   "gene": "COMP",
+   "present": [
+    "HP:0002515",
+    "HP:0008873",
+    "HP:0010049"
+   ],
+   "absent": [
+    "HP:0007807"
+   ]
+  },
+  {
+   "case_id": "test-omim-193",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619751",
+   "disease_name": "Stuve-Wiedemann syndrome 2",
+   "gene": "IL6ST",
+   "present": [
+    "HP:0000964",
+    "HP:0001511",
+    "HP:0001873",
+    "HP:0002092"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-194",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:610829",
+   "disease_name": "Holoprosencephaly 9",
+   "gene": "GLI2",
+   "present": [
+    "HP:0000400",
+    "HP:0000455",
+    "HP:0000508",
+    "HP:0001092",
+    "HP:0006485"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-195",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:219730",
+   "disease_name": "Ventriculomegaly with cystic kidney disease",
+   "gene": "CRB2",
+   "present": [
+    "HP:0000083",
+    "HP:0000238",
+    "HP:0002119",
+    "HP:0004719",
+    "HP:0100259"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-196",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:214700",
+   "disease_name": "Diarrhea 1, secretory chloride, congenital",
+   "gene": "SLC26A3",
+   "present": [
+    "HP:0001507",
+    "HP:0001622",
+    "HP:0005208"
+   ],
+   "absent": [
+    "HP:0001053"
+   ]
+  },
+  {
+   "case_id": "test-omim-197",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617405",
+   "disease_name": "Short-Rib thoracic dysplasia 17 with or without polydactyly",
+   "gene": "DYNLT2B",
+   "present": [
+    "HP:0000773",
+    "HP:0000895",
+    "HP:0001156",
+    "HP:0001162",
+    "HP:0001830",
+    "HP:0034374"
+   ],
+   "absent": [
+    "HP:0008720"
+   ]
+  },
+  {
+   "case_id": "test-omim-198",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:247100",
+   "disease_name": "Urbach-Wiethe disease",
+   "gene": "ECM1",
+   "present": [
+    "HP:0000718",
+    "HP:0002232",
+    "HP:0005671",
+    "HP:0034760"
+   ],
+   "absent": [
+    "HP:0000431"
+   ]
+  },
+  {
+   "case_id": "test-omim-199",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617991",
+   "disease_name": "Developmental delay, intellectual disability, obesity, and dysmorphic features",
+   "gene": "PHIP",
+   "present": [
+    "HP:0000486",
+    "HP:0000574",
+    "HP:0000718",
+    "HP:0001252",
+    "HP:0100710"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-200",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619761",
+   "disease_name": "Cerebellar dysfunction, impaired intellectual development, and hypogonadotropic hypogonadism",
+   "gene": "PRDM13",
+   "present": [
+    "HP:0000028",
+    "HP:0001263",
+    "HP:0001321",
+    "HP:0001511",
+    "HP:0002136"
+   ],
+   "absent": [
+    "HP:0009049"
+   ]
+  },
+  {
+   "case_id": "test-omim-201",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618109",
+   "disease_name": "Intellectual developmental disorder, autosomal recessive 65",
+   "gene": "KDM5B",
+   "present": [
+    "HP:0000321",
+    "HP:0000426",
+    "HP:0000483",
+    "HP:0000508",
+    "HP:0001263",
+    "HP:0002066"
+   ],
+   "absent": [
+    "HP:0005831"
+   ]
+  },
+  {
+   "case_id": "test-omim-202",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:269880",
+   "disease_name": "Short syndrome",
+   "gene": "PIK3R1",
+   "present": [
+    "HP:0000431",
+    "HP:0000501",
+    "HP:0001015"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-203",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:620282",
+   "disease_name": "Immunodeficiency 109 with lymphoproliferation",
+   "gene": "TNFRSF9",
+   "present": [
+    "HP:0002110",
+    "HP:0004315",
+    "HP:0008940",
+    "HP:0011108",
+    "HP:0030252",
+    "HP:0410295"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-204",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619719",
+   "disease_name": "Intellectual disability and myopathy syndrome",
+   "gene": "ABCC9",
+   "present": [
+    "HP:0000739",
+    "HP:0000965",
+    "HP:0002938",
+    "HP:0010535"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-205",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618316",
+   "disease_name": "Intellectual developmental disorder with cardiac defects and dysmorphic facies",
+   "gene": "TMEM94",
+   "present": [
+    "HP:0000307",
+    "HP:0012725",
+    "HP:0031936"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-206",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:608027",
+   "disease_name": "Pontocerebellar hypoplasia, type 3",
+   "gene": "PCLO",
+   "present": [
+    "HP:0000248",
+    "HP:0001263",
+    "HP:0005280",
+    "HP:0008936"
+   ],
+   "absent": [
+    "HP:0008959"
+   ]
+  },
+  {
+   "case_id": "test-omim-207",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:612885",
+   "disease_name": "Premature ovarian failure 10",
+   "gene": "MCM8",
+   "present": [
+    "HP:0000786",
+    "HP:0008232",
+    "HP:0008724"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-208",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:266280",
+   "disease_name": "RAPADILINO syndrome",
+   "gene": "RECQL4",
+   "present": [
+    "HP:0000218",
+    "HP:0000365",
+    "HP:0001373",
+    "HP:0005198",
+    "HP:0006498"
+   ],
+   "absent": [
+    "HP:0001304"
+   ]
+  },
+  {
+   "case_id": "test-omim-209",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:621096",
+   "disease_name": "Immunodeficiency 132B",
+   "gene": "TRAF3",
+   "present": [
+    "HP:0006530",
+    "HP:0032564",
+    "HP:0034839"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-210",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:616507",
+   "disease_name": "Osteogenesis imperfecta, type XVII",
+   "gene": "SPARC",
+   "present": [
+    "HP:0001324",
+    "HP:0002194",
+    "HP:0002751",
+    "HP:0002953",
+    "HP:0004322"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-211",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617830",
+   "disease_name": "Developmental and epileptic encephalopathy 58",
+   "gene": "NTRK2",
+   "present": [
+    "HP:0000733",
+    "HP:0001290",
+    "HP:0002133"
+   ],
+   "absent": [
+    "HP:0007351"
+   ]
+  },
+  {
+   "case_id": "test-omim-212",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617158",
+   "disease_name": "Myopathy, distal, with rimmed vacuoles",
+   "gene": "SQSTM1",
+   "present": [
+    "HP:0003691",
+    "HP:0003805",
+    "HP:0009027",
+    "HP:0020203",
+    "HP:0031237"
+   ],
+   "absent": [
+    "HP:0011389"
+   ]
+  },
+  {
+   "case_id": "test-omim-213",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:254130",
+   "disease_name": "Miyoshi muscular dystrophy 1",
+   "gene": "DYSF",
+   "present": [
+    "HP:0002460",
+    "HP:0003551",
+    "HP:0003693",
+    "HP:0003791",
+    "HP:0009072"
+   ],
+   "absent": [
+    "HP:0030973"
+   ]
+  },
+  {
+   "case_id": "test-omim-214",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:608093",
+   "disease_name": "Congenital disorder of glycosylation, type Ij",
+   "gene": "DPAGT1",
+   "present": [
+    "HP:0000028",
+    "HP:0000518",
+    "HP:0001263",
+    "HP:0001276",
+    "HP:0003075",
+    "HP:0004209"
+   ],
+   "absent": [
+    "HP:0002788"
+   ]
+  },
+  {
+   "case_id": "test-omim-215",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:217085",
+   "disease_name": "Congenital heart defects, hamartomas of tongue, and polysyndactyly",
+   "gene": "WDPCP",
+   "present": [
+    "HP:0001233",
+    "HP:0001680",
+    "HP:0004691",
+    "HP:0005696",
+    "HP:0010055",
+    "HP:0011968"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-216",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:311070",
+   "disease_name": "Charcot-Marie-Tooth disease, X-linked recessive, 5",
+   "gene": "PRPS1",
+   "present": [
+    "HP:0002522",
+    "HP:0003383",
+    "HP:0003693"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-217",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:259600",
+   "disease_name": "Multicentric osteolysis, nodulosis, and arthropathy",
+   "gene": "MMP2",
+   "present": [
+    "HP:0003493",
+    "HP:0006466",
+    "HP:0008078"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-218",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:100100",
+   "disease_name": "Prune belly syndrome",
+   "gene": "CHRM3",
+   "present": [
+    "HP:0000126",
+    "HP:0000217",
+    "HP:0000768",
+    "HP:0001762",
+    "HP:0002023",
+    "HP:0030211"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-219",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:300844",
+   "disease_name": "Intellectual developmental disorder, X-linked 19",
+   "gene": "RPS6KA3",
+   "present": [
+    "HP:0000455",
+    "HP:0001249",
+    "HP:0001252",
+    "HP:0001833",
+    "HP:0011220"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-220",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:301071",
+   "disease_name": "Thrombophilia 13, X-linked, due to factor VIII defect",
+   "gene": "F8",
+   "present": [
+    "HP:0001297",
+    "HP:0001399",
+    "HP:0002204",
+    "HP:0030242",
+    "HP:0040412"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-221",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:620796",
+   "disease_name": "Proteasome-associated autoinflammatory syndrome 6",
+   "gene": "PSMB9",
+   "present": [
+    "HP:0001394",
+    "HP:0001888",
+    "HP:0025435",
+    "HP:0033438",
+    "HP:6000239"
+   ],
+   "absent": [
+    "HP:0008695"
+   ]
+  },
+  {
+   "case_id": "test-omim-222",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:615547",
+   "disease_name": "Schaaf-Yang syndrome",
+   "gene": "MAGEL2",
+   "present": [
+    "HP:0000303",
+    "HP:0000545",
+    "HP:0002591",
+    "HP:0004322"
+   ],
+   "absent": [
+    "HP:0012176"
+   ]
+  },
+  {
+   "case_id": "test-omim-223",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619320",
+   "disease_name": "Intellectual developmental disorder, autosomal dominant 65",
+   "gene": "KDM4B",
+   "present": [
+    "HP:0000341",
+    "HP:0001252",
+    "HP:0001263",
+    "HP:0002194",
+    "HP:0025101"
+   ],
+   "absent": [
+    "HP:0005722"
+   ]
+  },
+  {
+   "case_id": "test-omim-224",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619519",
+   "disease_name": "Charcot-Marie-Tooth disease, axonal, type 2FF",
+   "gene": "CADM3",
+   "present": [
+    "HP:0002650",
+    "HP:0009005",
+    "HP:0009830"
+   ],
+   "absent": [
+    "HP:0032945"
+   ]
+  },
+  {
+   "case_id": "test-omim-225",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619013",
+   "disease_name": "Rajab interstitial lung disease with brain calcifications 2",
+   "gene": "FARSA",
+   "present": [
+    "HP:0001290",
+    "HP:0001433",
+    "HP:0001562",
+    "HP:0040075"
+   ],
+   "absent": [
+    "HP:0012586"
+   ]
+  },
+  {
+   "case_id": "test-omim-226",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618291",
+   "disease_name": "Spinal muscular atrophy, lower extremity-predominant, 2B, autosomal dominant",
+   "gene": "BICD2",
+   "present": [
+    "HP:0001558",
+    "HP:0002119",
+    "HP:0009487"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-227",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:614707",
+   "disease_name": "Brown-Vialetto-Van laere syndrome 2",
+   "gene": "SLC52A2",
+   "present": [
+    "HP:0001251",
+    "HP:0001252",
+    "HP:0001283",
+    "HP:0002751",
+    "HP:0003700"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-228",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617232",
+   "disease_name": "Muscular dystrophy, limb-girdle, autosomal recessive 21",
+   "gene": "POGLUT1",
+   "present": [
+    "HP:0002091",
+    "HP:0002505",
+    "HP:0003202",
+    "HP:0006536",
+    "HP:0008994",
+    "HP:0012548"
+   ],
+   "absent": [
+    "HP:0000581"
+   ]
+  },
+  {
+   "case_id": "test-omim-229",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618859",
+   "disease_name": "Neurodevelopmental disorder with or without autistic features and/or structural brain abnormalities",
+   "gene": "NOVA2",
+   "present": [
+    "HP:0000748",
+    "HP:0001250",
+    "HP:0001270",
+    "HP:0001290",
+    "HP:0011968"
+   ],
+   "absent": [
+    "HP:0012311"
+   ]
+  },
+  {
+   "case_id": "test-omim-230",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618986",
+   "disease_name": "Immunodeficiency 73B with defective neutrophil chemotaxis and lymphopenia",
+   "gene": "RAC2",
+   "present": [
+    "HP:0000403",
+    "HP:0001433",
+    "HP:0001875",
+    "HP:0004315",
+    "HP:0006532"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-231",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:610951",
+   "disease_name": "Ceroid lipofuscinosis, neuronal, 7",
+   "gene": "MFSD8",
+   "present": [
+    "HP:0000488",
+    "HP:0000648",
+    "HP:0001268",
+    "HP:0002059",
+    "HP:0002123",
+    "HP:0002353"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-232",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619339",
+   "disease_name": "Popliteal pterygium syndrome, Bartsocas-Papas type 2",
+   "gene": "CHUK",
+   "present": [
+    "HP:0000191",
+    "HP:0000260",
+    "HP:0000369",
+    "HP:0000568",
+    "HP:0005650"
+   ],
+   "absent": [
+    "HP:0002579"
+   ]
+  },
+  {
+   "case_id": "test-omim-233",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:616069",
+   "disease_name": "Inflammatory skin and bowel disease, neonatal, 2",
+   "gene": "EGFR",
+   "present": [
+    "HP:0000527",
+    "HP:0000822",
+    "HP:0001561",
+    "HP:0001944",
+    "HP:0200034",
+    "HP:0200039"
+   ],
+   "absent": [
+    "HP:0003719"
+   ]
+  },
+  {
+   "case_id": "test-omim-234",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:278720",
+   "disease_name": "Xeroderma pigmentosum, group C",
+   "gene": "XPC",
+   "present": [
+    "HP:0001029",
+    "HP:0001480",
+    "HP:0006739"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-235",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:619964",
+   "disease_name": "Developmental delay, impaired speech, and behavioral abnormalities, with or without seizures",
+   "gene": "ARFGEF1",
+   "present": [
+    "HP:0001344",
+    "HP:0008936",
+    "HP:0032792"
+   ],
+   "absent": [
+    "HP:0010837"
+   ]
+  },
+  {
+   "case_id": "test-omim-236",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:607398",
+   "disease_name": "Glucocorticoid deficiency 2",
+   "gene": "MRAP",
+   "present": [
+    "HP:0001336",
+    "HP:0002571",
+    "HP:0011153",
+    "HP:0011344",
+    "HP:0012444",
+    "HP:0032794"
+   ],
+   "absent": [
+    "HP:0005176"
+   ]
+  },
+  {
+   "case_id": "test-omim-237",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:614845",
+   "disease_name": "Nephronophthisis 15",
+   "gene": "CEP164",
+   "present": [
+    "HP:0000090",
+    "HP:0000546",
+    "HP:0000618",
+    "HP:0000639",
+    "HP:0002910",
+    "HP:0010442"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-238",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:606170",
+   "disease_name": "Genitopatellar syndrome",
+   "gene": "KAT6B",
+   "present": [
+    "HP:0000821",
+    "HP:0001302",
+    "HP:0001631",
+    "HP:0006380"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-239",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:617388",
+   "disease_name": "Autoinflammation with arthritis and dyskeratosis",
+   "gene": "NLRP1",
+   "present": [
+    "HP:0000958",
+    "HP:0000972",
+    "HP:0001097",
+    "HP:0011227"
+   ],
+   "absent": [
+    "HP:0040071"
+   ]
+  },
+  {
+   "case_id": "test-omim-240",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:603471",
+   "disease_name": "Citrullinemia, type II, adult-onset",
+   "gene": "SLC25A13",
+   "present": [
+    "HP:0001259",
+    "HP:0001397",
+    "HP:0001987",
+    "HP:0030948",
+    "HP:6000785"
+   ],
+   "absent": [
+    "HP:0032229"
+   ]
+  },
+  {
+   "case_id": "test-omim-241",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:210720",
+   "disease_name": "Microcephalic osteodysplastic primordial dwarfism, type II",
+   "gene": "PCNT",
+   "present": [
+    "HP:0000582",
+    "HP:0001620",
+    "HP:0002866",
+    "HP:0003031"
+   ],
+   "absent": [
+    "HP:6000623"
+   ]
+  },
+  {
+   "case_id": "test-omim-242",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:203740",
+   "disease_name": "Oxoglutarate dehydrogenase deficiency",
+   "gene": "OGDH",
+   "present": [
+    "HP:0001332",
+    "HP:0002194",
+    "HP:0002527",
+    "HP:0003700",
+    "HP:0004902"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-243",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:618829",
+   "disease_name": "Nabais Sa-de vries syndrome, type 2",
+   "gene": "SPOP",
+   "present": [
+    "HP:0000233",
+    "HP:0002007",
+    "HP:0031936"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-244",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:177850",
+   "disease_name": "Pseudoxanthoma elasticum, forme fruste",
+   "gene": "ABCC6",
+   "present": [
+    "HP:0000505",
+    "HP:0000766",
+    "HP:0002239",
+    "HP:0025507"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-245",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:611091",
+   "disease_name": "Intellectual developmental disorder, autosomal recessive 5",
+   "gene": "NSUN2",
+   "present": [
+    "HP:0001250",
+    "HP:0002136",
+    "HP:0002342",
+    "HP:0003186"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-246",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:245480",
+   "disease_name": "Specific granule deficiency",
+   "gene": "CEBPE",
+   "present": [
+    "HP:0002718",
+    "HP:0011447",
+    "HP:0040238",
+    "HP:0041046"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-247",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:221750",
+   "disease_name": "Deafness, sensorineural, with pituitary dwarfism",
+   "gene": "LHX3",
+   "present": [
+    "HP:0000407",
+    "HP:0000470",
+    "HP:0000830",
+    "HP:0000839",
+    "HP:0001249"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-248",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:236680",
+   "disease_name": "Hydrolethalus syndrome 1",
+   "gene": "HYLS1",
+   "present": [
+    "HP:0001305",
+    "HP:0001747",
+    "HP:0006882",
+    "HP:0008216",
+    "HP:0009824"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-omim-249",
+   "split": "test",
+   "source": "OMIM",
+   "disease_id": "OMIM:607812",
+   "disease_name": "Craniolenticulosutural dysplasia",
+   "gene": "SEC23A",
+   "present": [
+    "HP:0000316",
+    "HP:0000319",
+    "HP:0000336",
+    "HP:0000685",
+    "HP:0002868",
+    "HP:0008070"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-000",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:324422",
+   "disease_name": "ALG13-CDG",
+   "gene": "ALG13",
+   "present": [
+    "HP:0002312",
+    "HP:0004325",
+    "HP:0012469"
+   ],
+   "absent": [
+    "HP:0032989"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-001",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:101010",
+   "disease_name": "Autosomal spastic paraplegia type 30",
+   "gene": "KIF1A",
+   "present": [
+    "HP:0000570",
+    "HP:0001251",
+    "HP:0003487",
+    "HP:0007141",
+    "HP:0008969"
+   ],
+   "absent": [
+    "HP:0030273"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-002",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:231401",
+   "disease_name": "Alpha-thalassemia-myelodysplastic syndrome",
+   "gene": "ATRX",
+   "present": [
+    "HP:0001873",
+    "HP:0001875",
+    "HP:0012378"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-003",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:859",
+   "disease_name": "Transcobalamin deficiency",
+   "gene": "TCN2",
+   "present": [
+    "HP:0001875",
+    "HP:0001876",
+    "HP:0001919",
+    "HP:0001980",
+    "HP:0003220",
+    "HP:0004315"
+   ],
+   "absent": [
+    "HP:0025014"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-004",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:3102",
+   "disease_name": "Richieri Costa-Pereira syndrome",
+   "gene": "EIF4A3",
+   "present": [
+    "HP:0000690",
+    "HP:0004987",
+    "HP:0005011",
+    "HP:0010109",
+    "HP:0011051"
+   ],
+   "absent": [
+    "HP:0012757"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-005",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:521445",
+   "disease_name": "Microcephaly-facial dysmorphism-ocular anomalies-multiple congenital anomalies syndrome",
+   "gene": "ADAMTSL1",
+   "present": [
+    "HP:0000077",
+    "HP:0000303",
+    "HP:0005487"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-006",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:496641",
+   "disease_name": "Early-onset progressive diffuse brain atrophy-microcephaly-muscle weakness-optic atrophy syndrome",
+   "gene": "TBCD",
+   "present": [
+    "HP:0000768",
+    "HP:0001324",
+    "HP:0006808"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-007",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:179494",
+   "disease_name": "Obesity due to leptin receptor gene deficiency",
+   "gene": "LEPR",
+   "present": [
+    "HP:0000842",
+    "HP:0002788",
+    "HP:0008245"
+   ],
+   "absent": [
+    "HP:0030149"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-008",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:89937",
+   "disease_name": "Autosomal dominant hypophosphatemic rickets",
+   "gene": "FGF23",
+   "present": [
+    "HP:0002979",
+    "HP:0003109",
+    "HP:0012378",
+    "HP:0020110"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-009",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1658",
+   "disease_name": "Absence of fingerprints-congenital milia syndrome",
+   "gene": "SMARCAD1",
+   "present": [
+    "HP:0000963",
+    "HP:0001056",
+    "HP:0001072",
+    "HP:0008066",
+    "HP:0100490"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-010",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:98964",
+   "disease_name": "Lattice corneal dystrophy type I",
+   "gene": "TGFBI",
+   "present": [
+    "HP:0000495",
+    "HP:0001149",
+    "HP:0007957",
+    "HP:0200026"
+   ],
+   "absent": [
+    "HP:0002937"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-011",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:454840",
+   "disease_name": "NTHL1-related polyposis",
+   "gene": "NTHL1",
+   "present": [
+    "HP:0002858",
+    "HP:0003002",
+    "HP:0005227"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-012",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:370348",
+   "disease_name": "Peripheral primitive neuroectodermal tumor",
+   "gene": "FLI1",
+   "present": [
+    "HP:0000952",
+    "HP:0001541",
+    "HP:0003418",
+    "HP:0030067",
+    "HP:0031030",
+    "HP:0100711"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-013",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:26793",
+   "disease_name": "Very long chain acyl-CoA dehydrogenase deficiency",
+   "gene": "ACADVL",
+   "present": [
+    "HP:0000952",
+    "HP:0001631",
+    "HP:0009045",
+    "HP:0011968",
+    "HP:0030781"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-014",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:37",
+   "disease_name": "Acrodermatitis enteropathica",
+   "gene": "SLC39A4",
+   "present": [
+    "HP:0000157",
+    "HP:0000509",
+    "HP:0000958",
+    "HP:0001508",
+    "HP:0002028",
+    "HP:0008402"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-015",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2879",
+   "disease_name": "Phocomelia, Schinzel type",
+   "gene": "WNT7A",
+   "present": [
+    "HP:0000151",
+    "HP:0008517",
+    "HP:0008736"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-016",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79240",
+   "disease_name": "Glycogen storage disease due to liver and muscle phosphorylase kinase deficiency",
+   "gene": "PHKB",
+   "present": [
+    "HP:0001947",
+    "HP:0002910",
+    "HP:0003124",
+    "HP:0003162",
+    "HP:0011342"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-017",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:329308",
+   "disease_name": "Fatty acid hydroxylase-associated neurodegeneration",
+   "gene": "FA2H",
+   "present": [
+    "HP:0001260",
+    "HP:0002069",
+    "HP:0002427",
+    "HP:0002478",
+    "HP:0006855"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-018",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:157801",
+   "disease_name": "Mesoaxial synostotic syndactyly with phalangeal reduction",
+   "gene": "BHLHA9",
+   "present": [
+    "HP:0004209",
+    "HP:0004279",
+    "HP:0006101",
+    "HP:0008362"
+   ],
+   "absent": [
+    "HP:0002853"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-019",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:99944",
+   "disease_name": "Autosomal dominant Charcot-Marie-Tooth disease type 2K",
+   "gene": "GDAP1",
+   "present": [
+    "HP:0001288",
+    "HP:0002460",
+    "HP:0002936",
+    "HP:0009130"
+   ],
+   "absent": [
+    "HP:0000322"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-020",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:464",
+   "disease_name": "Incontinentia pigmenti",
+   "gene": "IKBKG",
+   "present": [
+    "HP:0002558",
+    "HP:0007957",
+    "HP:0200042",
+    "HP:0200043"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-021",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:99742",
+   "disease_name": "Amish lethal microcephaly",
+   "gene": "SLC25A19",
+   "present": [
+    "HP:0000252",
+    "HP:0000737",
+    "HP:0001320",
+    "HP:0002119",
+    "HP:0002414",
+    "HP:0004331"
+   ],
+   "absent": [
+    "HP:0005182"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-022",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:67044",
+   "disease_name": "Thrombocytopenia with congenital dyserythropoietic anemia",
+   "gene": "GATA1",
+   "present": [
+    "HP:0010972",
+    "HP:0011273",
+    "HP:0012143",
+    "HP:0040185",
+    "HP:0045040"
+   ],
+   "absent": [
+    "HP:0008065"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-023",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:93110",
+   "disease_name": "Posterior urethral valve",
+   "gene": "BNC2",
+   "present": [
+    "HP:0012330",
+    "HP:0012622",
+    "HP:0041047"
+   ],
+   "absent": [
+    "HP:0000848"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-024",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1310",
+   "disease_name": "Caffey disease",
+   "gene": "COL1A1",
+   "present": [
+    "HP:0000520",
+    "HP:0000708",
+    "HP:0100658"
+   ],
+   "absent": [
+    "HP:0040012"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-025",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:208447",
+   "disease_name": "Bilateral generalized polymicrogyria",
+   "gene": "GRIN1",
+   "present": [
+    "HP:0007359",
+    "HP:0011968",
+    "HP:0031936",
+    "HP:0100660"
+   ],
+   "absent": [
+    "HP:0010936"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-026",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:99901",
+   "disease_name": "Acyl-CoA dehydrogenase 9 deficiency",
+   "gene": "ACAD9",
+   "present": [
+    "HP:0001290",
+    "HP:0001397",
+    "HP:0001635",
+    "HP:0008331"
+   ],
+   "absent": [
+    "HP:0002817"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-027",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:642",
+   "disease_name": "Hereditary sensory and autonomic neuropathy type 4",
+   "gene": "NTRK1",
+   "present": [
+    "HP:0000970",
+    "HP:0002661",
+    "HP:0003134",
+    "HP:0005368",
+    "HP:0010829"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-028",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:93946",
+   "disease_name": "Hamel cerebro-palato-cardiac syndrome",
+   "gene": "PQBP1",
+   "present": [
+    "HP:0000160",
+    "HP:0000175",
+    "HP:0000252",
+    "HP:0001249",
+    "HP:0001263"
+   ],
+   "absent": [
+    "HP:0006979"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-029",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:241",
+   "disease_name": "Dyschromatosis universalis hereditaria",
+   "gene": "ABCB6",
+   "present": [
+    "HP:0000365",
+    "HP:0000992",
+    "HP:0001053",
+    "HP:0001480",
+    "HP:0004322",
+    "HP:0012733"
+   ],
+   "absent": [
+    "HP:0003798"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-030",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:171863",
+   "disease_name": "Autosomal dominant spastic paraplegia type 42",
+   "gene": "SLC33A1",
+   "present": [
+    "HP:0002064",
+    "HP:0002314",
+    "HP:0003487",
+    "HP:0007210"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-031",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:96",
+   "disease_name": "Ataxia with vitamin E deficiency",
+   "gene": "TTPA",
+   "present": [
+    "HP:0001272",
+    "HP:0001639",
+    "HP:0002167",
+    "HP:0003487",
+    "HP:0009830",
+    "HP:0100513"
+   ],
+   "absent": [
+    "HP:0100252"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-032",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:363417",
+   "disease_name": "Temtamy preaxial brachydactyly syndrome",
+   "gene": "CHSY1",
+   "present": [
+    "HP:0000691",
+    "HP:0001156",
+    "HP:0001249",
+    "HP:0012795"
+   ],
+   "absent": [
+    "HP:0010564"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-033",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1788",
+   "disease_name": "Acrofacial dysostosis, Rodríguez type",
+   "gene": "SF3B4",
+   "present": [
+    "HP:0000272",
+    "HP:0002644",
+    "HP:0006495"
+   ],
+   "absent": [
+    "HP:0001954"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-034",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:401815",
+   "disease_name": "Autosomal recessive spastic paraplegia type 66",
+   "gene": "ARSI",
+   "present": [
+    "HP:0001249",
+    "HP:0001288",
+    "HP:0001321",
+    "HP:0001762",
+    "HP:0002061",
+    "HP:0002079"
+   ],
+   "absent": [
+    "HP:0012196"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-035",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:209902",
+   "disease_name": "Hypercholesterolemia due to cholesterol 7alpha-hydroxylase deficiency",
+   "gene": "CYP7A1",
+   "present": [
+    "HP:0003124",
+    "HP:0006573",
+    "HP:0012115"
+   ],
+   "absent": [
+    "HP:6000397"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-036",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:277",
+   "disease_name": "Severe combined immunodeficiency due to adenosine deaminase deficiency",
+   "gene": "ADA",
+   "present": [
+    "HP:0000403",
+    "HP:0002960",
+    "HP:0005354",
+    "HP:0006532",
+    "HP:0010976",
+    "HP:0011123"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-037",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:99657",
+   "disease_name": "Primary dystonia, DYT2 type",
+   "gene": "HPCA",
+   "present": [
+    "HP:0000473",
+    "HP:0000643",
+    "HP:0001304",
+    "HP:0001337"
+   ],
+   "absent": [
+    "HP:0006315"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-038",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:255138",
+   "disease_name": "Pyruvate dehydrogenase E1-beta deficiency",
+   "gene": "PDHB",
+   "present": [
+    "HP:0001251",
+    "HP:0001274",
+    "HP:0002365",
+    "HP:0006970",
+    "HP:0007109",
+    "HP:0012758"
+   ],
+   "absent": [
+    "HP:0031142"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-039",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:404448",
+   "disease_name": "Helsmoortel-Van der Aa syndrome",
+   "gene": "ADNP",
+   "present": [
+    "HP:0000722",
+    "HP:0002167",
+    "HP:0002591",
+    "HP:0008551",
+    "HP:0011343",
+    "HP:0012450"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-040",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:228415",
+   "disease_name": "5q35 microduplication syndrome",
+   "gene": "NSD1",
+   "present": [
+    "HP:0000545",
+    "HP:0001249",
+    "HP:0002750",
+    "HP:0004322"
+   ],
+   "absent": [
+    "HP:0005103"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-041",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1770",
+   "disease_name": "XY type gonadal dysgenesis-associated anomalies syndrome",
+   "gene": "PPP2R3C",
+   "present": [
+    "HP:0000358",
+    "HP:0010720",
+    "HP:0011342"
+   ],
+   "absent": [
+    "HP:0500081"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-042",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:530838",
+   "disease_name": "KRT1-related diffuse nonepidermolytic keratoderma",
+   "gene": "KRT1",
+   "present": [
+    "HP:0000958",
+    "HP:0007404",
+    "HP:0010783",
+    "HP:0012203",
+    "HP:0040189"
+   ],
+   "absent": [
+    "HP:0008986"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-043",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1596",
+   "disease_name": "Distal deletion 15q syndrome",
+   "gene": "MCTP2",
+   "present": [
+    "HP:0000369",
+    "HP:0000729",
+    "HP:0001263",
+    "HP:0002857"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-044",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79431",
+   "disease_name": "Oculocutaneous albinism type 1A",
+   "gene": "TYR",
+   "present": [
+    "HP:0000505",
+    "HP:0000587",
+    "HP:0000639",
+    "HP:0001022",
+    "HP:0001107",
+    "HP:0002671"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-045",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:478029",
+   "disease_name": "Combined oxidative phosphorylation defect type 29",
+   "gene": "TXN2",
+   "present": [
+    "HP:0001138",
+    "HP:0002069",
+    "HP:0002922"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-046",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1299",
+   "disease_name": "Branchioskeletogenital syndrome",
+   "gene": "CDH11",
+   "present": [
+    "HP:0000233",
+    "HP:0000470",
+    "HP:0003423",
+    "HP:0005280"
+   ],
+   "absent": [
+    "HP:0011002"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-047",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:158673",
+   "disease_name": "Localized dystrophic epidermolysis bullosa, acral form",
+   "gene": "COL7A1",
+   "present": [
+    "HP:0001030",
+    "HP:0001810",
+    "HP:0002814",
+    "HP:0007473"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-048",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:353",
+   "disease_name": "Gamma-sarcoglycan-related limb-girdle muscular dystrophy R5",
+   "gene": "SGCG",
+   "present": [
+    "HP:0001667",
+    "HP:0002136",
+    "HP:0003458",
+    "HP:0030051"
+   ],
+   "absent": [
+    "HP:0001986"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-049",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:101001",
+   "disease_name": "Autosomal recessive spastic paraplegia type 21",
+   "gene": "SPG21",
+   "present": [
+    "HP:0001257",
+    "HP:0001263",
+    "HP:0001288",
+    "HP:0001347",
+    "HP:0002079",
+    "HP:0002186"
+   ],
+   "absent": [
+    "HP:0000924"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-050",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2596",
+   "disease_name": "Myopathy and diabetes mellitus",
+   "gene": "MT-TE",
+   "present": [
+    "HP:0000407",
+    "HP:0003546",
+    "HP:0003756",
+    "HP:0007126",
+    "HP:0009073",
+    "HP:0100651"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-051",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:647799",
+   "disease_name": "MYT1L-related developmental delay-intellectual disability-obesity syndrome",
+   "gene": "MYT1L",
+   "present": [
+    "HP:0000252",
+    "HP:0000729",
+    "HP:0002020",
+    "HP:0010862"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-052",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:98763",
+   "disease_name": "Spinocerebellar ataxia type 14",
+   "gene": "PRKCG",
+   "present": [
+    "HP:0001260",
+    "HP:0001290",
+    "HP:0002066",
+    "HP:0002073",
+    "HP:0006855"
+   ],
+   "absent": [
+    "HP:0009617"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-053",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:168572",
+   "disease_name": "Native American myopathy",
+   "gene": "STAC3",
+   "present": [
+    "HP:0000218",
+    "HP:0001252",
+    "HP:0001270",
+    "HP:0001762",
+    "HP:0002047",
+    "HP:0003202"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-054",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:3019",
+   "disease_name": "Ramon syndrome",
+   "gene": "ELMO2",
+   "present": [
+    "HP:0000684",
+    "HP:0001249",
+    "HP:0001250",
+    "HP:0002230",
+    "HP:0002797"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-055",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:263463",
+   "disease_name": "CHST3-related skeletal dysplasia",
+   "gene": "CHST3",
+   "present": [
+    "HP:0000337",
+    "HP:0002751",
+    "HP:0002945",
+    "HP:0003312",
+    "HP:0010585",
+    "HP:0045075"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-056",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:89838",
+   "disease_name": "Autosomal recessive generalized epidermolysis bullosa simplex",
+   "gene": "KRT14",
+   "present": [
+    "HP:0001810",
+    "HP:0007589",
+    "HP:0200097"
+   ],
+   "absent": [
+    "HP:0012703"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-057",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:457351",
+   "disease_name": "Microcephaly-intellectual disability-sensorineural hearing loss-epilepsy-abnormal muscle tone syndrome",
+   "gene": "AFG2A",
+   "present": [
+    "HP:0002342",
+    "HP:0008947",
+    "HP:0100704"
+   ],
+   "absent": [
+    "HP:0200008"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-058",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:83629",
+   "disease_name": "Leukoencephalopathy-spondyloepimetaphyseal dysplasia syndrome",
+   "gene": "AIFM1",
+   "present": [
+    "HP:0001288",
+    "HP:0001337",
+    "HP:0005871"
+   ],
+   "absent": [
+    "HP:0009465"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-059",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:98761",
+   "disease_name": "Spinocerebellar ataxia type 10",
+   "gene": "ATXN10",
+   "present": [
+    "HP:0000716",
+    "HP:0001265",
+    "HP:0002073",
+    "HP:0002141",
+    "HP:0007772"
+   ],
+   "absent": [
+    "HP:0010239"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-060",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:98826",
+   "disease_name": "Myelodysplastic neoplasm with low blasts",
+   "gene": "TET2",
+   "present": [
+    "HP:0001873",
+    "HP:0002863",
+    "HP:0010972",
+    "HP:0012133"
+   ],
+   "absent": [
+    "HP:0005453"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-061",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:119",
+   "disease_name": "Beta-sarcoglycan-related limb-girdle muscular dystrophy R4",
+   "gene": "SGCB",
+   "present": [
+    "HP:0000750",
+    "HP:0001288",
+    "HP:0001638",
+    "HP:0003236",
+    "HP:0003391"
+   ],
+   "absent": [
+    "HP:0008138"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-062",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:3339",
+   "disease_name": "Oculoectodermal syndrome",
+   "gene": "KRAS",
+   "present": [
+    "HP:0000486",
+    "HP:0008065",
+    "HP:0012639"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-063",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79255",
+   "disease_name": "GM1 gangliosidosis type 1",
+   "gene": "GLB1",
+   "present": [
+    "HP:0000924",
+    "HP:0001249",
+    "HP:0008166"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-064",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:100985",
+   "disease_name": "Autosomal dominant spastic paraplegia type 4",
+   "gene": "SPAST",
+   "present": [
+    "HP:0001761",
+    "HP:0002839",
+    "HP:0006938",
+    "HP:0007350"
+   ],
+   "absent": [
+    "HP:0005415"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-065",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:247815",
+   "disease_name": "Autosomal recessive ataxia due to PEX10 deficiency",
+   "gene": "PEX10",
+   "present": [
+    "HP:0001256",
+    "HP:0002070",
+    "HP:0007002",
+    "HP:0010965"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-066",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:494526",
+   "disease_name": "Infantile-onset generalized dyskinesia with orofacial involvement",
+   "gene": "PDE10A",
+   "present": [
+    "HP:0001260",
+    "HP:0002307",
+    "HP:0002310"
+   ],
+   "absent": [
+    "HP:0001708"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-067",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:206546",
+   "disease_name": "Symptomatic form of muscular dystrophy of Duchenne and Becker in female carriers",
+   "gene": "DMD",
+   "present": [
+    "HP:0001644",
+    "HP:0003701",
+    "HP:0003710"
+   ],
+   "absent": [
+    "HP:0000227"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-068",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:414",
+   "disease_name": "Gyrate atrophy of choroid and retina",
+   "gene": "OAT",
+   "present": [
+    "HP:0000529",
+    "HP:0001595",
+    "HP:0012026"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-069",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:457212",
+   "disease_name": "Progressive essential tremor-speech impairment-facial dysmorphism-intellectual disability-abnormal behavior syndrome",
+   "gene": "SLC6A17",
+   "present": [
+    "HP:0000400",
+    "HP:0000718",
+    "HP:0000742"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-070",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2635",
+   "disease_name": "Metatropic dysplasia",
+   "gene": "TRPV4",
+   "present": [
+    "HP:0000774",
+    "HP:0002983",
+    "HP:0003510"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-071",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:276580",
+   "disease_name": "Autosomal dominant hyperinsulinism due to Kir6.2 deficiency",
+   "gene": "KCNJ11",
+   "present": [
+    "HP:0000713",
+    "HP:0001985",
+    "HP:0002133",
+    "HP:0002329",
+    "HP:0004924"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-072",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:157941",
+   "disease_name": "Huntington disease-like 1",
+   "gene": "PRNP",
+   "present": [
+    "HP:0000746",
+    "HP:0001250",
+    "HP:0002354"
+   ],
+   "absent": [
+    "HP:6000246"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-073",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:500055",
+   "disease_name": "Hao-Fountain syndrome due to 16p13.2 microdeletion",
+   "gene": "USP7",
+   "present": [
+    "HP:0000565",
+    "HP:0001999",
+    "HP:0002020"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-074",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:52055",
+   "disease_name": "Corpus callosum agenesis-intellectual disability-coloboma-micrognathia syndrome",
+   "gene": "IGBP1",
+   "present": [
+    "HP:0000348",
+    "HP:0000377",
+    "HP:0000470",
+    "HP:0001274"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-075",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1832",
+   "disease_name": "Osteosclerotic bone dysplasia",
+   "gene": "FAM20C",
+   "present": [
+    "HP:0000239",
+    "HP:0000252",
+    "HP:0000457",
+    "HP:0000463",
+    "HP:0009099",
+    "HP:0009939"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-076",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2501",
+   "disease_name": "Metaphyseal chondrodysplasia, Spahr type",
+   "gene": "MMP13",
+   "present": [
+    "HP:0001385",
+    "HP:0004349",
+    "HP:0005871",
+    "HP:0006409"
+   ],
+   "absent": [
+    "HP:0031954"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-077",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2636",
+   "disease_name": "Microcephalic osteodysplastic primordial dwarfism types I and III",
+   "gene": "RNU4ATAC",
+   "present": [
+    "HP:0000079",
+    "HP:0004279",
+    "HP:0008070",
+    "HP:0009912"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-078",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:36367",
+   "disease_name": "Distal deletion 1q syndrome",
+   "gene": "ZBTB18",
+   "present": [
+    "HP:0000252",
+    "HP:0000311",
+    "HP:0000316",
+    "HP:0001249"
+   ],
+   "absent": [
+    "HP:0012734"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-079",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:88639",
+   "disease_name": "Neurodegeneration due to 3-hydroxyisobutyryl-CoA hydrolase deficiency",
+   "gene": "HIBCH",
+   "present": [
+    "HP:0001332",
+    "HP:0001347",
+    "HP:0002078"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-080",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:325",
+   "disease_name": "Congenital factor II deficiency",
+   "gene": "F2",
+   "present": [
+    "HP:0002170",
+    "HP:0003645",
+    "HP:0005261",
+    "HP:0008151",
+    "HP:0012233"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-081",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:468699",
+   "disease_name": "SLC39A8-CDG",
+   "gene": "SLC39A8",
+   "present": [
+    "HP:0002521",
+    "HP:0006829",
+    "HP:0008277"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-082",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:48431",
+   "disease_name": "Congenital cataracts-facial dysmorphism-neuropathy syndrome",
+   "gene": "CTDP1",
+   "present": [
+    "HP:0001511",
+    "HP:0002650",
+    "HP:0003134",
+    "HP:0007182",
+    "HP:0030890"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-083",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79329",
+   "disease_name": "MGAT2-CDG",
+   "gene": "MGAT2",
+   "present": [
+    "HP:0000678",
+    "HP:0001250",
+    "HP:0001789",
+    "HP:0001999",
+    "HP:0011471"
+   ],
+   "absent": [
+    "HP:0012730"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-084",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:139466",
+   "disease_name": "SERKAL syndrome",
+   "gene": "WNT4",
+   "present": [
+    "HP:0000047",
+    "HP:0000776",
+    "HP:0001562",
+    "HP:0004794"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-085",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:487796",
+   "disease_name": "Takenouchi-Kosaki syndrome",
+   "gene": "CDC42",
+   "present": [
+    "HP:0000319",
+    "HP:0000322",
+    "HP:0000343",
+    "HP:0001249",
+    "HP:0001263",
+    "HP:0002719"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-086",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:411986",
+   "disease_name": "Early-onset epileptic encephalopathy-cortical blindness-intellectual disability-facial dysmorphism syndrome",
+   "gene": "DOCK7",
+   "present": [
+    "HP:0000294",
+    "HP:0000733",
+    "HP:0002079",
+    "HP:0012110",
+    "HP:0100704"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-087",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:168563",
+   "disease_name": "46,XY gonadal dysgenesis-motor and sensory neuropathy syndrome",
+   "gene": "DHH",
+   "present": [
+    "HP:0000013",
+    "HP:0000026",
+    "HP:0000133",
+    "HP:0001271",
+    "HP:0003202",
+    "HP:0040171"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-088",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:477993",
+   "disease_name": "Palatal anomalies-widely spaced teeth-facial dysmorphism-developmental delay syndrome",
+   "gene": "KDM1A",
+   "present": [
+    "HP:0000431",
+    "HP:0000664",
+    "HP:0012430",
+    "HP:0012448",
+    "HP:0031936"
+   ],
+   "absent": [
+    "HP:0001844"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-089",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79452",
+   "disease_name": "Milroy disease",
+   "gene": "FLT4",
+   "present": [
+    "HP:0000034",
+    "HP:0001004",
+    "HP:0002624",
+    "HP:0010741",
+    "HP:0100658",
+    "HP:0100797"
+   ],
+   "absent": [
+    "HP:6001258"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-090",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:178509",
+   "disease_name": "Perry syndrome",
+   "gene": "DCTN1",
+   "present": [
+    "HP:0000716",
+    "HP:0001300",
+    "HP:0001824",
+    "HP:0002615",
+    "HP:0007110"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-091",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:94125",
+   "disease_name": "Recessive mitochondrial ataxia syndrome",
+   "gene": "POLG",
+   "present": [
+    "HP:0000872",
+    "HP:0001288",
+    "HP:0002015",
+    "HP:0012079"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-092",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:276238",
+   "disease_name": "Machado-Joseph disease type 1",
+   "gene": "ATXN3",
+   "present": [
+    "HP:0000623",
+    "HP:0000651",
+    "HP:0001272",
+    "HP:0002198",
+    "HP:0007240",
+    "HP:0011960"
+   ],
+   "absent": [
+    "HP:0100645"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-093",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:353281",
+   "disease_name": "Rubinstein-Taybi syndrome due to 16p13.3 microdeletion",
+   "gene": "CREBBP",
+   "present": [
+    "HP:0000670",
+    "HP:0002353",
+    "HP:0010674",
+    "HP:0011069"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-094",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:431361",
+   "disease_name": "Progressive encephalopathy with leukodystrophy due to DECR deficiency",
+   "gene": "NADK2",
+   "present": [
+    "HP:0001319",
+    "HP:0001733",
+    "HP:0002448",
+    "HP:0003234"
+   ],
+   "absent": [
+    "HP:0100682"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-095",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2848",
+   "disease_name": "Camptodactyly-arthropathy-coxa-vara-pericarditis syndrome",
+   "gene": "PRG4",
+   "present": [
+    "HP:0000939",
+    "HP:0001225",
+    "HP:0002938",
+    "HP:0005195",
+    "HP:0008812",
+    "HP:0100864"
+   ],
+   "absent": [
+    "HP:0003805"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-096",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79244",
+   "disease_name": "Pyruvate dehydrogenase E2 deficiency",
+   "gene": "DLAT",
+   "present": [
+    "HP:0001276",
+    "HP:0001288",
+    "HP:0003487",
+    "HP:0012379",
+    "HP:0500231"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-097",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:168577",
+   "disease_name": "Hereditary cryohydrocytosis with reduced stomatin",
+   "gene": "SLC2A1",
+   "present": [
+    "HP:0001249",
+    "HP:0001433",
+    "HP:0004446"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "tuning-orpha-098",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:300298",
+   "disease_name": "Severe congenital hypochromic anemia with ringed sideroblasts",
+   "gene": "STEAP3",
+   "present": [
+    "HP:0001896",
+    "HP:0001903",
+    "HP:0004823",
+    "HP:0012378",
+    "HP:0012464"
+   ],
+   "absent": [
+    "HP:0005464"
+   ]
+  },
+  {
+   "case_id": "tuning-orpha-099",
+   "split": "tuning",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:98908",
+   "disease_name": "Neutral lipid storage disease with myopathy",
+   "gene": "PNPLA2",
+   "present": [
+    "HP:0003388",
+    "HP:0003805",
+    "HP:0008167",
+    "HP:0040081"
+   ],
+   "absent": [
+    "HP:0033341"
+   ]
+  },
+  {
+   "case_id": "test-orpha-100",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:261222",
+   "disease_name": "Distal 16p11.2 microdeletion syndrome",
+   "gene": "SH2B1",
+   "present": [
+    "HP:0000510",
+    "HP:0001263",
+    "HP:0002251"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-101",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:96182",
+   "disease_name": "Silver-Russell syndrome due to maternal uniparental disomy of chromosome 7",
+   "gene": "GRB10",
+   "present": [
+    "HP:0001270",
+    "HP:0002714",
+    "HP:0003162"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-102",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:902",
+   "disease_name": "Werner syndrome",
+   "gene": "WRN",
+   "present": [
+    "HP:0000855",
+    "HP:0000934",
+    "HP:0002209",
+    "HP:0002621",
+    "HP:0004415",
+    "HP:0200042"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-103",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:100973",
+   "disease_name": "FRAXE intellectual disability",
+   "gene": "AFF2",
+   "present": [
+    "HP:0000426",
+    "HP:0000722",
+    "HP:0001511"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-104",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:464282",
+   "disease_name": "Spastic paraplegia-severe developmental delay-epilepsy syndrome",
+   "gene": "HACE1",
+   "present": [
+    "HP:0000316",
+    "HP:0002714",
+    "HP:0031087"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-105",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:300573",
+   "disease_name": "Polymicrogyria due to TUBB2B mutation",
+   "gene": "TUBB2B",
+   "present": [
+    "HP:0000252",
+    "HP:0001250",
+    "HP:0002126",
+    "HP:0012377",
+    "HP:0025160",
+    "HP:0100543"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-106",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2686",
+   "disease_name": "Cyclic neutropenia",
+   "gene": "ELANE",
+   "present": [
+    "HP:0002027",
+    "HP:0012378",
+    "HP:0032323"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-107",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:306550",
+   "disease_name": "FADD-related immunodeficiency",
+   "gene": "FADD",
+   "present": [
+    "HP:0001250",
+    "HP:0001298",
+    "HP:0001410"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-108",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:500150",
+   "disease_name": "ZTTK syndrome",
+   "gene": "SON",
+   "present": [
+    "HP:0000540",
+    "HP:0000729",
+    "HP:0001999",
+    "HP:0002119",
+    "HP:0002538",
+    "HP:0008765"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-109",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:23",
+   "disease_name": "Argininosuccinic aciduria",
+   "gene": "ASL",
+   "present": [
+    "HP:0001254",
+    "HP:0002240",
+    "HP:0002900",
+    "HP:0003355"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-110",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:584",
+   "disease_name": "Mucopolysaccharidosis type 7",
+   "gene": "GUSB",
+   "present": [
+    "HP:0001744",
+    "HP:0002205",
+    "HP:0008155",
+    "HP:0010655"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-111",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:498359",
+   "disease_name": "Aquagenic palmoplantar keratoderma",
+   "gene": "CFTR",
+   "present": [
+    "HP:0002725",
+    "HP:0006261",
+    "HP:0007407",
+    "HP:0007410",
+    "HP:0031289"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-112",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:284417",
+   "disease_name": "Phosphoserine aminotransferase deficiency, infantile/juvenile form",
+   "gene": "PSAT1",
+   "present": [
+    "HP:0001276",
+    "HP:0002079",
+    "HP:0009879",
+    "HP:0012430"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-113",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:246",
+   "disease_name": "Postaxial acrofacial dysostosis",
+   "gene": "DHODH",
+   "present": [
+    "HP:0002984",
+    "HP:0007477",
+    "HP:0007651"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-114",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:453521",
+   "disease_name": "Autosomal recessive cerebellar ataxia due to CWF19L1 deficiency",
+   "gene": "CWF19L1",
+   "present": [
+    "HP:0001350",
+    "HP:0002317",
+    "HP:0003487"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-115",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:628",
+   "disease_name": "Diastrophic dysplasia",
+   "gene": "SLC26A2",
+   "present": [
+    "HP:0005280",
+    "HP:0009748",
+    "HP:0011001",
+    "HP:0011800"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-116",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:423461",
+   "disease_name": "Mucolipidosis type III alpha/beta",
+   "gene": "GNPTAB",
+   "present": [
+    "HP:0000212",
+    "HP:0000403",
+    "HP:0001288",
+    "HP:0001540",
+    "HP:0001653",
+    "HP:0010471"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-117",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:158668",
+   "disease_name": "Ectodermal dysplasia-skin fragility syndrome",
+   "gene": "PKP1",
+   "present": [
+    "HP:0000966",
+    "HP:0000982",
+    "HP:0008070",
+    "HP:0040181",
+    "HP:0040189"
+   ],
+   "absent": [
+    "HP:6000619"
+   ]
+  },
+  {
+   "case_id": "test-orpha-118",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:482601",
+   "disease_name": "Adenylosuccinate synthetase-like 1-related distal myopathy",
+   "gene": "ADSS1",
+   "present": [
+    "HP:0001315",
+    "HP:0002317",
+    "HP:0003458",
+    "HP:0008994",
+    "HP:0009050"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-119",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:37612",
+   "disease_name": "Episodic ataxia type 1",
+   "gene": "KCNA1",
+   "present": [
+    "HP:0002311",
+    "HP:0002411",
+    "HP:0002486",
+    "HP:0003552"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-120",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:71",
+   "disease_name": "Chylomicron retention disease",
+   "gene": "SAR1B",
+   "present": [
+    "HP:0002910",
+    "HP:0006565",
+    "HP:0100508"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-121",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2143",
+   "disease_name": "Donnai-Barrow syndrome",
+   "gene": "LRP2",
+   "present": [
+    "HP:0000407",
+    "HP:0001263",
+    "HP:0005280"
+   ],
+   "absent": [
+    "HP:0008314"
+   ]
+  },
+  {
+   "case_id": "test-orpha-122",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:35069",
+   "disease_name": "Infantile neuroaxonal dystrophy",
+   "gene": "PLA2G6",
+   "present": [
+    "HP:0000712",
+    "HP:0002500",
+    "HP:0007256"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-123",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:363444",
+   "disease_name": "THOC6-related developmental delay-microcephaly-facial dysmorphism syndrome",
+   "gene": "THOC6",
+   "present": [
+    "HP:0000670",
+    "HP:0001631",
+    "HP:0009765",
+    "HP:0012443"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-124",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1297",
+   "disease_name": "Branchio-oculo-facial syndrome",
+   "gene": "TFAP2A",
+   "present": [
+    "HP:0000268",
+    "HP:0000486",
+    "HP:0000589",
+    "HP:0000691",
+    "HP:0001511",
+    "HP:0004467"
+   ],
+   "absent": [
+    "HP:4000199"
+   ]
+  },
+  {
+   "case_id": "test-orpha-125",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:99939",
+   "disease_name": "Autosomal dominant Charcot-Marie-Tooth disease type 2E",
+   "gene": "NEFL",
+   "present": [
+    "HP:0001288",
+    "HP:0001761",
+    "HP:0001884",
+    "HP:0003484",
+    "HP:0011402"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-126",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2477",
+   "disease_name": "Isolated megalencephaly",
+   "gene": "TBC1D7",
+   "present": [
+    "HP:0000269",
+    "HP:0000470",
+    "HP:0001631",
+    "HP:0001956",
+    "HP:0002750",
+    "HP:0002857"
+   ],
+   "absent": [
+    "HP:0011014"
+   ]
+  },
+  {
+   "case_id": "test-orpha-127",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:184",
+   "disease_name": "Cherubism",
+   "gene": "SH3BP2",
+   "present": [
+    "HP:0000277",
+    "HP:0000677",
+    "HP:0012062"
+   ],
+   "absent": [
+    "HP:0004232"
+   ]
+  },
+  {
+   "case_id": "test-orpha-128",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:326",
+   "disease_name": "Congenital factor V deficiency",
+   "gene": "F5",
+   "present": [
+    "HP:0000225",
+    "HP:0001934",
+    "HP:0004846",
+    "HP:0005261",
+    "HP:0007420"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-129",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:137634",
+   "disease_name": "Overgrowth-macrocephaly-facial dysmorphism syndrome",
+   "gene": "RNF135",
+   "present": [
+    "HP:0000219",
+    "HP:0000343",
+    "HP:0030680"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-130",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:444013",
+   "disease_name": "Combined oxidative phosphorylation defect type 23",
+   "gene": "GTPBP3",
+   "present": [
+    "HP:0001256",
+    "HP:0001635",
+    "HP:0001639",
+    "HP:0003128"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-131",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:391641",
+   "disease_name": "Feingold syndrome type 1",
+   "gene": "MYCN",
+   "present": [
+    "HP:0000405",
+    "HP:0001328",
+    "HP:0002589",
+    "HP:0004209",
+    "HP:0005819",
+    "HP:0012745"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-132",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:229",
+   "disease_name": "Familial aortic dissection",
+   "gene": "MYH11",
+   "present": [
+    "HP:0001677",
+    "HP:0002875",
+    "HP:0004959",
+    "HP:0005162",
+    "HP:0012499"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-133",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:504476",
+   "disease_name": "Cerebellar ataxia with neuropathy and bilateral vestibular areflexia syndrome",
+   "gene": "RFC1",
+   "present": [
+    "HP:0001260",
+    "HP:0002073",
+    "HP:0002080"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-134",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2255",
+   "disease_name": "Pancreatic hypoplasia-diabetes-congenital heart disease syndrome",
+   "gene": "GATA6",
+   "present": [
+    "HP:0001631",
+    "HP:0001655",
+    "HP:0002594"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-135",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:227510",
+   "disease_name": "Multiple system atrophy, cerebellar type",
+   "gene": "COQ2",
+   "present": [
+    "HP:0000716",
+    "HP:0000741",
+    "HP:0002019",
+    "HP:0002136",
+    "HP:0002310",
+    "HP:0008652"
+   ],
+   "absent": [
+    "HP:0003296"
+   ]
+  },
+  {
+   "case_id": "test-orpha-136",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:397685",
+   "disease_name": "Familial hyperprolactinemia",
+   "gene": "PRLR",
+   "present": [
+    "HP:0000938",
+    "HP:0000939",
+    "HP:0012886"
+   ],
+   "absent": [
+    "HP:0002663"
+   ]
+  },
+  {
+   "case_id": "test-orpha-137",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:444072",
+   "disease_name": "Cerebellar-facial-dental syndrome",
+   "gene": "BRF1",
+   "present": [
+    "HP:0000347",
+    "HP:0000431",
+    "HP:0000689",
+    "HP:0002079",
+    "HP:0004970",
+    "HP:0005135"
+   ],
+   "absent": [
+    "HP:0025435"
+   ]
+  },
+  {
+   "case_id": "test-orpha-138",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:3253",
+   "disease_name": "Cleft lip/palate-ectodermal dysplasia syndrome",
+   "gene": "NECTIN1",
+   "present": [
+    "HP:0000400",
+    "HP:0000670",
+    "HP:0000674",
+    "HP:0006101",
+    "HP:0100840"
+   ],
+   "absent": [
+    "HP:0034566"
+   ]
+  },
+  {
+   "case_id": "test-orpha-139",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:496689",
+   "disease_name": "Kyphoscoliosis-lateral tongue atrophy-hereditary spastic paraplegia syndrome",
+   "gene": "KY",
+   "present": [
+    "HP:0001762",
+    "HP:0002061",
+    "HP:0002395",
+    "HP:0007210",
+    "HP:0012531"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-140",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:88619",
+   "disease_name": "Familial acute necrotizing encephalopathy",
+   "gene": "RANBP2",
+   "present": [
+    "HP:0001250",
+    "HP:0001259",
+    "HP:0001288",
+    "HP:0002793",
+    "HP:0006846",
+    "HP:0031982"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-141",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:238769",
+   "disease_name": "1q44 microdeletion syndrome",
+   "gene": "HNRNPU",
+   "present": [
+    "HP:0000286",
+    "HP:0000319",
+    "HP:0000347",
+    "HP:0001274",
+    "HP:0004422"
+   ],
+   "absent": [
+    "HP:0003233"
+   ]
+  },
+  {
+   "case_id": "test-orpha-142",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:557003",
+   "disease_name": "Oculoskeletodental syndrome",
+   "gene": "PIK3C2A",
+   "present": [
+    "HP:0001999",
+    "HP:0002650",
+    "HP:0003072",
+    "HP:0010663"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-143",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:189",
+   "disease_name": "Hidrotic ectodermal dysplasia",
+   "gene": "GJB6",
+   "present": [
+    "HP:0000653",
+    "HP:0000972",
+    "HP:0002209",
+    "HP:0002215",
+    "HP:0004528"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-144",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:324",
+   "disease_name": "Fabry disease",
+   "gene": "GLA",
+   "present": [
+    "HP:0000112",
+    "HP:0001903",
+    "HP:0002376",
+    "HP:0100579"
+   ],
+   "absent": [
+    "HP:0033719"
+   ]
+  },
+  {
+   "case_id": "test-orpha-145",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:139406",
+   "disease_name": "Encephalopathy due to prosaposin deficiency",
+   "gene": "PSAP",
+   "present": [
+    "HP:0000496",
+    "HP:0001332",
+    "HP:0001336",
+    "HP:0002069",
+    "HP:0002093",
+    "HP:0002240"
+   ],
+   "absent": [
+    "HP:0012345"
+   ]
+  },
+  {
+   "case_id": "test-orpha-146",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:502423",
+   "disease_name": "Mitochondrial myopathy-cerebellar ataxia-pigmentary retinopathy syndrome",
+   "gene": "MSTO1",
+   "present": [
+    "HP:0001321",
+    "HP:0002650",
+    "HP:0003458",
+    "HP:0012240",
+    "HP:0030319",
+    "HP:0100874"
+   ],
+   "absent": [
+    "HP:0033628"
+   ]
+  },
+  {
+   "case_id": "test-orpha-147",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:35173",
+   "disease_name": "X-linked dominant chondrodysplasia punctata",
+   "gene": "EBP",
+   "present": [
+    "HP:0000316",
+    "HP:0002088",
+    "HP:0005756",
+    "HP:0008850",
+    "HP:0100559"
+   ],
+   "absent": [
+    "HP:0002680"
+   ]
+  },
+  {
+   "case_id": "test-orpha-148",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:404473",
+   "disease_name": "Intellectual disability-eye abnormalities-microcephaly-peripheral spasticity syndrome",
+   "gene": "CTNNB1",
+   "present": [
+    "HP:0000219",
+    "HP:0000478",
+    "HP:0000708",
+    "HP:0001257",
+    "HP:0001999",
+    "HP:0011451"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-149",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1270",
+   "disease_name": "Bowen-Conradi syndrome",
+   "gene": "EMG1",
+   "present": [
+    "HP:0000202",
+    "HP:0000252",
+    "HP:0000340",
+    "HP:0000347",
+    "HP:0004322",
+    "HP:0008872"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-150",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:353284",
+   "disease_name": "Rubinstein-Taybi syndrome due to EP300 haploinsufficiency",
+   "gene": "EP300",
+   "present": [
+    "HP:0000273",
+    "HP:0000756",
+    "HP:0001508",
+    "HP:0008897"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-151",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:99429",
+   "disease_name": "Complete androgen insensitivity syndrome",
+   "gene": "AR",
+   "present": [
+    "HP:0002221",
+    "HP:0008655",
+    "HP:0008689",
+    "HP:0030088"
+   ],
+   "absent": [
+    "HP:0034231"
+   ]
+  },
+  {
+   "case_id": "test-orpha-152",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:314911",
+   "disease_name": "Severe Canavan disease",
+   "gene": "ASPA",
+   "present": [
+    "HP:0000256",
+    "HP:0001344",
+    "HP:0003487",
+    "HP:0004302"
+   ],
+   "absent": [
+    "HP:0004860"
+   ]
+  },
+  {
+   "case_id": "test-orpha-153",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1880",
+   "disease_name": "Ebstein malformation of the tricuspid valve",
+   "gene": "MYH7",
+   "present": [
+    "HP:0000961",
+    "HP:0001643",
+    "HP:0001671",
+    "HP:0010741",
+    "HP:0011712",
+    "HP:0031667"
+   ],
+   "absent": [
+    "HP:0000991"
+   ]
+  },
+  {
+   "case_id": "test-orpha-154",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:280633",
+   "disease_name": "Multiple congenital anomalies-hypotonia-seizures syndrome",
+   "gene": "PIGN",
+   "present": [
+    "HP:0000280",
+    "HP:0001156",
+    "HP:0001250",
+    "HP:0001773",
+    "HP:0004488",
+    "HP:0006829"
+   ],
+   "absent": [
+    "HP:0009761"
+   ]
+  },
+  {
+   "case_id": "test-orpha-155",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:250972",
+   "disease_name": "Polymicrogyria with optic nerve hypoplasia",
+   "gene": "TUBA8",
+   "present": [
+    "HP:0001250",
+    "HP:0001265",
+    "HP:0001344",
+    "HP:0006989",
+    "HP:0030048"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-156",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:171706",
+   "disease_name": "Short stature-delayed bone age due to thyroid hormone metabolism deficiency",
+   "gene": "SECISBP2",
+   "present": [
+    "HP:0000736",
+    "HP:0012379",
+    "HP:0031903"
+   ],
+   "absent": [
+    "HP:0002243"
+   ]
+  },
+  {
+   "case_id": "test-orpha-157",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:436271",
+   "disease_name": "Non-progressive predominantly posterior cavitating leukoencephalopathy with peripheral neuropathy",
+   "gene": "COA8",
+   "present": [
+    "HP:0001262",
+    "HP:0003355",
+    "HP:0006555",
+    "HP:0008619",
+    "HP:0030195"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-158",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:293603",
+   "disease_name": "Congenital hereditary endothelial dystrophy type II",
+   "gene": "SLC4A11",
+   "present": [
+    "HP:0000622",
+    "HP:0007957",
+    "HP:0012040"
+   ],
+   "absent": [
+    "HP:0008458"
+   ]
+  },
+  {
+   "case_id": "test-orpha-159",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:324575",
+   "disease_name": "Hyperinsulinism due to HNF1A deficiency",
+   "gene": "HNF1A",
+   "present": [
+    "HP:0001520",
+    "HP:0002329",
+    "HP:0012051"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-160",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:466791",
+   "disease_name": "Macrocephaly-intellectual disability-left ventricular non compaction syndrome",
+   "gene": "NONO",
+   "present": [
+    "HP:0000486",
+    "HP:0000739",
+    "HP:0001508",
+    "HP:0004684",
+    "HP:0006989",
+    "HP:0011968"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-161",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1452",
+   "disease_name": "Cleidocranial dysplasia",
+   "gene": "RUNX2",
+   "present": [
+    "HP:0000340",
+    "HP:0000682",
+    "HP:0000894",
+    "HP:0002007",
+    "HP:0010535",
+    "HP:0010669"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-162",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1525",
+   "disease_name": "Cranio-osteoarthropathy",
+   "gene": "HPGD",
+   "present": [
+    "HP:0000239",
+    "HP:0001070",
+    "HP:0001369",
+    "HP:0002829",
+    "HP:0004097",
+    "HP:0100760"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-163",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79273",
+   "disease_name": "Hereditary coproporphyria",
+   "gene": "CPOX",
+   "present": [
+    "HP:0002027",
+    "HP:0002460",
+    "HP:0008994",
+    "HP:0012217",
+    "HP:0040319"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-164",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:251061",
+   "disease_name": "7q31 microdeletion syndrome",
+   "gene": "FOXP2",
+   "present": [
+    "HP:0000736",
+    "HP:0000750",
+    "HP:0011344",
+    "HP:0011470",
+    "HP:0040022"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-165",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:457284",
+   "disease_name": "Microcephaly-corpus callosum hypoplasia-intellectual disability-facial dysmorphism syndrome",
+   "gene": "PPP2R1A",
+   "present": [
+    "HP:0000023",
+    "HP:0000316",
+    "HP:0000609",
+    "HP:0003250",
+    "HP:0006955"
+   ],
+   "absent": [
+    "HP:0012242"
+   ]
+  },
+  {
+   "case_id": "test-orpha-166",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:100",
+   "disease_name": "Ataxia-telangiectasia",
+   "gene": "ATM",
+   "present": [
+    "HP:0001257",
+    "HP:0004322",
+    "HP:0005374",
+    "HP:0007495"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-167",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:314978",
+   "disease_name": "X-linked non progressive cerebellar ataxia",
+   "gene": "ATP2B3",
+   "present": [
+    "HP:0001270",
+    "HP:0001321",
+    "HP:0002078"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-168",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:505652",
+   "disease_name": "CDKL5-deficiency disorder",
+   "gene": "CDKL5",
+   "present": [
+    "HP:0000750",
+    "HP:0001288",
+    "HP:0001332",
+    "HP:0011220",
+    "HP:0032794",
+    "HP:5200061"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-169",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:536516",
+   "disease_name": "Myopathic Ehlers-Danlos syndrome",
+   "gene": "COL12A1",
+   "present": [
+    "HP:0001252",
+    "HP:0001270",
+    "HP:0001382",
+    "HP:0002803",
+    "HP:0003324",
+    "HP:0030319"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-170",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:85451",
+   "disease_name": "ATTRV122I amyloidosis",
+   "gene": "TTR",
+   "present": [
+    "HP:0001635",
+    "HP:0005150",
+    "HP:0011675",
+    "HP:0030843",
+    "HP:0410174"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-171",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:251274",
+   "disease_name": "Familial hyperaldosteronism type III",
+   "gene": "KCNJ5",
+   "present": [
+    "HP:0000822",
+    "HP:0001959",
+    "HP:0002900"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-172",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:35122",
+   "disease_name": "Congenital sucrase-isomaltase deficiency",
+   "gene": "SI",
+   "present": [
+    "HP:0002013",
+    "HP:0002014",
+    "HP:0002027",
+    "HP:0004396"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-173",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:352577",
+   "disease_name": "Bainbridge-Ropers syndrome",
+   "gene": "ASXL3",
+   "present": [
+    "HP:0000486",
+    "HP:0002187",
+    "HP:0002540",
+    "HP:0008872"
+   ],
+   "absent": [
+    "HP:0012001"
+   ]
+  },
+  {
+   "case_id": "test-orpha-174",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:35704",
+   "disease_name": "L-Arginine:glycine amidinotransferase deficiency",
+   "gene": "GATM",
+   "present": [
+    "HP:0001263",
+    "HP:0003198",
+    "HP:0100543",
+    "HP:6000572"
+   ],
+   "absent": [
+    "HP:0033645"
+   ]
+  },
+  {
+   "case_id": "test-orpha-175",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:85284",
+   "disease_name": "BRESEK syndrome",
+   "gene": "MBTPS2",
+   "present": [
+    "HP:0000076",
+    "HP:0000175",
+    "HP:0000238",
+    "HP:0000411",
+    "HP:0001510"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-176",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:171829",
+   "disease_name": "6q16 microdeletion syndrome",
+   "gene": "SIM1",
+   "present": [
+    "HP:0000341",
+    "HP:0000486",
+    "HP:0000750",
+    "HP:0001319",
+    "HP:0007874",
+    "HP:0025160"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-177",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:643",
+   "disease_name": "Giant axonal neuropathy",
+   "gene": "GAN",
+   "present": [
+    "HP:0001257",
+    "HP:0001290",
+    "HP:0002235",
+    "HP:0002527",
+    "HP:0002857",
+    "HP:0005109"
+   ],
+   "absent": [
+    "HP:0025195"
+   ]
+  },
+  {
+   "case_id": "test-orpha-178",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:98902",
+   "disease_name": "Amish nemaline myopathy",
+   "gene": "TNNT1",
+   "present": [
+    "HP:0001270",
+    "HP:0001319",
+    "HP:0001337",
+    "HP:0003273",
+    "HP:0003458"
+   ],
+   "absent": [
+    "HP:0007993"
+   ]
+  },
+  {
+   "case_id": "test-orpha-179",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79312",
+   "disease_name": "Vitamin B12-unresponsive methylmalonic acidemia type mut-",
+   "gene": "MMUT",
+   "present": [
+    "HP:0001263",
+    "HP:0001297",
+    "HP:0001744"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-180",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:672",
+   "disease_name": "Pallister-Hall syndrome",
+   "gene": "GLI3",
+   "present": [
+    "HP:0000457",
+    "HP:0001629",
+    "HP:0002444"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-181",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:66634",
+   "disease_name": "Dilated cardiomyopathy with ataxia",
+   "gene": "DNAJC19",
+   "present": [
+    "HP:0001251",
+    "HP:0001511",
+    "HP:0001644",
+    "HP:0001657",
+    "HP:0002151"
+   ],
+   "absent": [
+    "HP:0005227"
+   ]
+  },
+  {
+   "case_id": "test-orpha-182",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:30",
+   "disease_name": "Hereditary orotic aciduria",
+   "gene": "UMPS",
+   "present": [
+    "HP:0000316",
+    "HP:0000431",
+    "HP:0000494",
+    "HP:0003218"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-183",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:364028",
+   "disease_name": "X-linked intellectual disability due to GRIA3 mutations",
+   "gene": "GRIA3",
+   "present": [
+    "HP:0000194",
+    "HP:0000508",
+    "HP:0000675",
+    "HP:0001263",
+    "HP:0002079",
+    "HP:0002133"
+   ],
+   "absent": [
+    "HP:6000936"
+   ]
+  },
+  {
+   "case_id": "test-orpha-184",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:156728",
+   "disease_name": "Spondyloepimetaphyseal dysplasia, matrilin-3 type",
+   "gene": "MATN3",
+   "present": [
+    "HP:0002938",
+    "HP:0004322",
+    "HP:0009826"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-185",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2901",
+   "disease_name": "Neuralgic amyotrophy",
+   "gene": "SEPTIN9",
+   "present": [
+    "HP:0000175",
+    "HP:0000286",
+    "HP:0003401"
+   ],
+   "absent": [
+    "HP:0010766"
+   ]
+  },
+  {
+   "case_id": "test-orpha-186",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:98764",
+   "disease_name": "Spinocerebellar ataxia type 27A",
+   "gene": "FGF14",
+   "present": [
+    "HP:0001272",
+    "HP:0001337",
+    "HP:0001761",
+    "HP:0002066"
+   ],
+   "absent": [
+    "HP:0040163"
+   ]
+  },
+  {
+   "case_id": "test-orpha-187",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:101109",
+   "disease_name": "Spinocerebellar ataxia type 28",
+   "gene": "AFG3L2",
+   "present": [
+    "HP:0000514",
+    "HP:0000639",
+    "HP:0002066",
+    "HP:0003487"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-188",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:760",
+   "disease_name": "Purine nucleoside phosphorylase deficiency",
+   "gene": "PNP",
+   "present": [
+    "HP:0001251",
+    "HP:0002719",
+    "HP:0004430",
+    "HP:0011935"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-189",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:75234",
+   "disease_name": "Cholesteryl ester storage disease",
+   "gene": "LIPA",
+   "present": [
+    "HP:0001394",
+    "HP:0002017",
+    "HP:0002040",
+    "HP:0002240",
+    "HP:0010512"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-190",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:391487",
+   "disease_name": "STAT1-related autoimmune enteropathy and endocrinopathy-susceptibility to chronic infections syndrome",
+   "gene": "STAT1",
+   "present": [
+    "HP:0002728",
+    "HP:0004944",
+    "HP:0100646"
+   ],
+   "absent": [
+    "HP:0011223"
+   ]
+  },
+  {
+   "case_id": "test-orpha-191",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:98818",
+   "disease_name": "Landau-Kleffner syndrome",
+   "gene": "GRIN2A",
+   "present": [
+    "HP:0000708",
+    "HP:0001250",
+    "HP:0002381",
+    "HP:0011198"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-192",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:572798",
+   "disease_name": "WARS2-related combined oxidative phosphorylation defect",
+   "gene": "WARS2",
+   "present": [
+    "HP:0000369",
+    "HP:0000646",
+    "HP:0000718",
+    "HP:0001263",
+    "HP:0001347",
+    "HP:0002365"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-193",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1573",
+   "disease_name": "Hypotrichosis with juvenile macular degeneration",
+   "gene": "CDH3",
+   "present": [
+    "HP:0000618",
+    "HP:0000639",
+    "HP:0002209",
+    "HP:0003777"
+   ],
+   "absent": [
+    "HP:0006930"
+   ]
+  },
+  {
+   "case_id": "test-orpha-194",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:505237",
+   "disease_name": "Early-onset seizures-distal limb anomalies-facial dysmorphism-global developmental delay syndrome",
+   "gene": "OTUD6B",
+   "present": [
+    "HP:0000445",
+    "HP:0000527",
+    "HP:0000960",
+    "HP:0001257",
+    "HP:0001263",
+    "HP:0005469"
+   ],
+   "absent": [
+    "HP:0011062"
+   ]
+  },
+  {
+   "case_id": "test-orpha-195",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:480880",
+   "disease_name": "X-linked female restricted facial dysmorphism-short stature-choanal atresia-intellectual disability",
+   "gene": "USP9X",
+   "present": [
+    "HP:0000218",
+    "HP:0000448",
+    "HP:0001376",
+    "HP:0001845",
+    "HP:0011220"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-196",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:98772",
+   "disease_name": "Spinocerebellar ataxia type 19/22",
+   "gene": "KCND3",
+   "present": [
+    "HP:0000020",
+    "HP:0001265",
+    "HP:0001347",
+    "HP:0002136",
+    "HP:0002172",
+    "HP:0006938"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-197",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:159",
+   "disease_name": "Carnitine-acylcarnitine translocase deficiency",
+   "gene": "SLC25A20",
+   "present": [
+    "HP:0000639",
+    "HP:0002240",
+    "HP:0100520"
+   ],
+   "absent": [
+    "HP:0000927"
+   ]
+  },
+  {
+   "case_id": "test-orpha-198",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:88644",
+   "disease_name": "Autosomal recessive ataxia, Beauce type",
+   "gene": "SYNE1",
+   "present": [
+    "HP:0001251",
+    "HP:0001272",
+    "HP:0002061",
+    "HP:0002380"
+   ],
+   "absent": [
+    "HP:0003752"
+   ]
+  },
+  {
+   "case_id": "test-orpha-199",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:404499",
+   "disease_name": "Autosomal recessive cerebellar ataxia-epilepsy-intellectual disability syndrome due to RUBCN deficiency",
+   "gene": "RUBCN",
+   "present": [
+    "HP:0001249",
+    "HP:0001260",
+    "HP:0001265",
+    "HP:0002194"
+   ],
+   "absent": [
+    "HP:6001074"
+   ]
+  },
+  {
+   "case_id": "test-orpha-200",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:306674",
+   "disease_name": "Kufor-Rakeb syndrome",
+   "gene": "ATP13A2",
+   "present": [
+    "HP:0000338",
+    "HP:0000639",
+    "HP:0001254",
+    "HP:0100660"
+   ],
+   "absent": [
+    "HP:0410062"
+   ]
+  },
+  {
+   "case_id": "test-orpha-201",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:404",
+   "disease_name": "Familial hyperaldosteronism type II",
+   "gene": "CLCN2",
+   "present": [
+    "HP:0000360",
+    "HP:0001324",
+    "HP:0002900",
+    "HP:0011746",
+    "HP:0040084"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-202",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:169079",
+   "disease_name": "Cernunnos-XLF deficiency",
+   "gene": "NHEJ1",
+   "present": [
+    "HP:0000252",
+    "HP:0000414",
+    "HP:0000444",
+    "HP:0001510",
+    "HP:0004313"
+   ],
+   "absent": [
+    "HP:0500008"
+   ]
+  },
+  {
+   "case_id": "test-orpha-203",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:909",
+   "disease_name": "Cerebrotendinous xanthomatosis",
+   "gene": "CYP27A1",
+   "present": [
+    "HP:0001250",
+    "HP:0001332",
+    "HP:0002659",
+    "HP:0007018",
+    "HP:0012379",
+    "HP:0012758"
+   ],
+   "absent": [
+    "HP:0004327"
+   ]
+  },
+  {
+   "case_id": "test-orpha-204",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:217335",
+   "disease_name": "RIN2 syndrome",
+   "gene": "RIN2",
+   "present": [
+    "HP:0000280",
+    "HP:0000343",
+    "HP:0002650"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-205",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:226316",
+   "disease_name": "Genetic transient congenital hypothyroidism",
+   "gene": "DUOX2",
+   "present": [
+    "HP:0001254",
+    "HP:0001537",
+    "HP:0025484"
+   ],
+   "absent": [
+    "HP:0000722"
+   ]
+  },
+  {
+   "case_id": "test-orpha-206",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79124",
+   "disease_name": "Hepatic veno-occlusive disease-immunodeficiency syndrome",
+   "gene": "SP110",
+   "present": [
+    "HP:0001433",
+    "HP:0002743",
+    "HP:0002849",
+    "HP:0010550",
+    "HP:0012735",
+    "HP:0030355"
+   ],
+   "absent": [
+    "HP:0010491"
+   ]
+  },
+  {
+   "case_id": "test-orpha-207",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:300179",
+   "disease_name": "Kyphoscoliotic Ehlers-Danlos syndrome due to FKBP22 deficiency",
+   "gene": "FKBP14",
+   "present": [
+    "HP:0001324",
+    "HP:0006829",
+    "HP:0007502",
+    "HP:0025019"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-208",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2836",
+   "disease_name": "PEHO syndrome",
+   "gene": "ZNHIT3",
+   "present": [
+    "HP:0000177",
+    "HP:0000194",
+    "HP:0000377",
+    "HP:0001347",
+    "HP:0003196",
+    "HP:0004422"
+   ],
+   "absent": [
+    "HP:0001882"
+   ]
+  },
+  {
+   "case_id": "test-orpha-209",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:63273",
+   "disease_name": "FLNC-related handgrip and calf weakness-distal myopathy",
+   "gene": "FLNC",
+   "present": [
+    "HP:0002600",
+    "HP:0009046",
+    "HP:0030319"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-210",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:565",
+   "disease_name": "Menkes disease",
+   "gene": "ATP7A",
+   "present": [
+    "HP:0001257",
+    "HP:0001382",
+    "HP:0008872"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-211",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:3000",
+   "disease_name": "Familial peripheral male-limited precocious puberty",
+   "gene": "LHCGR",
+   "present": [
+    "HP:0000098",
+    "HP:0000826",
+    "HP:0001061",
+    "HP:0001595",
+    "HP:0005616",
+    "HP:0007018"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-212",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:589618",
+   "disease_name": "Dystonia 28",
+   "gene": "KMT2B",
+   "present": [
+    "HP:0000414",
+    "HP:0001249",
+    "HP:0002015",
+    "HP:0007325"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-213",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:363549",
+   "disease_name": "Acute encephalopathy with biphasic seizures and late reduced diffusion",
+   "gene": "ADORA2A",
+   "present": [
+    "HP:0002069",
+    "HP:0007103",
+    "HP:0007185",
+    "HP:0031691",
+    "HP:0032308"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-214",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:101108",
+   "disease_name": "Spinocerebellar ataxia type 23",
+   "gene": "PDYN",
+   "present": [
+    "HP:0000514",
+    "HP:0001260",
+    "HP:0002070",
+    "HP:0003487",
+    "HP:0006886"
+   ],
+   "absent": [
+    "HP:0031956"
+   ]
+  },
+  {
+   "case_id": "test-orpha-215",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:330",
+   "disease_name": "Congenital factor XII deficiency",
+   "gene": "F12",
+   "present": [
+    "HP:0001892",
+    "HP:0003645",
+    "HP:0004841",
+    "HP:0007985"
+   ],
+   "absent": [
+    "HP:0031282"
+   ]
+  },
+  {
+   "case_id": "test-orpha-216",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:168569",
+   "disease_name": "H syndrome",
+   "gene": "SLC29A3",
+   "present": [
+    "HP:0000365",
+    "HP:0000998",
+    "HP:0030053"
+   ],
+   "absent": [
+    "HP:0000363"
+   ]
+  },
+  {
+   "case_id": "test-orpha-217",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79302",
+   "disease_name": "Congenital bile acid synthesis defect type 3",
+   "gene": "CYP7B1",
+   "present": [
+    "HP:0001396",
+    "HP:0001399",
+    "HP:0003155",
+    "HP:0031956",
+    "HP:0100508"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-218",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:163966",
+   "disease_name": "X-linked dominant chondrodysplasia, Chassaing-Lacombe type",
+   "gene": "HDAC6",
+   "present": [
+    "HP:0000926",
+    "HP:0002007",
+    "HP:0003196",
+    "HP:0006028"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-219",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:251071",
+   "disease_name": "8p23.1 microdeletion syndrome",
+   "gene": "GATA4",
+   "present": [
+    "HP:0000218",
+    "HP:0000252",
+    "HP:0000377",
+    "HP:0000776",
+    "HP:0100625"
+   ],
+   "absent": [
+    "HP:0025097"
+   ]
+  },
+  {
+   "case_id": "test-orpha-220",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79401",
+   "disease_name": "PLEC-related intermediate epidermolysis bullosa simplex without extracutaneous involvement",
+   "gene": "PLEC",
+   "present": [
+    "HP:0000982",
+    "HP:0001030",
+    "HP:0007446",
+    "HP:0031045",
+    "HP:0200041"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-221",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:649",
+   "disease_name": "Norrie disease",
+   "gene": "NDP",
+   "present": [
+    "HP:0000233",
+    "HP:0000272",
+    "HP:0000739",
+    "HP:0001252"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-222",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:578",
+   "disease_name": "Mucolipidosis type IV",
+   "gene": "MCOLN1",
+   "present": [
+    "HP:0000486",
+    "HP:0001251",
+    "HP:0001288",
+    "HP:0001347",
+    "HP:0007957"
+   ],
+   "absent": [
+    "HP:0001710"
+   ]
+  },
+  {
+   "case_id": "test-orpha-223",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:438178",
+   "disease_name": "Fatty acyl-CoA reductase 1 deficiency",
+   "gene": "FAR1",
+   "present": [
+    "HP:0000253",
+    "HP:0001249",
+    "HP:0001263",
+    "HP:0001510",
+    "HP:0001999"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-224",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:320360",
+   "disease_name": "MT-ATP6-related mitochondrial spastic paraplegia",
+   "gene": "MT-ATP6",
+   "present": [
+    "HP:0001317",
+    "HP:0001347",
+    "HP:0002061",
+    "HP:0002166",
+    "HP:0009053"
+   ],
+   "absent": [
+    "HP:0020036"
+   ]
+  },
+  {
+   "case_id": "test-orpha-225",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:137831",
+   "disease_name": "X-linked intellectual disability-cerebellar hypoplasia syndrome",
+   "gene": "OPHN1",
+   "present": [
+    "HP:0001249",
+    "HP:0001321",
+    "HP:0002080",
+    "HP:0002465",
+    "HP:0006951",
+    "HP:0007112"
+   ],
+   "absent": [
+    "HP:0000117"
+   ]
+  },
+  {
+   "case_id": "test-orpha-226",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1493",
+   "disease_name": "Vici syndrome",
+   "gene": "EPG5",
+   "present": [
+    "HP:0001274",
+    "HP:0002353",
+    "HP:0002719",
+    "HP:0007703"
+   ],
+   "absent": [
+    "HP:0001667"
+   ]
+  },
+  {
+   "case_id": "test-orpha-227",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1415",
+   "disease_name": "Hardikar syndrome",
+   "gene": "MED12",
+   "present": [
+    "HP:0001680",
+    "HP:0002566",
+    "HP:0004467"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-228",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:487825",
+   "disease_name": "Pierpont syndrome",
+   "gene": "TBL1XR1",
+   "present": [
+    "HP:0000232",
+    "HP:0000365",
+    "HP:0011341"
+   ],
+   "absent": [
+    "HP:0040129"
+   ]
+  },
+  {
+   "case_id": "test-orpha-229",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:391307",
+   "disease_name": "Severe intellectual disability-short stature-behavioral abnormalities-facial dysmorphism syndrome",
+   "gene": "TTI2",
+   "present": [
+    "HP:0000708",
+    "HP:0001263",
+    "HP:0001999",
+    "HP:0002486",
+    "HP:0002751",
+    "HP:0004691"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-230",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1496",
+   "disease_name": "Corpus callosum agenesis-neuronopathy syndrome",
+   "gene": "SLC12A6",
+   "present": [
+    "HP:0001250",
+    "HP:0001274",
+    "HP:0001363"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-231",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:53",
+   "disease_name": "Albers-Schönberg osteopetrosis",
+   "gene": "CLCN7",
+   "present": [
+    "HP:0005930",
+    "HP:0007626",
+    "HP:0009882"
+   ],
+   "absent": [
+    "HP:6000478"
+   ]
+  },
+  {
+   "case_id": "test-orpha-232",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:79345",
+   "disease_name": "Brachytelephalangic chondrodysplasia punctata",
+   "gene": "ARSL",
+   "present": [
+    "HP:0000410",
+    "HP:0003417",
+    "HP:0025426"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-233",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1010",
+   "disease_name": "Autosomal dominant palmoplantar keratoderma and congenital alopecia",
+   "gene": "GJA1",
+   "present": [
+    "HP:0000982",
+    "HP:0001058",
+    "HP:0002209",
+    "HP:0004528",
+    "HP:0008404"
+   ],
+   "absent": [
+    "HP:0410293"
+   ]
+  },
+  {
+   "case_id": "test-orpha-234",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:85165",
+   "disease_name": "Severe achondroplasia-developmental delay-acanthosis nigricans syndrome",
+   "gene": "FGFR3",
+   "present": [
+    "HP:0000956",
+    "HP:0009118",
+    "HP:0010502",
+    "HP:0010864",
+    "HP:0012081",
+    "HP:0012444"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-235",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2095",
+   "disease_name": "Gorlin-Chaudhry-Moss syndrome",
+   "gene": "SLC25A24",
+   "present": [
+    "HP:0000929",
+    "HP:0001537",
+    "HP:0002230",
+    "HP:0004322",
+    "HP:0005916",
+    "HP:0009891"
+   ],
+   "absent": [
+    "HP:0001742"
+   ]
+  },
+  {
+   "case_id": "test-orpha-236",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:397951",
+   "disease_name": "Microcephaly-thin corpus callosum-intellectual disability syndrome",
+   "gene": "TAF2",
+   "present": [
+    "HP:0000238",
+    "HP:0001257",
+    "HP:0001647",
+    "HP:0012448"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-237",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:2908",
+   "disease_name": "Kindler epidermolysis bullosa",
+   "gene": "FERMT1",
+   "present": [
+    "HP:0000670",
+    "HP:0000982",
+    "HP:0001000",
+    "HP:0001741",
+    "HP:0008065",
+    "HP:0100633"
+   ],
+   "absent": [
+    "HP:0001362"
+   ]
+  },
+  {
+   "case_id": "test-orpha-238",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:99950",
+   "disease_name": "Charcot-Marie-Tooth disease type 4D",
+   "gene": "NDRG1",
+   "present": [
+    "HP:0001760",
+    "HP:0002317",
+    "HP:0003431",
+    "HP:0007108",
+    "HP:0007210",
+    "HP:0009053"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-239",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:101008",
+   "disease_name": "Autosomal recessive spastic paraplegia type 28",
+   "gene": "DDHD1",
+   "present": [
+    "HP:0001761",
+    "HP:0002061",
+    "HP:0002650",
+    "HP:0010830"
+   ],
+   "absent": [
+    "HP:0006384"
+   ]
+  },
+  {
+   "case_id": "test-orpha-240",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1520",
+   "disease_name": "Craniofrontonasal dysplasia",
+   "gene": "EFNB1",
+   "present": [
+    "HP:0000252",
+    "HP:0000457",
+    "HP:0000494",
+    "HP:0000889",
+    "HP:0001363"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-241",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:1675",
+   "disease_name": "Dihydropyrimidine dehydrogenase deficiency",
+   "gene": "DPYD",
+   "present": [
+    "HP:0000729",
+    "HP:0001104",
+    "HP:0001250",
+    "HP:0001263",
+    "HP:0002353",
+    "HP:0005280"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-242",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:216873",
+   "disease_name": "Atypical pantothenate kinase-associated neurodegeneration",
+   "gene": "PANK2",
+   "present": [
+    "HP:0000737",
+    "HP:0001300",
+    "HP:0001347",
+    "HP:0002015",
+    "HP:0002451",
+    "HP:0008760"
+   ],
+   "absent": [
+    "HP:0003262"
+   ]
+  },
+  {
+   "case_id": "test-orpha-243",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:275",
+   "disease_name": "Severe combined immunodeficiency due to DCLRE1C deficiency",
+   "gene": "DCLRE1C",
+   "present": [
+    "HP:0004315",
+    "HP:0005403",
+    "HP:0010976"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-244",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:506358",
+   "disease_name": "Gabriele-de Vries syndrome",
+   "gene": "YY1",
+   "present": [
+    "HP:0000337",
+    "HP:0000369",
+    "HP:0000629"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-245",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:324588",
+   "disease_name": "Familial dyskinesia and facial myokymia",
+   "gene": "ADCY5",
+   "present": [
+    "HP:0001260",
+    "HP:0001332",
+    "HP:0001347",
+    "HP:0002322"
+   ],
+   "absent": [
+    "HP:0008606"
+   ]
+  },
+  {
+   "case_id": "test-orpha-246",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:96147",
+   "disease_name": "Kleefstra syndrome due to 9q34 microdeletion",
+   "gene": "EHMT1",
+   "present": [
+    "HP:0000035",
+    "HP:0000463",
+    "HP:0001249",
+    "HP:0011800"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-247",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:324737",
+   "disease_name": "SRD5A3-CDG",
+   "gene": "SRD5A3",
+   "present": [
+    "HP:0001935",
+    "HP:0001999",
+    "HP:0002334",
+    "HP:0007766",
+    "HP:0008947"
+   ],
+   "absent": []
+  },
+  {
+   "case_id": "test-orpha-248",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:133",
+   "disease_name": "Chronic beryllium disease",
+   "gene": "HLA-DPB1",
+   "present": [
+    "HP:0001824",
+    "HP:0006516",
+    "HP:0006527",
+    "HP:0012378",
+    "HP:0025439"
+   ],
+   "absent": [
+    "HP:0005257"
+   ]
+  },
+  {
+   "case_id": "test-orpha-249",
+   "split": "test",
+   "source": "ORPHA",
+   "disease_id": "ORPHA:199318",
+   "disease_name": "15q13.3 microdeletion syndrome",
+   "gene": "CHRNA7",
+   "present": [
+    "HP:0000286",
+    "HP:0007018",
+    "HP:0007302",
+    "HP:0030680"
+   ],
+   "absent": []
+  }
+ ]
+}
